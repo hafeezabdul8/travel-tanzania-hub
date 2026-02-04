@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>Tour Booking Confirmation - AFCON 2027</title>
+    <style>
+        /* Similar styles as hotel template, adjust colors */
+        .header {
+            background: linear-gradient(135deg, #FFC72C 0%, #00A859 100%);
+        }
+        .cta-button {
+            background: #FFC72C;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>🎊 Tour Package Confirmed!</h1>
+        <p>AFCON 2027 Tanzania Tourism</p>
+    </div>
+    
+    <div class="content">
+        <p>Hello <strong>{{ booking.user.first_name|default:booking.user.username }}</strong>,</p>
+        
+        <p>Your adventure in Tanzania is confirmed! You're booked for <strong>{{ booking.tour_package.name }}</strong>.</p>
+        
+        <div class="booking-details">
+            <h3>📋 Tour Details</h3>
+            <div class="detail-row">
+                <span>Tour Package:</span>
+                <span>{{ booking.tour_package.name }}</span>
+            </div>
+            <div class="detail-row">
+                <span>Attraction:</span>
+                <span>{{ booking.tour_package.attraction.name }}</span>
+            </div>
+            <div class="detail-row">
+                <span>Tour Date:</span>
+                <span><strong>{{ booking.booking_date|date:"F d, Y" }}</strong></span>
+            </div>
+            <div class="detail-row">
+                <span>Duration:</span>
+                <span>{{ booking.tour_package.duration }}</span>
+            </div>
+            <div class="detail-row">
+                <span>Number of People:</span>
+                <span>{{ booking.number_of_people }}</span>
+            </div>
+            <div class="detail-row">
+                <span>Meeting Point:</span>
+                <span>Will be sent by tour guide 24h before tour</span>
+            </div>
+        </div>
+        
+        <div class="total-amount">
+            Total Paid: ${{ booking.total_price }}
+        </div>
+        
+        <!-- Add tour-specific content -->
+    </div>
+</body>
+</html>

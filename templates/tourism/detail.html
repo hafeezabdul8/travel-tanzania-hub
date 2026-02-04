@@ -1,0 +1,853 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}{{ attraction.name }} - Tanzania Tourism{% endblock %}
+
+{% block extra_css %}
+<style>
+    .attraction-hero {
+        height: 70vh;
+        min-height: 500px;
+        background: linear-gradient(rgba(0, 0, 0, 0.5), rgba(0, 0, 0, 0.3)),
+                    url('{% if primary_image %}{{ primary_image.image_url }}{% else %}https://images.unsplash.com/photo-1516026672322-bc52d61a55d5?ixlib=rb-4.0.3&auto=format&fit=crop&w=1920&q=80{% endif %}');
+        background-size: cover;
+        background-position: center;
+        background-attachment: fixed;
+        color: white;
+    }
+    
+    .image-gallery-grid {
+        display: grid;
+        grid-template-columns: repeat(12, 1fr);
+        grid-template-rows: repeat(3, 200px);
+        gap: 10px;
+    }
+    
+    .gallery-item {
+        border-radius: 10px;
+        overflow: hidden;
+        cursor: pointer;
+        transition: transform 0.3s;
+    }
+    
+    .gallery-item:hover {
+        transform: scale(1.02);
+    }
+    
+    .gallery-item-1 { grid-column: span 8; grid-row: span 2; }
+    .gallery-item-2 { grid-column: span 4; grid-row: span 1; }
+    .gallery-item-3 { grid-column: span 4; grid-row: span 1; }
+    .gallery-item-4 { grid-column: span 4; grid-row: span 2; }
+    .gallery-item-5 { grid-column: span 4; grid-row: span 1; }
+    
+    .info-card {
+        background: white;
+        border-radius: 15px;
+        padding: 25px;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
+        transition: transform 0.3s;
+    }
+    
+    .info-card:hover {
+        transform: translateY(-5px);
+    }
+    
+    .review-card {
+        background: white;
+        border-radius: 10px;
+        padding: 20px;
+        box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
+        border-left: 4px solid #00A859;
+    }
+    
+    .star-rating {
+        color: #FFC72C;
+        font-size: 1.2rem;
+    }
+    
+    .category-badge {
+        display: inline-flex;
+        align-items: center;
+        padding: 8px 16px;
+        border-radius: 50px;
+        font-weight: 600;
+        margin-right: 10px;
+        margin-bottom: 10px;
+    }
+    
+    .package-card {
+        transition: all 0.3s;
+        border: 2px solid transparent;
+    }
+    
+    .package-card:hover {
+        transform: translateY(-10px);
+        border-color: #00A859;
+        box-shadow: 0 20px 40px rgba(0, 168, 89, 0.1);
+    }
+    
+    .modal-overlay {
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: rgba(0, 0, 0, 0.9);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        z-index: 1000;
+        opacity: 0;
+        visibility: hidden;
+        transition: all 0.3s;
+    }
+    
+    .modal-overlay.active {
+        opacity: 1;
+        visibility: visible;
+    }
+    
+    .modal-image {
+        max-width: 90%;
+        max-height: 90%;
+        border-radius: 10px;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="animate-fade-in">
+    <!-- Hero Section -->
+    <section class="attraction-hero relative">
+        <div class="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent"></div>
+        <div class="container mx-auto px-4 h-full flex items-end pb-20 relative z-10">
+            <div class="max-w-4xl">
+                <div class="flex flex-wrap gap-3 mb-4">
+                    <span class="category-badge bg-white/20 backdrop-blur-sm text-white">
+                        <i class="fas {{ attraction.get_icon }} mr-2"></i>
+                        {{ attraction.get_category_display }}
+                    </span>
+                    <span class="category-badge bg-green-600 text-white">
+                        <i class="fas fa-map-marker-alt mr-2"></i>
+                        {{ attraction.get_city_display }}
+                    </span>
+                    {% if attraction.entry_fee %}
+                    <span class="category-badge bg-yellow-500 text-white">
+                        <i class="fas fa-ticket-alt mr-2"></i>
+                        Entry Fee: ${{ attraction.entry_fee }}
+                    </span>
+                    {% else %}
+                    <span class="category-badge bg-green-500 text-white">
+                        <i class="fas fa-ticket-alt mr-2"></i>
+                        Free Entry
+                    </span>
+                    {% endif %}
+                </div>
+                
+                <h1 class="text-5xl md:text-6xl font-bold mb-6">{{ attraction.name }}</h1>
+                
+                <p class="text-xl md:text-2xl opacity-90 mb-8 max-w-3xl">
+                    {{ attraction.description|truncatewords:30 }}
+                </p>
+                
+                <div class="flex flex-wrap gap-4">
+                    <a href="#gallery" class="bg-white text-gray-900 px-8 py-3 rounded-full font-semibold hover:bg-gray-100">
+                        <i class="fas fa-images mr-2"></i>View Gallery
+                    </a>
+                    <a href="#packages" class="bg-green-600 text-white px-8 py-3 rounded-full font-semibold hover:bg-green-700">
+                        <i class="fas fa-map-marked-alt mr-2"></i>Tour Packages
+                    </a>
+                    <a href="#location" class="border-2 border-white text-white px-8 py-3 rounded-full font-semibold hover:bg-white/10">
+                        <i class="fas fa-directions mr-2"></i>Get Directions
+                    </a>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Main Content -->
+    <div class="container mx-auto px-4 py-12">
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-12">
+            <!-- Left Column: Main Content -->
+            <div class="lg:col-span-2">
+                <!-- Description -->
+                <section class="mb-12">
+                    <div class="info-card">
+                        <h2 class="text-3xl font-bold mb-6 text-gray-800 flex items-center">
+                            <i class="fas fa-info-circle text-green-600 mr-3"></i>
+                            About {{ attraction.name }}
+                        </h2>
+                        <div class="prose max-w-none">
+                            <p class="text-gray-700 text-lg leading-relaxed mb-6">
+                                {{ attraction.description }}
+                            </p>
+                            
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+                                <div class="flex items-center p-4 bg-green-50 rounded-xl">
+                                    <div class="mr-4">
+                                        <i class="fas fa-clock text-2xl text-green-600"></i>
+                                    </div>
+                                    <div>
+                                        <h4 class="font-semibold text-gray-800">Opening Hours</h4>
+                                        <p class="text-gray-600">{{ attraction.opening_hours }}</p>
+                                    </div>
+                                </div>
+                                
+                                <div class="flex items-center p-4 bg-blue-50 rounded-xl">
+                                    <div class="mr-4">
+                                        <i class="fas fa-sun text-2xl text-blue-600"></i>
+                                    </div>
+                                    <div>
+                                        <h4 class="font-semibold text-gray-800">Best Time to Visit</h4>
+                                        <p class="text-gray-600">{{ attraction.best_time_to_visit }}</p>
+                                    </div>
+                                </div>
+                                
+                                <div class="flex items-center p-4 bg-yellow-50 rounded-xl">
+                                    <div class="mr-4">
+                                        <i class="fas fa-hourglass-half text-2xl text-yellow-600"></i>
+                                    </div>
+                                    <div>
+                                        <h4 class="font-semibold text-gray-800">Estimated Visit Time</h4>
+                                        <p class="text-gray-600">{{ attraction.estimated_visit_time }}</p>
+                                    </div>
+                                </div>
+                                
+                                {% if attraction.contact_phone %}
+                                <div class="flex items-center p-4 bg-purple-50 rounded-xl">
+                                    <div class="mr-4">
+                                        <i class="fas fa-phone text-2xl text-purple-600"></i>
+                                    </div>
+                                    <div>
+                                        <h4 class="font-semibold text-gray-800">Contact</h4>
+                                        <p class="text-gray-600">{{ attraction.contact_phone }}</p>
+                                    </div>
+                                </div>
+                                {% endif %}
+                            </div>
+                            
+                            <div class="bg-gradient-to-r from-green-50 to-blue-50 p-6 rounded-xl border-l-4 border-green-500">
+                                <h4 class="text-xl font-bold mb-3 text-gray-800">
+                                    <i class="fas fa-lightbulb mr-2 text-green-600"></i>
+                                    Pro Tip for AFCON 2027 Visitors
+                                </h4>
+                                <p class="text-gray-700">
+                                    Plan your visit on non-match days to avoid crowds. Many attractions offer 
+                                    special discounts for AFCON ticket holders. Combine your visit with nearby 
+                                    hotels for a complete experience.
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Image Gallery -->
+                <section class="mb-12" id="gallery">
+                    <div class="info-card">
+                        <div class="flex justify-between items-center mb-6">
+                            <h2 class="text-3xl font-bold text-gray-800 flex items-center">
+                                <i class="fas fa-camera text-green-600 mr-3"></i>
+                                Photo Gallery
+                            </h2>
+                            <span class="text-gray-600">
+                                {{ all_images|length }} photos
+                            </span>
+                        </div>
+                        
+                        {% if all_images %}
+                        <div class="image-gallery-grid mb-6">
+                            {% for image in all_images|slice:":5" %}
+                            <div class="gallery-item gallery-item-{{ forloop.counter }}"
+                                 onclick="openImageModal('{{ image.image_url }}')">
+                                <img src="{{ image.image_url }}" 
+                                     alt="{{ image.caption|default:attraction.name }}"
+                                     class="w-full h-full object-cover">
+                            </div>
+                            {% endfor %}
+                        </div>
+                        
+                        <!-- Additional Images Grid -->
+                        {% if all_images|length > 5 %}
+                        <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+                            {% for image in all_images|slice:"5:13" %}
+                            <div class="gallery-item h-48"
+                                 onclick="openImageModal('{{ image.image_url }}')">
+                                <img src="{{ image.image_url }}" 
+                                     alt="{{ image.caption|default:attraction.name }}"
+                                     class="w-full h-full object-cover rounded-lg">
+                            </div>
+                            {% endfor %}
+                        </div>
+                        {% endif %}
+                        {% else %}
+                        <div class="text-center py-12">
+                            <i class="fas fa-image text-6xl text-gray-300 mb-4"></i>
+                            <h3 class="text-xl font-semibold text-gray-600 mb-2">No photos available</h3>
+                            <p class="text-gray-500">Check back later for gallery updates</p>
+                        </div>
+                        {% endif %}
+                    </div>
+                </section>
+
+                <!-- Tour Packages -->
+                <section class="mb-12" id="packages">
+                    <div class="info-card">
+                        <h2 class="text-3xl font-bold mb-6 text-gray-800 flex items-center">
+                            <i class="fas fa-map-marked-alt text-green-600 mr-3"></i>
+                            Tour Packages
+                        </h2>
+                        
+                        {% if tour_packages %}
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            {% for package in tour_packages %}
+                            <div class="package-card bg-white border border-gray-200 rounded-xl p-6">
+                                <div class="flex justify-between items-start mb-4">
+                                    <div>
+                                        <h3 class="text-xl font-bold mb-2">{{ package.name }}</h3>
+                                        <div class="flex items-center text-gray-600 mb-2">
+                                            <i class="far fa-clock mr-2"></i>
+                                            <span>{{ package.duration }}</span>
+                                        </div>
+                                    </div>
+                                    {% if package.is_featured %}
+                                    <span class="bg-yellow-500 text-white px-3 py-1 rounded-full text-sm font-bold">
+                                        Featured
+                                    </span>
+                                    {% endif %}
+                                </div>
+                                
+                                <p class="text-gray-600 mb-4">{{ package.description|truncatewords:30 }}</p>
+                                
+                                <div class="mb-6">
+                                    <h4 class="font-semibold mb-2 text-gray-800">Includes:</h4>
+                                    <ul class="space-y-1">
+                                        {% for item in package.get_includes_list|slice:":3" %}
+                                        <li class="flex items-center text-gray-600">
+                                            <i class="fas fa-check-circle text-green-500 mr-2 text-sm"></i>
+                                            {{ item }}
+                                        </li>
+                                        {% endfor %}
+                                        {% if package.get_includes_list|length > 3 %}
+                                        <li class="text-gray-500 text-sm">
+                                            + {{ package.get_includes_list|length|add:"-3" }} more items
+                                        </li>
+                                        {% endif %}
+                                    </ul>
+                                </div>
+                                
+                                <div class="flex justify-between items-center">
+                                    <div>
+                                        <div class="text-2xl font-bold text-green-700">${{ package.price }}</div>
+                                        <div class="text-gray-500 text-sm">per person</div>
+                                    </div>
+                                    
+                                    <!-- FIXED: Direct link for Book Now button -->
+                                    {% if user.is_authenticated %}
+                                    <a href="{% url 'book_tour_package' package.id %}" 
+                                       class="bg-green-600 text-white px-6 py-2 rounded-lg hover:bg-green-700 font-semibold">
+                                        Book Now
+                                    </a>
+                                    {% else %}
+                                    <a href="{% url 'login' %}?next={% url 'book_tour_package' package.id %}" 
+                                       class="bg-green-600 text-white px-6 py-2 rounded-lg hover:bg-green-700 font-semibold">
+                                        Book Now
+                                    </a>
+                                    {% endif %}
+                                </div>
+                            </div>
+                            {% endfor %}
+                        </div>
+                        {% else %}
+                        <div class="text-center py-12">
+                            <i class="fas fa-map-signs text-6xl text-gray-300 mb-4"></i>
+                            <h3 class="text-xl font-semibold text-gray-600 mb-2">No tour packages available</h3>
+                            <p class="text-gray-500 mb-6">Custom tours can be arranged through our AI assistant</p>
+                            <a href="{% url 'chatbot' %}" class="inline-flex items-center bg-green-600 text-white px-6 py-3 rounded-lg hover:bg-green-700">
+                                <i class="fas fa-robot mr-2"></i>
+                                Ask AI Assistant
+                            </a>
+                        </div>
+                        {% endif %}
+                        
+                        <div class="mt-8 p-6 bg-gradient-to-r from-green-50 to-blue-50 rounded-xl">
+                            <h4 class="text-xl font-bold mb-3 text-gray-800">
+                                <i class="fas fa-star mr-2 text-yellow-500"></i>
+                                AFCON 2027 Special
+                            </h4>
+                            <p class="text-gray-700 mb-4">
+                                All tour packages include special AFCON 2027 match day planning assistance. 
+                                We'll help you schedule attractions around match times for the best experience.
+                            </p>
+                            <a href="{% url 'tour_packages' %}?city={{ attraction.city }}" 
+                               class="text-green-600 hover:text-green-800 font-semibold">
+                                View all packages in {{ attraction.get_city_display }} →
+                            </a>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Reviews & Ratings -->
+                <section class="mb-12">
+                    <div class="info-card">
+                        <div class="flex justify-between items-center mb-6">
+                            <h2 class="text-3xl font-bold text-gray-800 flex items-center">
+                                <i class="fas fa-star text-yellow-500 mr-3"></i>
+                                Visitor Reviews
+                            </h2>
+                            <div class="text-center">
+                                <div class="text-4xl font-bold text-gray-800">{{ avg_rating }}</div>
+                                <div class="star-rating">
+                                    {% for i in "12345"|make_list %}
+                                        {% if forloop.counter <= avg_rating|floatformat:0 %}
+                                            <i class="fas fa-star"></i>
+                                        {% elif forloop.counter == avg_rating|floatformat:0|add:"1" and avg_rating|floatformat:1|slice:"-1" == "5" %}
+                                            <i class="fas fa-star-half-alt"></i>
+                                        {% else %}
+                                            <i class="far fa-star"></i>
+                                        {% endif %}
+                                    {% endfor %}
+                                </div>
+                                <div class="text-gray-600 text-sm mt-1">{{ review_count }} reviews</div>
+                            </div>
+                        </div>
+                        
+                        {% if reviews %}
+                        <div class="space-y-6">
+                            {% for review in reviews|slice:":5" %}
+                            <div class="review-card">
+                                <div class="flex justify-between items-start mb-3">
+                                    <div>
+                                        <h4 class="font-bold text-gray-800">{{ review.user.username }}</h4>
+                                        <div class="star-rating">
+                                            {% for i in "12345"|make_list %}
+                                                {% if forloop.counter <= review.rating %}
+                                                    <i class="fas fa-star"></i>
+                                                {% else %}
+                                                    <i class="far fa-star"></i>
+                                                {% endif %}
+                                            {% endfor %}
+                                        </div>
+                                    </div>
+                                    <div class="text-gray-500 text-sm">
+                                        {{ review.created_at|date:"M d, Y" }}
+                                    </div>
+                                </div>
+                                <p class="text-gray-700">{{ review.comment }}</p>
+                            </div>
+                            {% endfor %}
+                        </div>
+                        
+                        {% if reviews.count > 5 %}
+                        <div class="text-center mt-6">
+                            <button onclick="showAllReviews()" class="text-green-600 hover:text-green-800 font-semibold">
+                                View all {{ reviews.count }} reviews →
+                            </button>
+                        </div>
+                        {% endif %}
+                        
+                        {% else %}
+                        <div class="text-center py-8">
+                            <i class="fas fa-comment-slash text-6xl text-gray-300 mb-4"></i>
+                            <h3 class="text-xl font-semibold text-gray-600 mb-2">No reviews yet</h3>
+                            <p class="text-gray-500">Be the first to review this attraction!</p>
+                        </div>
+                        {% endif %}
+                        
+                        <!-- Add Review Button -->
+                        {% if user.is_authenticated %}
+                        <div class="mt-8 p-6 bg-gray-50 rounded-xl">
+                            <h4 class="text-xl font-bold mb-4 text-gray-800">Share Your Experience</h4>
+                            <form method="POST" action="{% url 'add_review' attraction.id %}" class="space-y-4">
+                                {% csrf_token %}
+                                <div>
+                                    <label class="block text-gray-700 mb-2">Your Rating</label>
+                                    <div class="flex space-x-1">
+                                        {% for i in "12345"|make_list %}
+                                        <button type="button" 
+                                                onclick="setRating({ forloop,counter })" 
+                                                class="text-2xl review-star">
+                                            <i class="far fa-star text-gray-300"></i>
+                                        </button>
+                                        {% endfor %}
+                                    </div>
+                                    <input type="hidden" name="rating" id="ratingInput" value="5">
+                                </div>
+                                <div>
+                                    <label class="block text-gray-700 mb-2">Your Review</label>
+                                    <textarea name="comment" 
+                                              rows="3" 
+                                              placeholder="Share your experience at {{ attraction.name }}..."
+                                              class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500"></textarea>
+                                </div>
+                                <button type="submit" 
+                                        class="bg-green-600 text-white px-6 py-3 rounded-lg hover:bg-green-700 font-semibold">
+                                    Submit Review
+                                </button>
+                            </form>
+                        </div>
+                        {% else %}
+                        <div class="mt-8 p-6 bg-gradient-to-r from-green-50 to-blue-50 rounded-xl text-center">
+                            <p class="text-gray-700 mb-4">
+                                Share your experience at {{ attraction.name }} with other AFCON visitors
+                            </p>
+                            <a href="{% url 'login' %}?next={% url 'attraction_detail' attraction.id %}" 
+                               class="inline-flex items-center bg-green-600 text-white px-6 py-3 rounded-lg hover:bg-green-700">
+                                <i class="fas fa-sign-in-alt mr-2"></i>
+                                Login to Add Review
+                            </a>
+                        </div>
+                        {% endif %}
+                    </div>
+                </section>
+
+                <!-- Location & Map -->
+                <section id="location">
+                    <div class="info-card">
+                        <h2 class="text-3xl font-bold mb-6 text-gray-800 flex items-center">
+                            <i class="fas fa-map-pin text-red-600 mr-3"></i>
+                            Location & Directions
+                        </h2>
+                        
+                        <div class="mb-6">
+                            <h3 class="text-xl font-semibold mb-3 text-gray-800">{{ attraction.name }}</h3>
+                            <div class="flex items-start mb-4">
+                                <i class="fas fa-map-marker-alt text-green-600 mt-1 mr-3"></i>
+                                <div>
+                                    <p class="text-gray-700">{{ attraction.location }}</p>
+                                    <p class="text-gray-600 mt-1">{{ attraction.get_city_display }}, Tanzania</p>
+                                </div>
+                            </div>
+                            
+                            {% if attraction.website %}
+                            <div class="flex items-center mb-4">
+                                <i class="fas fa-globe text-blue-600 mr-3"></i>
+                                <a href="{{ attraction.website }}" 
+                                   target="_blank" 
+                                   rel="noopener noreferrer"
+                                   class="text-blue-600 hover:text-blue-800">
+                                    Official Website
+                                </a>
+                            </div>
+                            {% endif %}
+                        </div>
+                        
+                        <!-- Map Placeholder -->
+                        <div class="bg-gradient-to-r from-green-50 to-blue-50 rounded-xl p-8 text-center">
+                            <i class="fas fa-map-marked-alt text-6xl text-green-600 mb-6"></i>
+                            <h4 class="text-2xl font-bold mb-4 text-gray-800">{{ attraction.get_city_display }} Map</h4>
+                            <p class="text-gray-700 mb-6 max-w-2xl mx-auto">
+                                {{ attraction.name }} is conveniently located for AFCON 2027 visitors.
+                                Easy access from major hotels and stadiums in {{ attraction.get_city_display }}.
+                            </p>
+                            <div class="flex flex-wrap justify-center gap-4">
+                                <button onclick="getDirections()" 
+                                        class="bg-green-600 text-white px-8 py-3 rounded-full hover:bg-green-700 font-semibold">
+                                    <i class="fas fa-directions mr-2"></i>Get Directions
+                                </button>
+                                <button onclick="openInMaps()" 
+                                        class="border-2 border-green-600 text-green-600 px-8 py-3 rounded-full hover:bg-green-50 font-semibold">
+                                    <i class="fas fa-map mr-2"></i>Open in Maps
+                                </button>
+                            </div>
+                        </div>
+                        
+                        <!-- Travel Tips -->
+                        <div class="mt-8 p-6 bg-yellow-50 rounded-xl border-l-4 border-yellow-500">
+                            <h4 class="text-xl font-bold mb-3 text-gray-800">
+                                <i class="fas fa-car-side mr-2 text-yellow-600"></i>
+                                AFCON 2027 Travel Tip
+                            </h4>
+                            <p class="text-gray-700">
+                                During AFCON 2027, expect increased traffic on match days. Plan your visit 
+                                to {{ attraction.name }} on non-match days or schedule transportation through 
+                                our partner services for the best experience.
+                            </p>
+                        </div>
+                    </div>
+                </section>
+            </div>
+
+            <!-- Right Column: Sidebar -->
+            <div class="lg:col-span-1">
+                <!-- Quick Facts -->
+                <div class="info-card mb-6">
+                    <h3 class="text-xl font-bold mb-6 text-gray-800 border-b pb-3">
+                        <i class="fas fa-clipboard-list text-green-600 mr-2"></i>
+                        Quick Facts
+                    </h3>
+                    
+                    <div class="space-y-4">
+                        <div class="flex justify-between">
+                            <span class="text-gray-600">Category</span>
+                            <span class="font-semibold">{{ attraction.get_category_display }}</span>
+                        </div>
+                        
+                        <div class="flex justify-between">
+                            <span class="text-gray-600">City</span>
+                            <span class="font-semibold">{{ attraction.get_city_display }}</span>
+                        </div>
+                        
+                        <div class="flex justify-between">
+                            <span class="text-gray-600">Entry Fee</span>
+                            <span class="font-semibold">
+                                {% if attraction.entry_fee %}
+                                    ${{ attraction.entry_fee }}
+                                {% else %}
+                                    Free
+                                {% endif %}
+                            </span>
+                        </div>
+                        
+                        <div class="flex justify-between">
+                            <span class="text-gray-600">Best Time</span>
+                            <span class="font-semibold">{{ attraction.best_time_to_visit }}</span>
+                        </div>
+                        
+                        <div class="flex justify-between">
+                            <span class="text-gray-600">Visit Duration</span>
+                            <span class="font-semibold">{{ attraction.estimated_visit_time }}</span>
+                        </div>
+                        
+                        <div class="flex justify-between">
+                            <span class="text-gray-600">Rating</span>
+                            <span class="font-semibold">{{ avg_rating }}/5 ({{ review_count }})</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Nearby Attractions -->
+                {% if related_attractions %}
+                <div class="info-card mb-6">
+                    <h3 class="text-xl font-bold mb-6 text-gray-800 border-b pb-3">
+                        <i class="fas fa-compass text-blue-600 mr-2"></i>
+                        Nearby Attractions
+                    </h3>
+                    
+                    <div class="space-y-4">
+                        {% for related in related_attractions %}
+                        <a href="{% url 'attraction_detail' related.id %}" 
+                           class="flex items-center p-3 hover:bg-gray-50 rounded-lg transition duration-200">
+                            <div class="w-12 h-12 bg-gradient-to-r from-green-400 to-blue-400 rounded-lg flex items-center justify-center mr-4">
+                                <i class="fas {{ related.get_icon }} text-white"></i>
+                            </div>
+                            <div class="flex-1">
+                                <h4 class="font-semibold text-gray-800">{{ related.name }}</h4>
+                                <p class="text-gray-600 text-sm">{{ related.get_category_display }}</p>
+                            </div>
+                            <i class="fas fa-chevron-right text-gray-400"></i>
+                        </a>
+                        {% endfor %}
+                    </div>
+                    
+                    <div class="mt-6 text-center">
+                        <a href="{% url 'tourism' %}?city={{ attraction.city }}" 
+                           class="text-green-600 hover:text-green-800 font-semibold">
+                            View all in {{ attraction.get_city_display }} →
+                        </a>
+                    </div>
+                </div>
+                {% endif %}
+
+                <!-- AI Assistant Help -->
+                <div class="info-card bg-gradient-to-r from-green-600 to-blue-600 text-white">
+                    <div class="text-center mb-4">
+                        <i class="fas fa-robot text-4xl mb-4"></i>
+                        <h3 class="text-xl font-bold mb-2">Need Help Planning?</h3>
+                        <p class="opacity-90 mb-4">
+                            Our AI assistant can help you plan the perfect visit to {{ attraction.name }}
+                        </p>
+                    </div>
+                    
+                    <div class="space-y-3">
+                        <a href="{% url 'chatbot' %}?message=Tell me about {{ attraction.name }}" 
+                           class="flex items-center justify-between p-3 bg-white/10 hover:bg-white/20 rounded-lg transition duration-200">
+                            <span>Get personalized tips</span>
+                            <i class="fas fa-arrow-right"></i>
+                        </a>
+                        
+                        <a href="{% url 'chatbot' %}?message=Best time to visit {{ attraction.name }}" 
+                           class="flex items-center justify-between p-3 bg-white/10 hover:bg-white/20 rounded-lg transition duration-200">
+                            <span>Best visit schedule</span>
+                            <i class="fas fa-arrow-right"></i>
+                        </a>
+                        
+                        <a href="{% url 'chatbot' %}?message=Combine {{ attraction.name }} with hotels" 
+                           class="flex items-center justify-between p-3 bg-white/10 hover:bg-white/20 rounded-lg transition duration-200">
+                            <span>Hotel + Attraction packages</span>
+                            <i class="fas fa-arrow-right"></i>
+                        </a>
+                    </div>
+                    
+                    <div class="mt-6">
+                        <a href="{% url 'chatbot' %}" 
+                           class="block w-full bg-white text-green-600 text-center py-3 rounded-lg font-semibold hover:bg-gray-100">
+                            <i class="fas fa-comments mr-2"></i>Chat with AI Assistant
+                        </a>
+                    </div>
+                </div>
+
+                <!-- Share This Attraction -->
+                <div class="info-card mt-6">
+                    <h3 class="text-xl font-bold mb-4 text-gray-800">Share This Attraction</h3>
+                    <div class="flex space-x-4">
+                        <button onclick="shareOnFacebook()" 
+                                class="flex-1 bg-blue-600 text-white p-3 rounded-lg hover:bg-blue-700">
+                            <i class="fab fa-facebook-f"></i>
+                        </button>
+                        <button onclick="shareOnTwitter()" 
+                                class="flex-1 bg-blue-400 text-white p-3 rounded-lg hover:bg-blue-500">
+                            <i class="fab fa-twitter"></i>
+                        </button>
+                        <button onclick="shareOnWhatsApp()" 
+                                class="flex-1 bg-green-500 text-white p-3 rounded-lg hover:bg-green-600">
+                            <i class="fab fa-whatsapp"></i>
+                        </button>
+                        <button onclick="copyLink()" 
+                                class="flex-1 bg-gray-600 text-white p-3 rounded-lg hover:bg-gray-700">
+                            <i class="fas fa-link"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Image Modal -->
+    <div id="imageModal" class="modal-overlay" onclick="closeImageModal()">
+        <div onclick="event.stopPropagation()">
+            <img id="modalImage" class="modal-image" src="" alt="">
+            <button onclick="closeImageModal()" 
+                    class="absolute top-4 right-4 text-white text-3xl hover:text-gray-300">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // Image Modal Functions
+    function openImageModal(imageUrl) {
+        document.getElementById('modalImage').src = imageUrl;
+        document.getElementById('imageModal').classList.add('active');
+        document.body.style.overflow = 'hidden';
+    }
+
+    function closeImageModal() {
+        document.getElementById('imageModal').classList.remove('active');
+        document.body.style.overflow = 'auto';
+    }
+
+    // Review Rating System
+    let currentRating = 5;
+    const stars = document.querySelectorAll('.review-star');
+    
+    function setRating(rating) {
+        currentRating = rating;
+        document.getElementById('ratingInput').value = rating;
+        
+        stars.forEach((star, index) => {
+            const icon = star.querySelector('i');
+            if (index < rating) {
+                icon.classList.remove('far', 'fa-star');
+                icon.classList.add('fas', 'fa-star', 'text-yellow-500');
+            } else {
+                icon.classList.remove('fas', 'fa-star', 'text-yellow-500');
+                icon.classList.add('far', 'fa-star', 'text-gray-300');
+            }
+        });
+    }
+
+    // Initialize rating
+    if (stars.length > 0) {
+        stars.forEach((star, index) => {
+            star.addEventListener('click', () => setRating(index + 1));
+        });
+        setRating(currentRating);
+    }
+
+    // Location Functions
+    function getDirections() {
+        const location = encodeURIComponent("{{ attraction.name }}, {{ attraction.location }}, {{ attraction.get_city_display }}, Tanzania");
+        window.open('https://www.google.com/maps/dir/?api=1&destination=' + location, '_blank');
+    }
+
+    function openInMaps() {
+        const location = encodeURIComponent("{{ attraction.name }}, {{ attraction.get_city_display }}, Tanzania");
+        window.open('https://www.google.com/maps/search/?api=1&query=' + location, '_blank');
+    }
+
+    // Share Functions
+    function shareOnFacebook() {
+        const url = encodeURIComponent(window.location.href);
+        window.open('https://www.facebook.com/sharer/sharer.php?u=' + url, '_blank');
+    }
+
+    function shareOnTwitter() {
+        const text = encodeURIComponent("Check out {{ attraction.name }} in Tanzania for AFCON 2027!");
+        const url = encodeURIComponent(window.location.href);
+        window.open('https://twitter.com/intent/tweet?text=' + text + '&url=' + url, '_blank');
+    }
+
+    function shareOnWhatsApp() {
+        const text = encodeURIComponent("Check out {{ attraction.name }} in Tanzania for AFCON 2027! " + window.location.href);
+        window.open('https://wa.me/?text=' + text, '_blank');
+    }
+
+    function copyLink() {
+        navigator.clipboard.writeText(window.location.href).then(() => {
+            alert('Link copied to clipboard!');
+        }).catch(err => {
+            console.error('Failed to copy: ', err);
+            // Fallback for older browsers
+            const textArea = document.createElement('textarea');
+            textArea.value = window.location.href;
+            document.body.appendChild(textArea);
+            textArea.select();
+            document.execCommand('copy');
+            document.body.removeChild(textArea);
+            alert('Link copied to clipboard!');
+        });
+    }
+
+    // Show all reviews
+    function showAllReviews() {
+        const hiddenReviews = document.querySelectorAll('.review-card:nth-child(n+6)');
+        hiddenReviews.forEach(review => {
+            review.style.display = 'block';
+        });
+        const showMoreBtn = document.querySelector('button[onclick="showAllReviews()"]');
+        if (showMoreBtn) {
+            showMoreBtn.style.display = 'none';
+        }
+    }
+
+    // Close modal on ESC key
+    document.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape') {
+            closeImageModal();
+        }
+    });
+
+    // Close modal on background click
+    document.getElementById('imageModal').addEventListener('click', (e) => {
+        if (e.target.id === 'imageModal') {
+            closeImageModal();
+        }
+    });
+
+    // Initialize on page load
+    document.addEventListener('DOMContentLoaded', function() {
+        console.log('Attraction detail page loaded');
+        
+        // Hide extra reviews initially
+        const allReviews = document.querySelectorAll('.review-card');
+        if (allReviews.length > 5) {
+            for (let i = 5; i < allReviews.length; i++) {
+                allReviews[i].style.display = 'none';
+            }
+        }
+    });
+</script>
+{% endblock %}

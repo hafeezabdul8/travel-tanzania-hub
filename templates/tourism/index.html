@@ -1,0 +1,432 @@
+{% extends 'base.html' %}
+
+{% block title %}Tourist Attractions - Tanzania AFCON 2027{% endblock %}
+
+{% block content %}
+<div class="animate-fade-in">
+    <!-- Hero Section -->
+    <div class="bg-gradient-to-r from-green-800 to-blue-800 text-white py-16">
+        <div class="container mx-auto px-4 text-center">
+            <h1 class="text-4xl md:text-5xl font-bold mb-6">
+                Discover Tanzania
+                <span class="block text-yellow-400 mt-2">Beyond Football</span>
+            </h1>
+            <p class="text-xl mb-8 max-w-3xl mx-auto opacity-90">
+                Explore breathtaking attractions across Dar es Salaam, Arusha, and Zanzibar during AFCON 2027. 
+                From wildlife safaris to pristine beaches and rich cultural heritage.
+            </p>
+            
+            <!-- Quick Stats -->
+            <div class="grid grid-cols-2 md:grid-cols-4 gap-6 max-w-4xl mx-auto mt-12">
+                <div class="text-center">
+                    <div class="text-3xl font-bold mb-2">50+</div>
+                    <div class="text-sm opacity-90">Attractions</div>
+                </div>
+                <div class="text-center">
+                    <div class="text-3xl font-bold mb-2">3</div>
+                    <div class="text-sm opacity-90">Host Cities</div>
+                </div>
+                <div class="text-center">
+                    <div class="text-3xl font-bold mb-2">24/7</div>
+                    <div class="text-sm opacity-90">Tour Guides</div>
+                </div>
+                <div class="text-center">
+                    <div class="text-3xl font-bold mb-2">100+</div>
+                    <div class="text-sm opacity-90">Tour Packages</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Filters -->
+    <div class="bg-white shadow-lg py-6 sticky top-0 z-10">
+        <div class="container mx-auto px-4">
+            <form method="get" class="flex flex-col md:flex-row gap-4 items-end">
+                <!-- City Filter -->
+                <div>
+                    <label class="block text-gray-700 mb-2 font-semibold">City</label>
+                    <select name="city" class="w-full p-3 border border-gray-300 rounded-lg">
+                        <option value="">All Cities</option>
+                        <option value="DAR" {% if selected_city == 'DAR' %}selected{% endif %}>Dar es Salaam</option>
+                        <option value="ARU" {% if selected_city == 'ARU' %}selected{% endif %}>Arusha</option>
+                        <option value="ZAN" {% if selected_city == 'ZAN' %}selected{% endif %}>Zanzibar</option>
+                        <option value="ALL" {% if selected_city == 'ALL' %}selected{% endif %}>All Tanzania</option>
+                    </select>
+                </div>
+                
+                <!-- Category Filter -->
+                <div>
+                    <label class="block text-gray-700 mb-2 font-semibold">Category</label>
+                    <select name="category" class="w-full p-3 border border-gray-300 rounded-lg">
+                        <option value="">All Categories</option>
+                        <option value="nature" {% if selected_category == 'nature' %}selected{% endif %}>🌿 Nature & Wildlife</option>
+                        <option value="beach" {% if selected_category == 'beach' %}selected{% endif %}>🏖️ Beach & Coast</option>
+                        <option value="culture" {% if selected_category == 'culture' %}selected{% endif %}>🎭 Culture & History</option>
+                        <option value="adventure" {% if selected_category == 'adventure' %}selected{% endif %}>🗻 Adventure & Sports</option>
+                        <option value="food" {% if selected_category == 'food' %}selected{% endif %}>🍲 Food & Dining</option>
+                        <option value="shopping" {% if selected_category == 'shopping' %}selected{% endif %}>🛍️ Shopping & Markets</option>
+                    </select>
+                </div>
+                
+                <!-- Search -->
+                <div class="flex-1">
+                    <label class="block text-gray-700 mb-2 font-semibold">Search Attractions</label>
+                    <div class="flex">
+                        <input type="text" name="search" value="{{ search_query }}" 
+                               placeholder="Search by name, location, or description..." 
+                               class="flex-1 p-3 border border-gray-300 rounded-l-lg">
+                        <button type="submit" 
+                                class="bg-green-600 text-white px-6 rounded-r-lg hover:bg-green-700 font-semibold">
+                            <i class="fas fa-search"></i>
+                        </button>
+                    </div>
+                </div>
+                
+                <!-- Reset Button -->
+                <div>
+                    <a href="{% url 'tourism' %}" 
+                       class="bg-gray-200 text-gray-800 px-6 py-3 rounded-lg hover:bg-gray-300 font-semibold inline-block">
+                        Clear Filters
+                    </a>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Main Content -->
+    <div class="container mx-auto px-4 py-12">
+        <!-- Featured Tour Packages -->
+        {% if featured_packages %}
+        <div class="mb-16">
+            <div class="flex justify-between items-center mb-8">
+                <h2 class="text-3xl font-bold text-gray-800">🏆 Featured Tour Packages</h2>
+                <a href="{% url 'tour_packages' %}" class="text-green-600 hover:text-green-800 font-semibold">
+                    View All Packages <i class="fas fa-arrow-right ml-1"></i>
+                </a>
+            </div>
+            
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
+                {% for package in featured_packages %}
+                <div class="bg-white rounded-xl shadow-lg overflow-hidden hover:shadow-2xl transition duration-300 transform hover:-translate-y-2">
+                    <div class="h-48 bg-gradient-to-r from-green-500 to-blue-500 relative">
+                        <div class="absolute inset-0 flex items-center justify-center">
+                            <i class="fas fa-map-marked-alt text-white text-4xl"></i>
+                        </div>
+                        <div class="absolute top-4 right-4 bg-yellow-500 text-white px-3 py-1 rounded-full text-sm font-bold">
+                            Featured
+                        </div>
+                    </div>
+                    <div class="p-6">
+                        <h3 class="text-xl font-bold mb-2">{{ package.name }}</h3>
+                        <p class="text-gray-600 text-sm mb-3">{{ package.attraction.name }}</p>
+                        <div class="flex items-center text-gray-500 text-sm mb-4">
+                            <i class="far fa-clock mr-2"></i>
+                            <span>{{ package.duration }}</span>
+                        </div>
+                        <div class="mb-4">
+                            <span class="text-2xl font-bold text-green-700">${{ package.price }}</span>
+                            <span class="text-gray-500"> per person</span>
+                        </div>
+                        <a href="{% url 'attraction_detail' package.attraction.id %}" 
+                           class="block w-full bg-green-600 text-white text-center py-3 rounded-lg hover:bg-green-700 font-semibold">
+                            View Details
+                        </a>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+        {% endif %}
+
+        <!-- Dar es Salaam Attractions -->
+        {% if dar_attractions %}
+        <div class="mb-16">
+            <h2 class="text-3xl font-bold mb-8 text-green-800 border-b pb-2">
+                <i class="fas fa-city mr-3"></i>Dar es Salaam Attractions
+            </h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                {% for attraction in dar_attractions %}
+                <div class="bg-white rounded-xl shadow-lg overflow-hidden hover:shadow-2xl transition duration-300">
+                    <!-- FIXED IMAGE SECTION -->
+                    {% with images=attraction.images.all %}
+                        {% if images %}
+                            {% with primary_image=images|first %}
+                                <div class="h-48 bg-gray-200 relative overflow-hidden">
+                                    <img src="{{ primary_image.image_url }}" 
+                                         alt="{{ attraction.name }}"
+                                         class="w-full h-full object-cover hover:scale-110 transition-transform duration-500">
+                                    {% if primary_image.caption %}
+                                        <div class="absolute bottom-0 left-0 right-0 bg-black bg-opacity-50 text-white p-2 text-sm">
+                                            {{ primary_image.caption|truncatechars:50 }}
+                                        </div>
+                                    {% endif %}
+                                    <div class="absolute top-4 left-4 bg-white text-green-800 px-3 py-1 rounded-full text-sm font-bold">
+                                        {{ attraction.get_category_display|slice:"0:2" }}
+                                    </div>
+                                </div>
+                            {% endwith %}
+                        {% else %}
+                            <!-- Fallback with icon -->
+                            <div class="h-48 bg-gradient-to-r from-green-400 to-green-600 relative">
+                                <div class="absolute inset-0 flex items-center justify-center">
+                                    <i class="fas {{ attraction.get_icon }} text-white text-5xl"></i>
+                                </div>
+                                <div class="absolute top-4 left-4 bg-white text-green-800 px-3 py-1 rounded-full text-sm font-bold">
+                                    {{ attraction.get_category_display|slice:"0:2" }}
+                                </div>
+                            </div>
+                        {% endif %}
+                    {% endwith %}
+                    
+                    <div class="p-6">
+                        <h3 class="text-xl font-bold mb-2">{{ attraction.name }}</h3>
+                        <p class="text-gray-600 mb-4">{{ attraction.description|truncatechars:120 }}</p>
+                        <div class="flex justify-between items-center mb-4">
+                            <div class="text-sm text-gray-500">
+                                <i class="fas fa-map-marker-alt mr-1"></i>
+                                {{ attraction.location|truncatechars:30 }}
+                            </div>
+                            {% if attraction.entry_fee %}
+                            <div class="font-bold text-green-700">${{ attraction.entry_fee }}</div>
+                            {% else %}
+                            <div class="font-bold text-green-700">Free</div>
+                            {% endif %}
+                        </div>
+                        <a href="{% url 'attraction_detail' attraction.id %}" 
+                           class="block w-full bg-green-600 text-white text-center py-3 rounded-lg hover:bg-green-700 font-semibold">
+                            Explore Now <i class="fas fa-arrow-right ml-2"></i>
+                        </a>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+        {% endif %}
+
+        <!-- Arusha Attractions -->
+        {% if aru_attractions %}
+        <div class="mb-16">
+            <h2 class="text-3xl font-bold mb-8 text-blue-800 border-b pb-2">
+                <i class="fas fa-mountain mr-3"></i>Arusha Attractions
+            </h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                {% for attraction in aru_attractions %}
+                <div class="bg-white rounded-xl shadow-lg overflow-hidden hover:shadow-2xl transition duration-300">
+                    <!-- FIXED IMAGE SECTION -->
+                    {% with images=attraction.images.all %}
+                        {% if images %}
+                            {% with primary_image=images|first %}
+                                <div class="h-48 bg-gray-200 relative overflow-hidden">
+                                    <img src="{{ primary_image.image_url }}" 
+                                         alt="{{ attraction.name }}"
+                                         class="w-full h-full object-cover hover:scale-110 transition-transform duration-500">
+                                    {% if primary_image.caption %}
+                                        <div class="absolute bottom-0 left-0 right-0 bg-black bg-opacity-50 text-white p-2 text-sm">
+                                            {{ primary_image.caption|truncatechars:50 }}
+                                        </div>
+                                    {% endif %}
+                                    <div class="absolute top-4 left-4 bg-white text-blue-800 px-3 py-1 rounded-full text-sm font-bold">
+                                        {{ attraction.get_category_display|slice:"0:2" }}
+                                    </div>
+                                </div>
+                            {% endwith %}
+                        {% else %}
+                            <!-- Fallback with icon -->
+                            <div class="h-48 bg-gradient-to-r from-blue-400 to-blue-600 relative">
+                                <div class="absolute inset-0 flex items-center justify-center">
+                                    <i class="fas {{ attraction.get_icon }} text-white text-5xl"></i>
+                                </div>
+                                <div class="absolute top-4 left-4 bg-white text-blue-800 px-3 py-1 rounded-full text-sm font-bold">
+                                    {{ attraction.get_category_display|slice:"0:2" }}
+                                </div>
+                            </div>
+                        {% endif %}
+                    {% endwith %}
+                    
+                    <div class="p-6">
+                        <h3 class="text-xl font-bold mb-2">{{ attraction.name }}</h3>
+                        <p class="text-gray-600 mb-4">{{ attraction.description|truncatechars:120 }}</p>
+                        <div class="flex justify-between items-center mb-4">
+                            <div class="text-sm text-gray-500">
+                                <i class="fas fa-map-marker-alt mr-1"></i>
+                                {{ attraction.location|truncatechars:30 }}
+                            </div>
+                            {% if attraction.entry_fee %}
+                            <div class="font-bold text-blue-700">${{ attraction.entry_fee }}</div>
+                            {% else %}
+                            <div class="font-bold text-blue-700">Free</div>
+                            {% endif %}
+                        </div>
+                        <a href="{% url 'attraction_detail' attraction.id %}" 
+                           class="block w-full bg-blue-600 text-white text-center py-3 rounded-lg hover:bg-blue-700 font-semibold">
+                            Explore Now <i class="fas fa-arrow-right ml-2"></i>
+                        </a>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+        {% endif %}
+
+        <!-- Zanzibar Attractions -->
+        {% if zan_attractions %}
+        <div class="mb-16">
+            <h2 class="text-3xl font-bold mb-8 text-yellow-800 border-b pb-2">
+                <i class="fas fa-umbrella-beach mr-3"></i>Zanzibar Attractions
+            </h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                {% for attraction in zan_attractions %}
+                <div class="bg-white rounded-xl shadow-lg overflow-hidden hover:shadow-2xl transition duration-300">
+                    <!-- FIXED IMAGE SECTION -->
+                    {% with images=attraction.images.all %}
+                        {% if images %}
+                            {% with primary_image=images|first %}
+                                <div class="h-48 bg-gray-200 relative overflow-hidden">
+                                    <img src="{{ primary_image.image_url }}" 
+                                         alt="{{ attraction.name }}"
+                                         class="w-full h-full object-cover hover:scale-110 transition-transform duration-500">
+                                    {% if primary_image.caption %}
+                                        <div class="absolute bottom-0 left-0 right-0 bg-black bg-opacity-50 text-white p-2 text-sm">
+                                            {{ primary_image.caption|truncatechars:50 }}
+                                        </div>
+                                    {% endif %}
+                                    <div class="absolute top-4 left-4 bg-white text-yellow-800 px-3 py-1 rounded-full text-sm font-bold">
+                                        {{ attraction.get_category_display|slice:"0:2" }}
+                                    </div>
+                                </div>
+                            {% endwith %}
+                        {% else %}
+                            <!-- Fallback with icon -->
+                            <div class="h-48 bg-gradient-to-r from-yellow-400 to-yellow-600 relative">
+                                <div class="absolute inset-0 flex items-center justify-center">
+                                    <i class="fas {{ attraction.get_icon }} text-white text-5xl"></i>
+                                </div>
+                                <div class="absolute top-4 left-4 bg-white text-yellow-800 px-3 py-1 rounded-full text-sm font-bold">
+                                    {{ attraction.get_category_display|slice:"0:2" }}
+                                </div>
+                            </div>
+                        {% endif %}
+                    {% endwith %}
+                    
+                    <div class="p-6">
+                        <h3 class="text-xl font-bold mb-2">{{ attraction.name }}</h3>
+                        <p class="text-gray-600 mb-4">{{ attraction.description|truncatechars:120 }}</p>
+                        <div class="flex justify-between items-center mb-4">
+                            <div class="text-sm text-gray-500">
+                                <i class="fas fa-map-marker-alt mr-1"></i>
+                                {{ attraction.location|truncatechars:30 }}
+                            </div>
+                            {% if attraction.entry_fee %}
+                            <div class="font-bold text-yellow-700">${{ attraction.entry_fee }}</div>
+                            {% else %}
+                            <div class="font-bold text-yellow-700">Free</div>
+                            {% endif %}
+                        </div>
+                        <a href="{% url 'attraction_detail' attraction.id %}" 
+                           class="block w-full bg-yellow-600 text-white text-center py-3 rounded-lg hover:bg-yellow-700 font-semibold">
+                            Explore Now <i class="fas fa-arrow-right ml-2"></i>
+                        </a>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+        {% endif %}
+
+        <!-- All Tanzania Attractions -->
+        {% if all_attractions %}
+        <div class="mb-16">
+            <h2 class="text-3xl font-bold mb-8 text-purple-800 border-b pb-2">
+                <i class="fas fa-globe-africa mr-3"></i>All Tanzania Attractions
+            </h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                {% for attraction in all_attractions %}
+                <div class="bg-white rounded-xl shadow-lg overflow-hidden hover:shadow-2xl transition duration-300">
+                    <!-- FIXED IMAGE SECTION -->
+                    {% with images=attraction.images.all %}
+                        {% if images %}
+                            {% with primary_image=images|first %}
+                                <div class="h-48 bg-gray-200 relative overflow-hidden">
+                                    <img src="{{ primary_image.image_url }}" 
+                                         alt="{{ attraction.name }}"
+                                         class="w-full h-full object-cover hover:scale-110 transition-transform duration-500">
+                                    {% if primary_image.caption %}
+                                        <div class="absolute bottom-0 left-0 right-0 bg-black bg-opacity-50 text-white p-2 text-sm">
+                                            {{ primary_image.caption|truncatechars:50 }}
+                                        </div>
+                                    {% endif %}
+                                    <div class="absolute top-4 left-4 bg-white text-purple-800 px-3 py-1 rounded-full text-sm font-bold">
+                                        {{ attraction.get_category_display|slice:"0:2" }}
+                                    </div>
+                                </div>
+                            {% endwith %}
+                        {% else %}
+                            <!-- Fallback with icon -->
+                            <div class="h-48 bg-gradient-to-r from-purple-400 to-purple-600 relative">
+                                <div class="absolute inset-0 flex items-center justify-center">
+                                    <i class="fas {{ attraction.get_icon }} text-white text-5xl"></i>
+                                </div>
+                                <div class="absolute top-4 left-4 bg-white text-purple-800 px-3 py-1 rounded-full text-sm font-bold">
+                                    {{ attraction.get_category_display|slice:"0:2" }}
+                                </div>
+                            </div>
+                        {% endif %}
+                    {% endwith %}
+                    
+                    <div class="p-6">
+                        <h3 class="text-xl font-bold mb-2">{{ attraction.name }}</h3>
+                        <p class="text-gray-600 mb-4">{{ attraction.description|truncatechars:120 }}</p>
+                        <div class="flex justify-between items-center mb-4">
+                            <div class="text-sm text-gray-500">
+                                <i class="fas fa-map-marker-alt mr-1"></i>
+                                {{ attraction.location|truncatechars:30 }}
+                            </div>
+                            {% if attraction.entry_fee %}
+                            <div class="font-bold text-purple-700">${{ attraction.entry_fee }}</div>
+                            {% else %}
+                            <div class="font-bold text-purple-700">Free</div>
+                            {% endif %}
+                        </div>
+                        <a href="{% url 'attraction_detail' attraction.id %}" 
+                           class="block w-full bg-purple-600 text-white text-center py-3 rounded-lg hover:bg-purple-700 font-semibold">
+                            Explore Now <i class="fas fa-arrow-right ml-2"></i>
+                        </a>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+        {% endif %}
+
+        <!-- No Results -->
+        {% if not dar_attractions and not aru_attractions and not zan_attractions and not all_attractions %}
+        <div class="text-center py-16">
+            <div class="text-6xl mb-6 text-gray-300">
+                <i class="fas fa-map-marked-alt"></i>
+            </div>
+            <h3 class="text-2xl font-bold text-gray-600 mb-4">No attractions found</h3>
+            <p class="text-gray-500 mb-6">Try adjusting your search filters or explore our featured packages</p>
+            <a href="{% url 'tourism' %}" class="text-green-600 hover:text-green-800 font-semibold">
+                <i class="fas fa-redo mr-2"></i>Clear all filters
+            </a>
+        </div>
+        {% endif %}
+
+        <!-- CTA Section -->
+        <div class="bg-gradient-to-r from-green-600 to-blue-600 text-white rounded-2xl p-12 text-center">
+            <h2 class="text-3xl font-bold mb-4">Need Help Planning Your Tours?</h2>
+            <p class="text-xl mb-8 max-w-2xl mx-auto opacity-90">
+                Our AI Assistant can create personalized tour itineraries based on your interests and schedule.
+            </p>
+            <div class="flex flex-wrap justify-center gap-6">
+                <a href="{% url 'chatbot' %}" class="bg-white text-green-800 px-8 py-4 rounded-full text-lg font-bold hover:bg-gray-100">
+                    <i class="fas fa-robot mr-2"></i>Ask AI Assistant
+                </a>
+                <a href="{% url 'tour_packages' %}" class="bg-yellow-400 text-gray-900 px-8 py-4 rounded-full text-lg font-bold hover:bg-yellow-300">
+                    <i class="fas fa-suitcase mr-2"></i>View All Packages
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

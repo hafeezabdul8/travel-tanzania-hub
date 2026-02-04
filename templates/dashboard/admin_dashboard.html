@@ -1,0 +1,288 @@
+{% extends 'base.html' %}
+
+{% block title %}Admin Dashboard - AFCON 2027 Platform{% endblock %}
+
+{% block extra_css %}
+<style>
+    .stat-card {
+        transition: all 0.3s ease;
+    }
+    .stat-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+    }
+    .progress-bar {
+        height: 8px;
+        border-radius: 4px;
+        overflow: hidden;
+        background-color: #f3f4f6; /* bg-gray-200 */
+    }
+    .progress-fill {
+        height: 100%;
+        border-radius: 4px;
+        background-color: #10b981; /* bg-green-500 */
+        transition: width 0.5s ease-in-out;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="animate-fade-in">
+    <!-- Header -->
+    <div class="bg-gradient-to-r from-green-800 to-blue-800 text-white py-8">
+        <div class="container mx-auto px-4">
+            <div class="flex justify-between items-center">
+                <div>
+                    <h1 class="text-3xl font-bold mb-2">Platform Admin Dashboard</h1>
+                    <p class="opacity-90">Monitor bookings, commissions, and platform performance</p>
+                </div>
+                <div class="text-right">
+                    <div class="text-sm opacity-90">Today: {{ today|date:"F d, Y" }}</div>
+                    <div class="text-lg font-semibold">Welcome, {{ request.user.username }}</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Quick Stats -->
+    <div class="container mx-auto px-4 py-8">
+        <h2 class="text-2xl font-bold mb-6 text-gray-800">Quick Overview</h2>
+        
+        <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+            <!-- Total Revenue Card -->
+            <div class="stat-card bg-white rounded-xl shadow-lg p-6">
+                <div class="flex items-center mb-4">
+                    <div class="w-12 h-12 bg-green-100 rounded-full flex items-center justify-center mr-4">
+                        <i class="fas fa-money-bill-wave text-green-600 text-xl"></i>
+                    </div>
+                    <div>
+                        <div class="text-2xl font-bold text-green-700">
+                            ${{ financial_stats.total_revenue|floatformat:2 }}
+                        </div>
+                        <div class="text-gray-600 text-sm">Total Commission</div>
+                    </div>
+                </div>
+                <div class="text-sm text-gray-500">Lifetime earnings from platform</div>
+            </div>
+
+            <!-- Today's Revenue -->
+            <div class="stat-card bg-white rounded-xl shadow-lg p-6">
+                <div class="flex items-center mb-4">
+                    <div class="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center mr-4">
+                        <i class="fas fa-calendar-day text-blue-600 text-xl"></i>
+                    </div>
+                    <div>
+                        <div class="text-2xl font-bold text-blue-700">
+                            ${{ financial_stats.today_revenue|floatformat:2 }}
+                        </div>
+                        <div class="text-gray-600 text-sm">Today's Commission</div>
+                    </div>
+                </div>
+                <div class="text-sm text-gray-500">Earnings from today's bookings</div>
+            </div>
+
+            <!-- Monthly Revenue -->
+            <div class="stat-card bg-white rounded-xl shadow-lg p-6">
+                <div class="flex items-center mb-4">
+                    <div class="w-12 h-12 bg-purple-100 rounded-full flex items-center justify-center mr-4">
+                        <i class="fas fa-chart-line text-purple-600 text-xl"></i>
+                    </div>
+                    <div>
+                        <div class="text-2xl font-bold text-purple-700">
+                            ${{ financial_stats.monthly_revenue|floatformat:2 }}
+                        </div>
+                        <div class="text-gray-600 text-sm">Monthly Commission</div>
+                    </div>
+                </div>
+                <div class="text-sm text-gray-500">Last 30 days earnings</div>
+            </div>
+
+            <!-- Total Bookings -->
+            <div class="stat-card bg-white rounded-xl shadow-lg p-6">
+                <div class="flex items-center mb-4">
+                    <div class="w-12 h-12 bg-yellow-100 rounded-full flex items-center justify-center mr-4">
+                        <i class="fas fa-hotel text-yellow-600 text-xl"></i>
+                    </div>
+                    <div>
+                        <div class="text-2xl font-bold text-yellow-700">
+                            {{ hotel_stats.total_bookings }}
+                        </div>
+                        <div class="text-gray-600 text-sm">Total Bookings</div>
+                    </div>
+                </div>
+                <div class="text-sm text-gray-500">All-time confirmed bookings</div>
+            </div>
+        </div>
+
+        <!-- Two Column Layout -->
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+            <!-- Top Hotels by Revenue -->
+            <div class="bg-white rounded-xl shadow-lg p-6">
+                <div class="flex justify-between items-center mb-6">
+                    <h3 class="text-xl font-bold text-gray-800">Top Hotels by Commission</h3>
+                    <a href="{% url 'financial_reports' %}" class="text-green-600 hover:text-green-800 text-sm font-semibold">
+                        View All
+                    </a>
+                </div>
+                
+                <div class="space-y-4">
+                    {% for hotel in top_hotels %}
+                    <div class="border-b pb-4 last:border-b-0">
+                        <div class="flex justify-between items-center mb-2">
+                            <div>
+                                <h4 class="font-semibold">{{ hotel.hotel__name }}</h4>
+                                <p class="text-sm text-gray-600">{{ hotel.hotel__city }}</p>
+                            </div>
+                            <div class="text-right">
+                                <div class="font-bold text-green-700">${{ hotel.total_commission|floatformat:2 }}</div>
+                                <div class="text-sm text-gray-500">{{ hotel.total_bookings }} bookings</div>
+                            </div>
+                        </div>
+                        
+                        <!-- FIXED: Progress bar with calculation -->
+                        {% if financial_stats.total_revenue > 0 %}
+                            {% with hotel.total_commission as hotel_commission %}
+                            {% with financial_stats.total_revenue as total_revenue %}
+                                {% if total_revenue > 0 %}
+                                    {% widthratio hotel_commission total_revenue 100 as percentage %}
+                                    <div class="progress-bar mt-2" data-percentage="{{ percentage|floatformat:1 }}">
+                                        <div class="progress-fill"></div>
+                                    </div>
+                                {% else %}
+                                    <div class="progress-bar mt-2" data-percentage="0">
+                                        <div class="progress-fill"></div>
+                                    </div>
+                                {% endif %}
+                            {% endwith %}
+                            {% endwith %}
+                        {% else %}
+                            <div class="progress-bar mt-2" data-percentage="0">
+                                <div class="progress-fill"></div>
+                            </div>
+                        {% endif %}
+                    </div>
+                    {% empty %}
+                    <p class="text-gray-500 text-center py-4">No bookings yet</p>
+                    {% endfor %}
+                </div>
+            </div>
+
+            <!-- Recent Bookings -->
+            <div class="bg-white rounded-xl shadow-lg p-6">
+                <div class="flex justify-between items-center mb-6">
+                    <h3 class="text-xl font-bold text-gray-800">Recent Bookings</h3>
+                    <a href="{% url 'admin:hotels_booking_changelist' %}" class="text-green-600 hover:text-green-800 text-sm font-semibold">
+                        View All
+                    </a>
+                </div>
+                
+                <div class="overflow-x-auto">
+                    <table class="w-full">
+                        <thead class="bg-gray-50">
+                            <tr>
+                                <th class="p-3 text-left text-sm font-semibold text-gray-600">Customer</th>
+                                <th class="p-3 text-left text-sm font-semibold text-gray-600">Hotel</th>
+                                <th class="p-3 text-left text-sm font-semibold text-gray-600">Amount</th>
+                                <th class="p-3 text-left text-sm font-semibold text-gray-600">Commission</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for booking in recent_bookings %}
+                            <tr class="border-b hover:bg-gray-50">
+                                <td class="p-3">
+                                    <div class="font-medium">{{ booking.user.username }}</div>
+                                    <div class="text-sm text-gray-500">{{ booking.created_at|date:"M d" }}</div>
+                                </td>
+                                <td class="p-3">{{ booking.hotel.name|truncatechars:20 }}</td>
+                                <td class="p-3 font-semibold">${{ booking.total_price|floatformat:2 }}</td>
+                                <td class="p-3">
+                                    <span class="font-bold text-green-700">
+                                        ${{ booking.platform_commission|floatformat:2 }}
+                                    </span>
+                                </td>
+                            </tr>
+                            {% empty %}
+                            <tr>
+                                <td colspan="4" class="p-3 text-center text-gray-500">No recent bookings</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- City-wise Statistics -->
+        <div class="mt-8 bg-white rounded-xl shadow-lg p-6">
+            <h3 class="text-xl font-bold mb-6 text-gray-800">Performance by City</h3>
+            
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                {% for stat in city_stats %}
+                <div class="border rounded-lg p-4">
+                    <div class="flex justify-between items-center mb-3">
+                        <div>
+                            <h4 class="font-bold text-lg">{{ stat.hotel__city|default:"Unknown" }}</h4>
+                            <p class="text-sm text-gray-600">{{ stat.bookings }} bookings</p>
+                        </div>
+                        <div class="text-2xl font-bold text-green-700">
+                            ${{ stat.revenue|floatformat:2 }}
+                        </div>
+                    </div>
+                    <div class="text-sm text-gray-500">
+                        {% if stat.bookings > 0 %}
+                            {% with stat.revenue as revenue %}
+                            {% with stat.bookings as bookings %}
+                                {% widthratio revenue bookings 1 as avg_per_booking %}
+                                Average: ${{ avg_per_booking|floatformat:2 }} per booking
+                            {% endwith %}
+                            {% endwith %}
+                        {% else %}
+                            Average: $0.00 per booking
+                        {% endif %}
+                    </div>
+                </div>
+                {% empty %}
+                <div class="col-span-3 text-center py-4 text-gray-500">
+                    No city data available
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+
+        <!-- Quick Actions -->
+        <div class="mt-8">
+            <h3 class="text-xl font-bold mb-4 text-gray-800">Quick Actions</h3>
+            <div class="flex flex-wrap gap-4">
+                <a href="{% url 'financial_reports' %}" 
+                   class="bg-green-600 text-white px-6 py-3 rounded-lg hover:bg-green-700 font-semibold">
+                    <i class="fas fa-chart-bar mr-2"></i>View Financial Reports
+                </a>
+                <a href="/admin/" 
+                   class="bg-blue-600 text-white px-6 py-3 rounded-lg hover:bg-blue-700 font-semibold">
+                    <i class="fas fa-cog mr-2"></i>Admin Panel
+                </a>
+                <a href="{% url 'hotel_list' %}" 
+                   class="bg-purple-600 text-white px-6 py-3 rounded-lg hover:bg-purple-700 font-semibold">
+                    <i class="fas fa-hotel mr-2"></i>Manage Hotels
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- JavaScript for Progress Bars -->
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Set progress bar widths
+    document.querySelectorAll('.progress-bar[data-percentage]').forEach(bar => {
+        const percentage = bar.getAttribute('data-percentage');
+        const fill = bar.querySelector('.progress-fill');
+        if (fill && percentage) {
+            // Ensure percentage is between 0 and 100
+            const width = Math.min(Math.max(parseFloat(percentage), 0), 100);
+            fill.style.width = `${width}%`;
+        }
+    });
+});
+</script>
+{% endblock %}

@@ -1,0 +1,808 @@
+<!-- templates/partners/settings.html -->
+{% extends 'base.html' %}
+
+{% block title %}Settings - Partner Dashboard{% endblock %}
+
+{% block content %}
+<div class="animate-fade-in">
+  <!-- Header -->
+  <div class="bg-gradient-to-r from-green-800 to-blue-800 text-white py-8">
+    <div class="container mx-auto px-4">
+      <div class="flex justify-between items-center">
+        <div>
+          <h1 class="text-3xl font-bold mb-2">Account Settings</h1>
+          <p class="opacity-90">Manage your partner account information and preferences</p>
+        </div>
+        <div class="text-right">
+          <div class="inline-block bg-white text-green-800 px-4 py-2 rounded-full font-bold">
+            {{ partner.get_status_display }}
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="container mx-auto px-4 py-8">
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+      <!-- Left Column - Navigation -->
+      <div class="lg:col-span-1">
+        <div class="bg-white rounded-xl shadow-lg p-6 sticky top-8">
+          <h3 class="text-lg font-bold mb-6 text-gray-800">Settings Menu</h3>
+          <nav class="space-y-2">
+            <a href="#profile" onclick="showSection('profile')" 
+               class="block p-3 rounded-lg hover:bg-gray-100 font-medium text-gray-700 settings-nav active">
+              <i class="fas fa-user-circle mr-3"></i>Profile Information
+            </a>
+            <a href="#payment" onclick="showSection('payment')" 
+               class="block p-3 rounded-lg hover:bg-gray-100 font-medium text-gray-700 settings-nav">
+              <i class="fas fa-credit-card mr-3"></i>Payment Settings
+            </a>
+            <a href="#commission" onclick="showSection('commission')" 
+               class="block p-3 rounded-lg hover:bg-gray-100 font-medium text-gray-700 settings-nav">
+              <i class="fas fa-percentage mr-3"></i>Commission
+            </a>
+            <a href="#notifications" onclick="showSection('notifications')" 
+               class="block p-3 rounded-lg hover:bg-gray-100 font-medium text-gray-700 settings-nav">
+              <i class="fas fa-bell mr-3"></i>Notifications
+            </a>
+            <a href="#security" onclick="showSection('security')" 
+               class="block p-3 rounded-lg hover:bg-gray-100 font-medium text-gray-700 settings-nav">
+              <i class="fas fa-shield-alt mr-3"></i>Security
+            </a>
+            <div class="pt-6 mt-6 border-t">
+              <a href="{% url 'partner_dashboard' %}" 
+                 class="block p-3 rounded-lg hover:bg-gray-100 font-medium text-gray-700">
+                <i class="fas fa-arrow-left mr-3"></i>Back to Dashboard
+              </a>
+            </div>
+          </nav>
+        </div>
+      </div>
+
+      <!-- Right Column - Content -->
+      <div class="lg:col-span-2">
+        <!-- Profile Information -->
+        <div id="profile-section" class="settings-section active">
+          <div class="bg-white rounded-xl shadow-lg p-6 mb-6">
+            <h2 class="text-2xl font-bold mb-6 text-gray-800">Profile Information</h2>
+            
+            <form method="post" action="{% url 'partner_settings' %}">
+              {% csrf_token %}
+              <input type="hidden" name="section" value="profile">
+              
+              <div class="space-y-6">
+                <!-- Business Information -->
+                <div>
+                  <h3 class="text-lg font-semibold mb-4 text-gray-700">Business Information</h3>
+                  <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div>
+                      <label class="block text-gray-700 mb-2">Business Name *</label>
+                      <input type="text" name="business_name" value="{{ partner.business_name }}" 
+                             required class="w-full p-3 border border-gray-300 rounded-lg">
+                    </div>
+                    <div>
+                      <label class="block text-gray-700 mb-2">Business Type</label>
+                      <input type="text" value="{{ partner.get_business_type_display }}" 
+                             disabled class="w-full p-3 border border-gray-300 rounded-lg bg-gray-50">
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Contact Information -->
+                <div>
+                  <h3 class="text-lg font-semibold mb-4 text-gray-700">Contact Information</h3>
+                  <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div>
+                      <label class="block text-gray-700 mb-2">Contact Person *</label>
+                      <input type="text" name="contact_person" value="{{ partner.contact_person }}" 
+                             required class="w-full p-3 border border-gray-300 rounded-lg">
+                    </div>
+                    <div>
+                      <label class="block text-gray-700 mb-2">Phone Number *</label>
+                      <input type="tel" name="phone" value="{{ partner.phone }}" 
+                             required class="w-full p-3 border border-gray-300 rounded-lg">
+                    </div>
+                    <div>
+                      <label class="block text-gray-700 mb-2">Email Address *</label>
+                      <input type="email" name="email" value="{{ partner.email }}" 
+                             required class="w-full p-3 border border-gray-300 rounded-lg">
+                    </div>
+                    <div>
+                      <label class="block text-gray-700 mb-2">Website</label>
+                      <input type="url" name="website" value="{{ partner.website|default:'' }}" 
+                             class="w-full p-3 border border-gray-300 rounded-lg">
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Address -->
+                <div>
+                  <h3 class="text-lg font-semibold mb-4 text-gray-700">Business Address</h3>
+                  <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div>
+                      <label class="block text-gray-700 mb-2">City</label>
+                      <select name="city" class="w-full p-3 border border-gray-300 rounded-lg">
+                        <option value="DAR" {% if partner.city == 'DAR' %}selected{% endif %}>Dar es Salaam</option>
+                        <option value="ARU" {% if partner.city == 'ARU' %}selected{% endif %}>Arusha</option>
+                        <option value="ZAN" {% if partner.city == 'ZAN' %}selected{% endif %}>Zanzibar</option>
+                        <option value="other" {% if partner.city == 'other' %}selected{% endif %}>Other</option>
+                      </select>
+                    </div>
+                    <div>
+                      <label class="block text-gray-700 mb-2">Address *</label>
+                      <textarea name="address" rows="3" required 
+                                class="w-full p-3 border border-gray-300 rounded-lg">{{ partner.address }}</textarea>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Business Details -->
+                <div>
+                  <h3 class="text-lg font-semibold mb-4 text-gray-700">Business Details</h3>
+                  <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                    <div>
+                      <label class="block text-gray-700 mb-2">Year Established</label>
+                      <input type="number" name="year_established" value="{{ partner.year_established|default:'' }}" 
+                             min="1900" max="2027" class="w-full p-3 border border-gray-300 rounded-lg">
+                    </div>
+                    <div>
+                      <label class="block text-gray-700 mb-2">Employee Count</label>
+                      <input type="number" name="employee_count" value="{{ partner.employee_count|default:1 }}" 
+                             min="1" class="w-full p-3 border border-gray-300 rounded-lg">
+                    </div>
+                    <div>
+                      <label class="block text-gray-700 mb-2">Tax ID / VAT Number</label>
+                      <input type="text" name="tax_id" value="{{ partner.tax_id|default:'' }}" 
+                             class="w-full p-3 border border-gray-300 rounded-lg">
+                    </div>
+                  </div>
+                  <div class="mt-6">
+                    <label class="block text-gray-700 mb-2">Business Description</label>
+                    <textarea name="description" rows="4" 
+                              class="w-full p-3 border border-gray-300 rounded-lg">{{ partner.description|default:'' }}</textarea>
+                  </div>
+                </div>
+
+                <!-- Submit Button -->
+                <div class="pt-6 border-t">
+                  <button type="submit" 
+                          class="bg-green-600 text-white px-8 py-3 rounded-lg hover:bg-green-700 font-semibold">
+                    <i class="fas fa-save mr-2"></i>Save Changes
+                  </button>
+                  <button type="button" onclick="resetForm('profile')" 
+                          class="ml-4 px-6 py-3 border border-gray-300 rounded-lg hover:bg-gray-50">
+                    Reset
+                  </button>
+                </div>
+              </div>
+            </form>
+          </div>
+        </div>
+
+        <!-- Payment Settings -->
+        <div id="payment-section" class="settings-section hidden">
+          <div class="bg-white rounded-xl shadow-lg p-6 mb-6">
+            <h2 class="text-2xl font-bold mb-6 text-gray-800">Payment Settings</h2>
+            
+            <form method="post" action="{% url 'partner_settings' %}">
+              {% csrf_token %}
+              <input type="hidden" name="section" value="payment">
+              
+              <div class="space-y-6">
+                <!-- Payment Method -->
+                <div>
+                  <h3 class="text-lg font-semibold mb-4 text-gray-700">Preferred Payment Method</h3>
+                  <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div>
+                      <label class="block text-gray-700 mb-2">Payment Method *</label>
+                      <select name="payment_method" class="w-full p-3 border border-gray-300 rounded-lg">
+                        <option value="bank_transfer" {% if partner.payment_method == 'bank_transfer' %}selected{% endif %}>
+                          Bank Transfer
+                        </option>
+                        <option value="mobile_money" {% if partner.payment_method == 'mobile_money' %}selected{% endif %}>
+                          Mobile Money
+                        </option>
+                        <option value="paypal" {% if partner.payment_method == 'paypal' %}selected{% endif %}>
+                          PayPal
+                        </option>
+                        <option value="other" {% if partner.payment_method == 'other' %}selected{% endif %}>
+                          Other
+                        </option>
+                      </select>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Bank Details -->
+                <div id="bankDetails" class="{% if partner.payment_method != 'bank_transfer' %}hidden{% endif %}">
+                  <h3 class="text-lg font-semibold mb-4 text-gray-700">Bank Account Details</h3>
+                  <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div>
+                      <label class="block text-gray-700 mb-2">Bank Name</label>
+                      <input type="text" name="bank_name" value="{{ partner.bank_name|default:'' }}" 
+                             class="w-full p-3 border border-gray-300 rounded-lg">
+                    </div>
+                    <div>
+                      <label class="block text-gray-700 mb-2">Account Number</label>
+                      <input type="text" name="bank_account" value="{{ partner.bank_account|default:'' }}" 
+                             class="w-full p-3 border border-gray-300 rounded-lg">
+                    </div>
+                    <div>
+                      <label class="block text-gray-700 mb-2">Branch Name</label>
+                      <input type="text" name="bank_branch" value="{{ partner.bank_branch|default:'' }}" 
+                             class="w-full p-3 border border-gray-300 rounded-lg">
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Mobile Money Details -->
+                <div id="mobileMoneyDetails" class="{% if partner.payment_method != 'mobile_money' %}hidden{% endif %}">
+                  <h3 class="text-lg font-semibold mb-4 text-gray-700">Mobile Money Details</h3>
+                  <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div>
+                      <label class="block text-gray-700 mb-2">Provider</label>
+                      <select name="mobile_money_provider" class="w-full p-3 border border-gray-300 rounded-lg">
+                        <option value="">Select Provider</option>
+                        <option value="mpesa" {% if partner.mobile_money_provider == 'mpesa' %}selected{% endif %}>M-Pesa</option>
+                        <option value="tigopesa" {% if partner.mobile_money_provider == 'tigopesa' %}selected{% endif %}>Tigo Pesa</option>
+                        <option value="airtelmoney" {% if partner.mobile_money_provider == 'airtelmoney' %}selected{% endif %}>Airtel Money</option>
+                        <option value="halopesa" {% if partner.mobile_money_provider == 'halopesa' %}selected{% endif %}>Halo Pesa</option>
+                        <option value="other" {% if partner.mobile_money_provider == 'other' %}selected{% endif %}>Other</option>
+                      </select>
+                    </div>
+                    <div>
+                      <label class="block text-gray-700 mb-2">Mobile Number</label>
+                      <input type="tel" name="mobile_money_number" value="{{ partner.mobile_money_number|default:'' }}" 
+                             class="w-full p-3 border border-gray-300 rounded-lg">
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Payout Schedule -->
+                <div>
+                  <h3 class="text-lg font-semibold mb-4 text-gray-700">Payout Schedule</h3>
+                  <div class="bg-blue-50 p-4 rounded-lg">
+                    <div class="flex items-start">
+                      <i class="fas fa-info-circle text-blue-600 mt-1 mr-3"></i>
+                      <div>
+                        <p class="text-blue-800">
+                          Payouts are processed <strong>every 2 weeks</strong> on the <strong>1st and 15th</strong> of each month.
+                        </p>
+                        <p class="text-blue-700 text-sm mt-2">
+                          Minimum payout amount: <strong>$50.00</strong><br>
+                          Payments are typically processed within <strong>3-5 business days</strong> after the payout date.
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Submit Button -->
+                <div class="pt-6 border-t">
+                  <button type="submit" 
+                          class="bg-green-600 text-white px-8 py-3 rounded-lg hover:bg-green-700 font-semibold">
+                    <i class="fas fa-save mr-2"></i>Save Payment Settings
+                  </button>
+                </div>
+              </div>
+            </form>
+          </div>
+        </div>
+
+        <!-- Commission Settings -->
+        <div id="commission-section" class="settings-section hidden">
+          <div class="bg-white rounded-xl shadow-lg p-6 mb-6">
+            <h2 class="text-2xl font-bold mb-6 text-gray-800">Commission Settings</h2>
+            
+            <div class="space-y-6">
+              <!-- Current Commission -->
+              <div>
+                <h3 class="text-lg font-semibold mb-4 text-gray-700">Current Commission Rate</h3>
+                <div class="bg-green-50 p-6 rounded-lg">
+                  <div class="flex items-center justify-between">
+                    <div>
+                      <div class="text-3xl font-bold text-green-700">{{ partner.commission_rate }}%</div>
+                      <div class="text-green-600">Platform Commission</div>
+                    </div>
+                    <div class="text-right">
+                      <!-- Fixed: Using conditional logic for commission calculation -->
+                      {% with partner.commission_rate as rate %}
+                        {% if rate == 15 or rate == "15.00" or rate == 15.0 %}
+                          <div class="text-2xl font-bold text-blue-700">85%</div>
+                        {% elif rate == 20 or rate == "20.00" or rate == 20.0 %}
+                          <div class="text-2xl font-bold text-blue-700">80%</div>
+                        {% elif rate == 10 or rate == "10.00" or rate == 10.0 %}
+                          <div class="text-2xl font-bold text-blue-700">90%</div>
+                        {% elif rate == 5 or rate == "5.00" or rate == 5.0 %}
+                          <div class="text-2xl font-bold text-blue-700">95%</div>
+                        {% else %}
+                          <!-- Using Django's built-in filters for the calculation -->
+                          {% with "100" as base %}
+                            {% with base|add:"-"|add:rate as partner_percentage %}
+                              <div class="text-2xl font-bold text-blue-700">{{ partner_percentage|floatformat:"0" }}%</div>
+                            {% endwith %}
+                          {% endwith %}
+                        {% endif %}
+                      {% endwith %}
+                      <div class="text-blue-600">You Receive</div>
+                    </div>
+                  </div>
+                  <p class="text-green-700 text-sm mt-4">
+                    <i class="fas fa-info-circle mr-2"></i>
+                    This commission rate applies to all bookings made through the platform.
+                  </p>
+                </div>
+              </div>
+
+              <!-- Commission Structure -->
+              <div>
+                <h3 class="text-lg font-semibold mb-4 text-gray-700">Commission Structure</h3>
+                <div class="overflow-x-auto">
+                  <table class="w-full">
+                    <thead class="bg-gray-100">
+                      <tr>
+                        <th class="p-4 text-left font-semibold">Service Type</th>
+                        <th class="p-4 text-left font-semibold">Platform Commission</th>
+                        <th class="p-4 text-left font-semibold">You Receive</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      <tr class="border-b">
+                        <td class="p-4">Hotel Bookings</td>
+                        <td class="p-4 font-bold text-green-700">{{ partner.commission_rate }}%</td>
+                        <td class="p-4 font-bold text-blue-700">
+                          {% with partner.commission_rate as rate %}
+                            {% if rate == 15 or rate == "15.00" or rate == 15.0 %}85%
+                            {% elif rate == 20 or rate == "20.00" or rate == 20.0 %}80%
+                            {% elif rate == 10 or rate == "10.00" or rate == 10.0 %}90%
+                            {% elif rate == 5 or rate == "5.00" or rate == 5.0 %}95%
+                            {% else %}{% with "100" as base %}{% with base|add:"-"|add:rate as partner_percentage %}{{ partner_percentage|floatformat:"0" }}%{% endwith %}{% endwith %}
+                            {% endif %}
+                          {% endwith %}
+                        </td>
+                      </tr>
+                      <tr class="border-b">
+                        <td class="p-4">Tour Packages</td>
+                        <td class="p-4 font-bold text-green-700">{{ partner.commission_rate }}%</td>
+                        <td class="p-4 font-bold text-blue-700">
+                          {% with partner.commission_rate as rate %}
+                            {% if rate == 15 or rate == "15.00" or rate == 15.0 %}85%
+                            {% elif rate == 20 or rate == "20.00" or rate == 20.0 %}80%
+                            {% elif rate == 10 or rate == "10.00" or rate == 10.0 %}90%
+                            {% elif rate == 5 or rate == "5.00" or rate == 5.0 %}95%
+                            {% else %}{% with "100" as base %}{% with base|add:"-"|add:rate as partner_percentage %}{{ partner_percentage|floatformat:"0" }}%{% endwith %}{% endwith %}
+                            {% endif %}
+                          {% endwith %}
+                        </td>
+                      </tr>
+                      <tr>
+                        <td class="p-4">Attraction Tickets</td>
+                        <td class="p-4 font-bold text-green-700">{{ partner.commission_rate }}%</td>
+                        <td class="p-4 font-bold text-blue-700">
+                          {% with partner.commission_rate as rate %}
+                            {% if rate == 15 or rate == "15.00" or rate == 15.0 %}85%
+                            {% elif rate == 20 or rate == "20.00" or rate == 20.0 %}80%
+                            {% elif rate == 10 or rate == "10.00" or rate == 10.0 %}90%
+                            {% elif rate == 5 or rate == "5.00" or rate == 5.0 %}95%
+                            {% else %}{% with "100" as base %}{% with base|add:"-"|add:rate as partner_percentage %}{{ partner_percentage|floatformat:"0" }}%{% endwith %}{% endwith %}
+                            {% endif %}
+                          {% endwith %}
+                        </td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+
+              <!-- Request Commission Change -->
+              <div class="bg-yellow-50 p-6 rounded-lg">
+                <h3 class="text-lg font-semibold mb-3 text-yellow-800">Request Commission Change</h3>
+                <p class="text-yellow-700 mb-4">
+                  If you would like to request a different commission rate, please contact our partner support team.
+                </p>
+                <a href="mailto:partners@afcon2027platform.com?subject=Commission Rate Change Request" 
+                   class="inline-block bg-yellow-600 text-white px-6 py-3 rounded-lg hover:bg-yellow-700 font-semibold">
+                  <i class="fas fa-envelope mr-2"></i>Contact Support
+                </a>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Notifications Settings -->
+        <div id="notifications-section" class="settings-section hidden">
+          <div class="bg-white rounded-xl shadow-lg p-6 mb-6">
+            <h2 class="text-2xl font-bold mb-6 text-gray-800">Notification Settings</h2>
+            
+            <form method="post" action="{% url 'partner_settings' %}">
+              {% csrf_token %}
+              <input type="hidden" name="section" value="notifications">
+              
+              <div class="space-y-6">
+                <!-- Email Notifications -->
+                <div>
+                  <h3 class="text-lg font-semibold mb-4 text-gray-700">Email Notifications</h3>
+                  <div class="space-y-3">
+                    <div class="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                      <div>
+                        <div class="font-medium">New Booking Alerts</div>
+                        <div class="text-sm text-gray-500">Receive email when someone books your service</div>
+                      </div>
+                      <label class="relative inline-flex items-center cursor-pointer">
+                        <input type="checkbox" name="booking_alerts" value="true" 
+                               {% if partner.notification_settings.booking_alerts|default:True %}checked{% endif %}
+                               class="sr-only peer">
+                        <div class="w-11 h-6 bg-gray-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-green-600"></div>
+                      </label>
+                    </div>
+                    
+                    <div class="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                      <div>
+                        <div class="font-medium">Payout Notifications</div>
+                        <div class="text-sm text-gray-500">Receive email when payout is processed</div>
+                      </div>
+                      <label class="relative inline-flex items-center cursor-pointer">
+                        <input type="checkbox" name="payout_notifications" value="true" 
+                               {% if partner.notification_settings.payout_notifications|default:True %}checked{% endif %}
+                               class="sr-only peer">
+                        <div class="w-11 h-6 bg-gray-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-green-600"></div>
+                      </label>
+                    </div>
+                    
+                    <div class="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                      <div>
+                        <div class="font-medium">Monthly Reports</div>
+                        <div class="text-sm text-gray-500">Receive monthly earnings report</div>
+                      </div>
+                      <label class="relative inline-flex items-center cursor-pointer">
+                        <input type="checkbox" name="monthly_reports" value="true" 
+                               {% if partner.notification_settings.monthly_reports|default:True %}checked{% endif %}
+                               class="sr-only peer">
+                        <div class="w-11 h-6 bg-gray-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-green-600"></div>
+                      </label>
+                    </div>
+                    
+                    <div class="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                      <div>
+                        <div class="font-medium">Promotional Offers</div>
+                        <div class="text-sm text-gray-500">Receive special offers and promotions</div>
+                      </div>
+                      <label class="relative inline-flex items-center cursor-pointer">
+                        <input type="checkbox" name="promotional_offers" value="true" 
+                               {% if partner.notification_settings.promotional_offers|default:True %}checked{% endif %}
+                               class="sr-only peer">
+                        <div class="w-11 h-6 bg-gray-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-green-600"></div>
+                      </label>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- SMS Notifications -->
+                <div>
+                  <h3 class="text-lg font-semibold mb-4 text-gray-700">SMS Notifications</h3>
+                  <div class="space-y-3">
+                    <div class="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                      <div>
+                        <div class="font-medium">SMS Alerts</div>
+                        <div class="text-sm text-gray-500">Receive SMS for urgent notifications</div>
+                      </div>
+                      <label class="relative inline-flex items-center cursor-pointer">
+                        <input type="checkbox" name="sms_alerts" value="true" 
+                               {% if partner.notification_settings.sms_alerts|default:True %}checked{% endif %}
+                               class="sr-only peer">
+                        <div class="w-11 h-6 bg-gray-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-green-600"></div>
+                      </label>
+                    </div>
+                    
+                    <div class="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                      <div>
+                        <div class="font-medium">Payout SMS</div>
+                        <div class="text-sm text-gray-500">Receive SMS when payout is sent</div>
+                      </div>
+                      <label class="relative inline-flex items-center cursor-pointer">
+                        <input type="checkbox" name="sms_payout" value="true" 
+                               {% if partner.notification_settings.sms_payout|default:True %}checked{% endif %}
+                               class="sr-only peer">
+                        <div class="w-11 h-6 bg-gray-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-green-600"></div>
+                      </label>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Notification Frequency -->
+                <div>
+                  <h3 class="text-lg font-semibold mb-4 text-gray-700">Notification Frequency</h3>
+                  <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div>
+                      <label class="block text-gray-700 mb-2">Email Frequency</label>
+                      <select name="email_frequency" class="w-full p-3 border border-gray-300 rounded-lg">
+                        <option value="immediate" {% if partner.notification_settings.email_frequency == 'immediate' %}selected{% endif %}>Immediately</option>
+                        <option value="daily" {% if partner.notification_settings.email_frequency == 'daily' %}selected{% endif %}>Daily Digest</option>
+                        <option value="weekly" {% if partner.notification_settings.email_frequency == 'weekly' or not partner.notification_settings.email_frequency %}selected{% endif %}>Weekly Digest</option>
+                      </select>
+                    </div>
+                    <div>
+                      <label class="block text-gray-700 mb-2">SMS Frequency</label>
+                      <select name="sms_frequency" class="w-full p-3 border border-gray-300 rounded-lg">
+                        <option value="urgent" {% if partner.notification_settings.sms_frequency == 'urgent' %}selected{% endif %}>Urgent Only</option>
+                        <option value="all" {% if partner.notification_settings.sms_frequency == 'all' or not partner.notification_settings.sms_frequency %}selected{% endif %}>All Notifications</option>
+                        <option value="none" {% if partner.notification_settings.sms_frequency == 'none' %}selected{% endif %}>No SMS</option>
+                      </select>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Submit Button -->
+                <div class="pt-6 border-t">
+                  <button type="submit" 
+                          class="bg-green-600 text-white px-8 py-3 rounded-lg hover:bg-green-700 font-semibold">
+                    <i class="fas fa-save mr-2"></i>Save Notification Settings
+                  </button>
+                </div>
+              </div>
+            </form>
+          </div>
+        </div>
+
+        <!-- Security Settings -->
+        <div id="security-section" class="settings-section hidden">
+          <div class="bg-white rounded-xl shadow-lg p-6 mb-6">
+            <h2 class="text-2xl font-bold mb-6 text-gray-800">Security Settings</h2>
+            
+            <div class="space-y-6">
+              <!-- Change Password -->
+              <div class="bg-gray-50 p-6 rounded-lg">
+                <h3 class="text-lg font-semibold mb-4 text-gray-700">Change Password</h3>
+                <form method="post" action="{% url 'partner_settings' %}">
+                  {% csrf_token %}
+                  <input type="hidden" name="section" value="change_password">
+                  
+                  <div class="space-y-4">
+                    <div>
+                      <label class="block text-gray-700 mb-2">Current Password *</label>
+                      <input type="password" name="current_password" required 
+                             class="w-full p-3 border border-gray-300 rounded-lg">
+                    </div>
+                    <div>
+                      <label class="block text-gray-700 mb-2">New Password *</label>
+                      <input type="password" name="new_password" required 
+                             class="w-full p-3 border border-gray-300 rounded-lg">
+                      <p class="text-sm text-gray-500 mt-1">Must be at least 8 characters long</p>
+                    </div>
+                    <div>
+                      <label class="block text-gray-700 mb-2">Confirm New Password *</label>
+                      <input type="password" name="confirm_password" required 
+                             class="w-full p-3 border border-gray-300 rounded-lg">
+                    </div>
+                    <div>
+                      <button type="submit" 
+                              class="bg-green-600 text-white px-6 py-3 rounded-lg hover:bg-green-700 font-semibold">
+                        <i class="fas fa-key mr-2"></i>Change Password
+                      </button>
+                    </div>
+                  </div>
+                </form>
+              </div>
+
+              <!-- Two-Factor Authentication -->
+              <div class="bg-blue-50 p-6 rounded-lg">
+                <h3 class="text-lg font-semibold mb-4 text-blue-800">Two-Factor Authentication (2FA)</h3>
+                <div class="flex items-start mb-4">
+                  <div class="flex-1">
+                    <p class="text-blue-700 mb-2">
+                      Add an extra layer of security to your account by enabling two-factor authentication.
+                    </p>
+                    <div class="flex items-center">
+                      <span class="text-sm {% if partner.security_settings.two_factor_enabled %}text-green-600{% else %}text-red-600{% endif %} font-semibold mr-3">
+                        {% if partner.security_settings.two_factor_enabled %}
+                          <i class="fas fa-check-circle mr-1"></i> 2FA Enabled
+                        {% else %}
+                          <i class="fas fa-times-circle mr-1"></i> 2FA Disabled
+                        {% endif %}
+                      </span>
+                      <span class="text-sm text-gray-600">
+                        Last updated: {{ partner.security_settings.two_factor_updated|default:"Never"|date:"M d, Y" }}
+                      </span>
+                    </div>
+                  </div>
+                  <div>
+                    {% if partner.security_settings.two_factor_enabled %}
+                      <button type="button" onclick="disable2FA()" 
+                              class="bg-red-600 text-white px-4 py-2 rounded-lg hover:bg-red-700 font-semibold text-sm">
+                        <i class="fas fa-times mr-1"></i>Disable 2FA
+                      </button>
+                    {% else %}
+                      <button type="button" onclick="enable2FA()" 
+                              class="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 font-semibold text-sm">
+                        <i class="fas fa-shield-alt mr-1"></i>Enable 2FA
+                      </button>
+                    {% endif %}
+                  </div>
+                </div>
+                <div class="bg-white p-4 rounded border border-blue-200">
+                  <h4 class="font-semibold mb-2 text-blue-800">How it works:</h4>
+                  <ul class="list-disc pl-5 text-blue-700 space-y-1 text-sm">
+                    <li>You'll need to enter a code from your phone each time you log in</li>
+                    <li>We recommend using Google Authenticator or Authy app</li>
+                    <li>You'll get backup codes to use if you lose your phone</li>
+                  </ul>
+                </div>
+              </div>
+
+              <!-- Login Activity -->
+              <div>
+                <h3 class="text-lg font-semibold mb-4 text-gray-700">Recent Login Activity</h3>
+                <div class="overflow-x-auto">
+                  <table class="w-full">
+                    <thead class="bg-gray-100">
+                      <tr>
+                        <th class="p-3 text-left font-semibold text-sm">Date & Time</th>
+                        <th class="p-3 text-left font-semibold text-sm">IP Address</th>
+                        <th class="p-3 text-left font-semibold text-sm">Location</th>
+                        <th class="p-3 text-left font-semibold text-sm">Device</th>
+                        <th class="p-3 text-left font-semibold text-sm">Status</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {% for login in recent_logins|slice:":5" %}
+                      <tr class="border-b hover:bg-gray-50">
+                        <td class="p-3 text-sm">{{ login.timestamp|date:"M d, Y H:i" }}</td>
+                        <td class="p-3 text-sm font-mono">{{ login.ip_address }}</td>
+                        <td class="p-3 text-sm">{{ login.location|default:"Unknown" }}</td>
+                        <td class="p-3 text-sm">{{ login.device|default:"Unknown" }}</td>
+                        <td class="p-3">
+                          <span class="px-2 py-1 rounded-full text-xs font-semibold 
+                            {% if login.success %}bg-green-100 text-green-800
+                            {% else %}bg-red-100 text-red-800{% endif %}">
+                            {% if login.success %}Success{% else %}Failed{% endif %}
+                          </span>
+                        </td>
+                      </tr>
+                      {% empty %}
+                      <tr>
+                        <td colspan="5" class="p-4 text-center text-gray-500">
+                          <i class="fas fa-history text-gray-300 text-3xl mb-2"></i>
+                          <p>No login activity recorded</p>
+                        </td>
+                      </tr>
+                      {% endfor %}
+                    </tbody>
+                  </table>
+                </div>
+                <div class="mt-4 text-right">
+                  <a href="#" class="text-green-600 hover:text-green-800 text-sm font-semibold">
+                    View All Activity
+                  </a>
+                </div>
+              </div>
+
+              <!-- Account Deactivation -->
+              <div class="bg-red-50 p-6 rounded-lg border border-red-200">
+                <h3 class="text-lg font-semibold mb-3 text-red-800">Danger Zone</h3>
+                <p class="text-red-700 mb-4">
+                  Once you deactivate your partner account, you will lose access to all partner features and your listings will be removed from the platform.
+                </p>
+                <div class="flex items-center justify-between">
+                  <div>
+                    <p class="text-sm text-red-600">
+                      This action cannot be undone. Please proceed with caution.
+                    </p>
+                  </div>
+                  <div>
+                    <button type="button" onclick="deactivateAccount()" 
+                            class="bg-red-600 text-white px-4 py-2 rounded-lg hover:bg-red-700 font-semibold text-sm">
+                      <i class="fas fa-exclamation-triangle mr-1"></i>Deactivate Account
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+function showSection(sectionId) {
+  // Hide all sections
+  document.querySelectorAll('.settings-section').forEach(section => {
+    section.classList.remove('active');
+    section.classList.add('hidden');
+  });
+  
+  // Remove active class from all nav items
+  document.querySelectorAll('.settings-nav').forEach(nav => {
+    nav.classList.remove('active');
+    nav.classList.remove('bg-green-50', 'text-green-700');
+  });
+  
+  // Show selected section
+  document.getElementById(sectionId + '-section').classList.remove('hidden');
+  document.getElementById(sectionId + '-section').classList.add('active');
+  
+  // Highlight active nav item
+  const activeNav = document.querySelector(`[onclick="showSection('${sectionId}')"]`);
+  activeNav.classList.add('active', 'bg-green-50', 'text-green-700');
+}
+
+// Show/hide payment method details
+document.querySelector('[name="payment_method"]').addEventListener('change', function() {
+  const method = this.value;
+  
+  // Hide all detail sections
+  document.getElementById('bankDetails').classList.add('hidden');
+  document.getElementById('mobileMoneyDetails').classList.add('hidden');
+  
+  // Show relevant section
+  if (method === 'bank_transfer') {
+    document.getElementById('bankDetails').classList.remove('hidden');
+  } else if (method === 'mobile_money') {
+    document.getElementById('mobileMoneyDetails').classList.remove('hidden');
+  }
+});
+
+function resetForm(section) {
+  if (confirm('Are you sure you want to reset all changes in this section?')) {
+    const form = document.querySelector(`#${section}-section form`);
+    form.reset();
+  }
+}
+
+// Security functions
+function enable2FA() {
+  if (confirm('Enable Two-Factor Authentication?\n\nYou will need to scan a QR code with an authenticator app like Google Authenticator.')) {
+    // In a real app, this would redirect to 2FA setup page
+    alert('Redirecting to 2FA setup page...\n\nFor now, this feature is under development.');
+  }
+}
+
+function disable2FA() {
+  if (confirm('Disable Two-Factor Authentication?\n\nThis will make your account less secure.')) {
+    // In a real app, this would make an API call
+    alert('2FA Disabled Successfully!\n\nFor now, this feature is under development.');
+  }
+}
+
+function deactivateAccount() {
+  const reason = prompt('Please tell us why you are deactivating your account:');
+  if (reason !== null) {
+    if (confirm(`Are you absolutely sure?\n\nReason: ${reason}\n\nThis action cannot be undone.`)) {
+      // In a real app, this would make an API call
+      alert('Account deactivation request sent!\n\nFor now, this feature is under development.');
+    }
+  }
+}
+
+// Initialize
+document.addEventListener('DOMContentLoaded', function() {
+  // Set active section based on URL hash
+  const hash = window.location.hash.substring(1) || 'profile';
+  showSection(hash);
+});
+</script>
+
+<style>
+.settings-section {
+  display: none;
+}
+.settings-section.active {
+  display: block;
+  animation: fadeIn 0.3s ease-in;
+}
+.settings-nav.active {
+  background-color: #f0f9ff;
+  color: #047857;
+}
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* Toggle switch styles */
+input:checked ~ .dot {
+  transform: translateX(100%);
+}
+</style>
+{% endblock %}

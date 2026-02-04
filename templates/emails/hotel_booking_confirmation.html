@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hotel Booking Confirmation - AFCON 2027</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        .header {
+            background: linear-gradient(135deg, #00A859 0%, #1EB2E6 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+            border-radius: 10px 10px 0 0;
+        }
+        .content {
+            background: #ffffff;
+            padding: 30px;
+            border: 1px solid #e0e0e0;
+            border-top: none;
+            border-radius: 0 0 10px 10px;
+        }
+        .booking-details {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 8px;
+            margin: 20px 0;
+        }
+        .detail-row {
+            display: flex;
+            justify-content: space-between;
+            padding: 8px 0;
+            border-bottom: 1px solid #eee;
+        }
+        .detail-row:last-child {
+            border-bottom: none;
+        }
+        .total-amount {
+            background: #00A859;
+            color: white;
+            padding: 15px;
+            border-radius: 8px;
+            text-align: center;
+            font-size: 24px;
+            font-weight: bold;
+            margin: 20px 0;
+        }
+        .footer {
+            text-align: center;
+            margin-top: 30px;
+            padding-top: 20px;
+            border-top: 1px solid #eee;
+            color: #666;
+            font-size: 12px;
+        }
+        .qr-code {
+            text-align: center;
+            margin: 20px 0;
+        }
+        .cta-button {
+            display: inline-block;
+            background: #00A859;
+            color: white;
+            padding: 12px 30px;
+            text-decoration: none;
+            border-radius: 5px;
+            font-weight: bold;
+            margin: 10px 5px;
+        }
+        .important-note {
+            background: #fff3cd;
+            border-left: 4px solid #ffc107;
+            padding: 15px;
+            margin: 20px 0;
+            border-radius: 4px;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>🎉 Hotel Booking Confirmed!</h1>
+        <p>AFCON 2027 Tanzania - Official Accommodation Partner</p>
+    </div>
+    
+    <div class="content">
+        <p>Hello <strong>{{ booking.user.first_name|default:booking.user.username }}</strong>,</p>
+        
+        <p>Thank you for booking your accommodation for AFCON 2027! Your booking at <strong>{{ booking.hotel.name }}</strong> has been confirmed.</p>
+        
+        <div class="booking-details">
+            <h3 style="margin-top: 0;">📋 Booking Details</h3>
+            
+            <div class="detail-row">
+                <span>Booking ID:</span>
+                <span><strong>#{{ booking.id|stringformat:"06d" }}</strong></span>
+            </div>
+            <div class="detail-row">
+                <span>Hotel:</span>
+                <span>{{ booking.hotel.name }}</span>
+            </div>
+            <div class="detail-row">
+                <span>Location:</span>
+                <span>{{ booking.hotel.get_city_display }}</span>
+            </div>
+            <div class="detail-row">
+                <span>Check-in:</span>
+                <span><strong>{{ booking.check_in|date:"F d, Y" }}</strong></span>
+            </div>
+            <div class="detail-row">
+                <span>Check-out:</span>
+                <span><strong>{{ booking.check_out|date:"F d, Y" }}</strong></span>
+            </div>
+            <div class="detail-row">
+                <span>Nights:</span>
+                <span>{{ booking.calculate_total_nights }} nights</span>
+            </div>
+            <div class="detail-row">
+                <span>Guests:</span>
+                <span>{{ booking.guests }} person(s)</span>
+            </div>
+            <div class="detail-row">
+                <span>Status:</span>
+                <span style="color: #00A859; font-weight: bold;">{{ booking.get_status_display|upper }}</span>
+            </div>
+        </div>
+        
+        <div class="total-amount">
+            Total Amount: ${{ booking.total_price }}
+        </div>
+        
+        {% if booking.special_requests %}
+        <div class="important-note">
+            <strong>📝 Your Special Requests:</strong>
+            <p>{{ booking.special_requests }}</p>
+        </div>
+        {% endif %}
+        
+        <div class="important-note">
+            <strong>ℹ️ Important Information:</strong>
+            <ul>
+                <li>Check-in time: 2:00 PM</li>
+                <li>Check-out time: 11:00 AM</li>
+                <li>Free cancellation available until 24 hours before check-in</li>
+                <li>Bring this confirmation email and valid ID to check-in</li>
+                <li>Contact hotel directly for early check-in/late check-out requests</li>
+            </ul>
+        </div>
+        
+        <div class="qr-code">
+            <!-- QR Code for booking (you can generate this dynamically) -->
+            <p><small>Show this QR code at check-in:</small></p>
+            <img src="https://api.qrserver.com/v1/create-qr-code/?size=150x150&data={{ booking_url }}" 
+                 alt="Booking QR Code" width="150" height="150">
+        </div>
+        
+        <div style="text-align: center; margin: 30px 0;">
+            <a href="{{ booking_url }}" class="cta-button">View Booking Online</a>
+            <a href="{% url 'hotel_list' %}" class="cta-button" style="background: #1EB2E6;">Book Another Hotel</a>
+        </div>
+        
+        <p><strong>Need help with your booking?</strong></p>
+        <p>📞 Call us: +255 123 456 789<br>
+           📧 Email: hotels@afcon2027.tz<br>
+           💬 Chat: <a href="{{ chatbot_url }}">AI Assistant</a></p>
+        
+        <p>We look forward to hosting you for AFCON 2027!<br>
+           <strong>The AFCON 2027 Hotel Team</strong></p>
+    </div>
+    
+    <div class="footer">
+        <p>AFCON 2027 Hotel Management System<br>
+           Official Accommodation Partner for Africa Cup of Nations 2027<br>
+           © 2027 AFCON 2027 Tanzania. All rights reserved.</p>
+        <p>This is an automated email. Please do not reply to this message.</p>
+    </div>
+</body>
+</html>

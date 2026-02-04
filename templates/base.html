@@ -1,0 +1,467 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}AFCON 2027 Hotel System{% endblock %}</title>
+    
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        'tanzania-green': '#00A859',
+                        'tanzania-blue': '#1EB2E6',
+                        'tanzania-black': '#000000',
+                        'tanzania-yellow': '#FFC72C',
+                        'afcon-green': '#00A859',
+                        'afcon-blue': '#1EB2E6',
+                        'afcon-yellow': '#FFC72C',
+                    }
+                }
+            }
+        }
+    </script>
+    
+    <style>
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .animate-fade-in { animation: fadeIn 0.5s ease-out; }
+        
+        /* Add these styles to base.html */
+        .stadium-bg {
+            background: linear-gradient(rgba(0, 0, 0, 0.7), rgba(0, 0, 0, 0.7)), 
+                        url('https://images.unsplash.com/photo-1595435934247-5d33b7f92c70?ixlib=rb-4.0.3&auto=format&fit=crop&w=1920&q=80');
+            background-size: cover;
+            background-position: center;
+        }
+
+        .hover-lift {
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        .hover-lift:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+        }
+        
+        /* Custom scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+        
+        ::-webkit-scrollbar-track {
+            background: #f1f1f1;
+        }
+        
+        ::-webkit-scrollbar-thumb {
+            background: #00A859;
+            border-radius: 4px;
+        }
+        
+        /* Mobile menu styles */
+        .mobile-menu {
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.3s ease-out;
+        }
+        
+        .mobile-menu.open {
+            max-height: 500px;
+        }
+        
+        /* Dropdown styles */
+        .dropdown-menu {
+            opacity: 0;
+            visibility: hidden;
+            transform: translateY(-10px);
+            transition: opacity 0.3s, transform 0.3s;
+        }
+        
+        .dropdown:hover .dropdown-menu {
+            opacity: 1;
+            visibility: visible;
+            transform: translateY(0);
+        }
+    </style>
+    
+    {% block extra_css %}{% endblock %}
+</head>
+<body class="bg-gray-50">
+    <!-- Navigation -->
+    <nav class="bg-gray-900 text-white shadow-lg sticky top-0 z-50">
+        <div class="container mx-auto px-4">
+            <div class="flex justify-between items-center py-4">
+                <!-- Logo -->
+                <a href="{% url 'home' %}" class="flex items-center text-2xl font-bold text-tanzania-green">
+                    <i class="fas fa-futbol mr-3"></i>
+                    <span>AFCON 2027</span>
+                </a>
+                
+                <!-- Desktop Menu -->
+                <div class="hidden md:flex items-center space-x-6">
+                    <!-- Main Navigation -->
+                    <a href="{% url 'home' %}" class="hover:text-tanzania-green transition duration-300 font-medium">
+                        <i class="fas fa-home mr-2"></i>Home
+                    </a>
+                    <a href="{% url 'hotel_list' %}" class="hover:text-tanzania-green transition duration-300 font-medium">
+                        <i class="fas fa-hotel mr-2"></i>Hotels
+                    </a>
+                    <a href="{% url 'tourism' %}" class="hover:text-tanzania-green transition duration-300 font-medium">
+                        <i class="fas fa-map-marked-alt mr-2"></i>Attractions
+                    </a>
+                    
+                    {% if user.is_authenticated %}
+                        <!-- User Dropdown -->
+                        <div class="relative dropdown">
+                            <button class="flex items-center space-x-2 hover:text-tanzania-green transition duration-300 font-medium">
+                                <i class="fas fa-user-circle text-xl"></i>
+                                <span>{{ user.username|truncatechars:15 }}</span>
+                                <i class="fas fa-chevron-down text-xs"></i>
+                            </button>
+                            <div class="dropdown-menu absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-xl py-2 z-50">
+                                <a href="{% url 'profile' %}" class="block px-4 py-2 text-gray-800 hover:bg-gray-100">
+                                    <i class="fas fa-user mr-2"></i>My Profile
+                                </a>
+                                <a href="{% url 'my_bookings' %}" class="block px-4 py-2 text-gray-800 hover:bg-gray-100">
+                                    <i class="fas fa-calendar-check mr-2"></i>My Bookings
+                                </a>
+                                
+                                <!-- Partner Links -->
+                                {% if user.partner_profile %}
+                                    <div class="border-t border-gray-200 mt-2 pt-2">
+                                        <a href="{% url 'partner_dashboard' %}" class="block px-4 py-2 text-blue-600 hover:bg-blue-50">
+                                            <i class="fas fa-briefcase mr-2"></i>Partner Dashboard
+                                        </a>
+                                    </div>
+                                {% else %}
+                                    <div class="border-t border-gray-200 mt-2 pt-2">
+                                        <a href="{% url 'become_partner' %}" class="block px-4 py-2 text-blue-600 hover:bg-blue-50">
+                                            <i class="fas fa-handshake mr-2"></i>Become a Partner
+                                        </a>
+                                    </div>
+                                {% endif %}
+                                
+                                <!-- Admin Links -->
+                                {% if user.is_staff or user.is_superuser %}
+                                    <div class="border-t border-gray-200 mt-2 pt-2">
+                                        <a href="{% url 'admin_dashboard' %}" class="block px-4 py-2 text-purple-600 hover:bg-purple-50">
+                                            <i class="fas fa-chart-line mr-2"></i>Admin Dashboard
+                                        </a>
+                                        <a href="/admin/" class="block px-4 py-2 text-purple-600 hover:bg-purple-50">
+                                            <i class="fas fa-cog mr-2"></i>Admin Panel
+                                        </a>
+                                    </div>
+                                {% endif %}
+                                
+                                <div class="border-t border-gray-200 mt-2 pt-2">
+                                    <a href="{% url 'logout' %}" class="block px-4 py-2 text-red-600 hover:bg-red-50">
+                                        <i class="fas fa-sign-out-alt mr-2"></i>Logout
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Chatbot Link -->
+                        <a href="{% url 'chatbot' %}" class="flex items-center bg-gradient-to-r from-tanzania-green to-tanzania-blue px-4 py-2 rounded-lg hover:opacity-90 transition duration-300 font-medium">
+                            <i class="fas fa-robot mr-2"></i>AI Assistant
+                        </a>
+                    {% else %}
+                        <!-- Guest Links -->
+                        <a href="{% url 'login' %}" class="hover:text-tanzania-green transition duration-300 font-medium">
+                            <i class="fas fa-sign-in-alt mr-2"></i>Login
+                        </a>
+                        <a href="{% url 'register' %}" class="bg-tanzania-green px-4 py-2 rounded-lg hover:bg-green-700 transition duration-300 font-medium">
+                            <i class="fas fa-user-plus mr-2"></i>Register
+                        </a>
+                    {% endif %}
+                </div>
+                
+                <!-- Mobile Menu Button -->
+                <button id="mobileMenuButton" class="md:hidden text-2xl hover:text-tanzania-green transition duration-300">
+                    <i class="fas fa-bars"></i>
+                </button>
+            </div>
+            
+            <!-- Mobile Menu (Hidden by default) -->
+            <div id="mobileMenu" class="mobile-menu md:hidden bg-gray-800 rounded-b-lg">
+                <div class="py-4 px-4 space-y-3">
+                    <a href="{% url 'home' %}" class="flex items-center py-2 hover:text-tanzania-green transition duration-300">
+                        <i class="fas fa-home mr-3 w-5 text-center"></i>Home
+                    </a>
+                    <a href="{% url 'hotel_list' %}" class="flex items-center py-2 hover:text-tanzania-green transition duration-300">
+                        <i class="fas fa-hotel mr-3 w-5 text-center"></i>Hotels
+                    </a>
+                    <a href="{% url 'tourism' %}" class="flex items-center py-2 hover:text-tanzania-green transition duration-300">
+                        <i class="fas fa-map-marked-alt mr-3 w-5 text-center"></i>Attractions
+                    </a>
+                    
+                    {% if user.is_authenticated %}
+                        <!-- Mobile User Section -->
+                        <div class="border-t border-gray-700 pt-3 mt-3">
+                            <div class="flex items-center py-2 text-tanzania-green">
+                                <i class="fas fa-user-circle mr-3"></i>
+                                <span class="font-medium">{{ user.username }}</span>
+                            </div>
+                            <a href="{% url 'profile' %}" class="flex items-center py-2 hover:text-tanzania-green transition duration-300 pl-8">
+                                <i class="fas fa-user mr-3 w-5 text-center"></i>My Profile
+                            </a>
+                            <a href="{% url 'my_bookings' %}" class="flex items-center py-2 hover:text-tanzania-green transition duration-300 pl-8">
+                                <i class="fas fa-calendar-check mr-3 w-5 text-center"></i>My Bookings
+                            </a>
+                            <a href="{% url 'chatbot' %}" class="flex items-center py-2 hover:text-tanzania-green transition duration-300 pl-8">
+                                <i class="fas fa-robot mr-3 w-5 text-center"></i>AI Assistant
+                            </a>
+                            
+                            <!-- Partner Links (Mobile) -->
+                            {% if user.partner_profile %}
+                                <a href="{% url 'partner_dashboard' %}" class="flex items-center py-2 text-blue-400 hover:text-blue-300 transition duration-300 pl-8">
+                                    <i class="fas fa-briefcase mr-3 w-5 text-center"></i>Partner Dashboard
+                                </a>
+                            {% else %}
+                                <a href="{% url 'become_partner' %}" class="flex items-center py-2 text-blue-400 hover:text-blue-300 transition duration-300 pl-8">
+                                    <i class="fas fa-handshake mr-3 w-5 text-center"></i>Become a Partner
+                                </a>
+                            {% endif %}
+                            
+                            <!-- Admin Links (Mobile) -->
+                            {% if user.is_staff or user.is_superuser %}
+                                <div class="border-t border-gray-700 pt-2 mt-2">
+                                    <a href="{% url 'admin_dashboard' %}" class="flex items-center py-2 text-purple-400 hover:text-purple-300 transition duration-300 pl-8">
+                                        <i class="fas fa-chart-line mr-3 w-5 text-center"></i>Admin Dashboard
+                                    </a>
+                                    <a href="/admin/" class="flex items-center py-2 text-purple-400 hover:text-purple-300 transition duration-300 pl-8">
+                                        <i class="fas fa-cog mr-3 w-5 text-center"></i>Admin Panel
+                                    </a>
+                                </div>
+                            {% endif %}
+                            
+                            <div class="border-t border-gray-700 pt-2 mt-2">
+                                <a href="{% url 'logout' %}" class="flex items-center py-2 text-red-400 hover:text-red-300 transition duration-300 pl-8">
+                                    <i class="fas fa-sign-out-alt mr-3 w-5 text-center"></i>Logout
+                                </a>
+                            </div>
+                        </div>
+                    {% else %}
+                        <!-- Mobile Guest Links -->
+                        <div class="border-t border-gray-700 pt-3 mt-3">
+                            <a href="{% url 'login' %}" class="flex items-center py-2 hover:text-tanzania-green transition duration-300">
+                                <i class="fas fa-sign-in-alt mr-3 w-5 text-center"></i>Login
+                            </a>
+                            <a href="{% url 'register' %}" class="flex items-center py-2 bg-tanzania-green rounded-lg hover:bg-green-700 transition duration-300 justify-center mt-2">
+                                <i class="fas fa-user-plus mr-2"></i>Register
+                            </a>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Messages/Alerts -->
+    {% if messages %}
+    <div class="container mx-auto px-4 mt-4">
+        {% for message in messages %}
+        <div class="alert alert-{{ message.tags }} bg-{% if message.tags == 'success' %}green-100 border-green-400 text-green-700{% elif message.tags == 'error' %}red-100 border-red-400 text-red-700{% else %}blue-100 border-blue-400 text-blue-700{% endif %} border-l-4 p-4 mb-4 rounded shadow animate-fade-in">
+            <div class="flex justify-between items-center">
+                <div>
+                    <i class="fas fa-{% if message.tags == 'success' %}check-circle{% elif message.tags == 'error' %}exclamation-circle{% else %}info-circle{% endif %} mr-2"></i>
+                    {{ message }}
+                </div>
+                <button type="button" class="text-2xl leading-none hover:opacity-75" onclick="this.parentElement.parentElement.remove()">&times;</button>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+    {% endif %}
+
+    <!-- Main Content -->
+    <main class="min-h-screen">
+        {% block content %}{% endblock %}
+    </main>
+
+    <!-- Footer -->
+    <footer class="bg-gray-900 text-white py-12 mt-16">
+        <div class="container mx-auto px-4">
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-8">
+                <!-- About -->
+                <div class="md:col-span-2">
+                    <h3 class="text-2xl font-bold text-tanzania-green mb-4">AFCON 2027 Tanzania</h3>
+                    <p class="text-gray-400 mb-4">
+                        Official Hotel Management System for Africa Cup of Nations 2027. 
+                        Book your perfect stay across Dar es Salaam, Arusha, and Zanzibar.
+                    </p>
+                    <div class="flex space-x-4">
+                        <a href="#" class="text-gray-400 hover:text-white">
+                            <i class="fab fa-facebook text-xl"></i>
+                        </a>
+                        <a href="#" class="text-gray-400 hover:text-white">
+                            <i class="fab fa-twitter text-xl"></i>
+                        </a>
+                        <a href="#" class="text-gray-400 hover:text-white">
+                            <i class="fab fa-instagram text-xl"></i>
+                        </a>
+                        <a href="#" class="text-gray-400 hover:text-white">
+                            <i class="fab fa-youtube text-xl"></i>
+                        </a>
+                    </div>
+                </div>
+                
+                <!-- Quick Links -->
+                <div>
+                    <h4 class="text-xl font-semibold mb-4">Quick Links</h4>
+                    <ul class="space-y-2 text-gray-400">
+                        <li><a href="{% url 'home' %}" class="hover:text-tanzania-green">Home</a></li>
+                        <li><a href="{% url 'hotel_list' %}" class="hover:text-tanzania-green">Hotels</a></li>
+                        <li><a href="{% url 'tourism' %}" class="hover:text-tanzania-green">Tourist Attractions</a></li>
+                        <li><a href="{% url 'chatbot' %}" class="hover:text-tanzania-green">AI Assistant</a></li>
+                        {% if user.is_authenticated %}
+                            <li><a href="{% url 'profile' %}" class="hover:text-tanzania-green">My Profile</a></li>
+                            {% if user.partner_profile %}
+                                <li><a href="{% url 'partner_dashboard' %}" class="hover:text-blue-400">Partner Dashboard</a></li>
+                            {% endif %}
+                            {% if user.is_staff or user.is_superuser %}
+                                <li><a href="{% url 'admin_dashboard' %}" class="hover:text-purple-400">Admin Dashboard</a></li>
+                            {% endif %}
+                        {% else %}
+                            <li><a href="{% url 'login' %}" class="hover:text-tanzania-green">Login</a></li>
+                            <li><a href="{% url 'register' %}" class="hover:text-tanzania-green">Register</a></li>
+                        {% endif %}
+                    </ul>
+                </div>
+                
+                <!-- Contact Info -->
+                <div>
+                    <h4 class="text-xl font-semibold mb-4">Contact Us</h4>
+                    <div class="space-y-3 text-gray-400">
+                        <p class="flex items-start">
+                            <i class="fas fa-map-marker-alt text-tanzania-green mr-2 mt-1"></i>
+                            <span>Dar es Salaam, Tanzania</span>
+                        </p>
+                        <p class="flex items-center">
+                            <i class="fas fa-phone text-tanzania-green mr-2"></i>
+                            <span>+255 713 819 660</span>
+                        </p>
+                        <p class="flex items-center">
+                            <i class="fas fa-envelope text-tanzania-green mr-2"></i>
+                            <span>info@afcon2027.tz</span>
+                        </p>
+                        <p class="flex items-center">
+                            <i class="fas fa-clock text-tanzania-green mr-2"></i>
+                            <span>24/7 Customer Support</span>
+                        </p>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Divider -->
+            <div class="border-t border-gray-800 mt-8 pt-8">
+                <div class="flex flex-col md:flex-row justify-between items-center">
+                    <p class="text-gray-500 text-center md:text-left">
+                        &copy; 2027 AFCON Hotel Management System. All rights reserved.
+                    </p>
+                    <div class="mt-4 md:mt-0">
+                        <span class="text-gray-500 text-sm">
+                            Official Partner: 
+                            <span class="text-tanzania-green font-semibold">Tanzania Football Federation</span>
+                        </span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Chatbot Floating Button (Only for authenticated users) -->
+    {% if user.is_authenticated %}
+    <a href="{% url 'chatbot' %}" 
+       class="fixed bottom-6 right-6 bg-gradient-to-r from-tanzania-green to-tanzania-blue text-white p-4 rounded-full shadow-2xl hover:shadow-3xl transform hover:scale-110 transition duration-300 z-50 group">
+        <i class="fas fa-robot text-2xl"></i>
+        <span class="absolute right-14 bg-gray-900 text-white px-2 py-1 rounded text-sm opacity-0 group-hover:opacity-100 transition duration-300 whitespace-nowrap">
+            AI Assistant
+        </span>
+    </a>
+    {% endif %}
+
+    <!-- JavaScript -->
+    <script>
+        // Mobile menu toggle
+        const mobileMenuButton = document.getElementById('mobileMenuButton');
+        const mobileMenu = document.getElementById('mobileMenu');
+        
+        if (mobileMenuButton && mobileMenu) {
+            mobileMenuButton.addEventListener('click', function(e) {
+                e.stopPropagation();
+                mobileMenu.classList.toggle('open');
+                const icon = mobileMenuButton.querySelector('i');
+                if (mobileMenu.classList.contains('open')) {
+                    icon.className = 'fas fa-times';
+                } else {
+                    icon.className = 'fas fa-bars';
+                }
+            });
+        }
+        
+        // Close mobile menu when clicking outside
+        document.addEventListener('click', function(event) {
+            if (mobileMenu && mobileMenuButton && 
+                !mobileMenu.contains(event.target) && 
+                !mobileMenuButton.contains(event.target)) {
+                mobileMenu.classList.remove('open');
+                const icon = mobileMenuButton.querySelector('i');
+                if (icon) icon.className = 'fas fa-bars';
+            }
+        });
+        
+        // Close mobile menu when clicking a link
+        document.querySelectorAll('#mobileMenu a').forEach(link => {
+            link.addEventListener('click', () => {
+                mobileMenu.classList.remove('open');
+                const icon = mobileMenuButton.querySelector('i');
+                if (icon) icon.className = 'fas fa-bars';
+            });
+        });
+        
+        // Auto-dismiss alerts after 5 seconds
+        setTimeout(function() {
+            document.querySelectorAll('.alert').forEach(function(alert) {
+                alert.style.opacity = '0';
+                alert.style.transition = 'opacity 0.5s';
+                setTimeout(() => alert.remove(), 500);
+            });
+        }, 5000);
+        
+        // Smooth scroll to top function
+        function scrollToTop() {
+            window.scrollTo({
+                top: 0,
+                behavior: 'smooth'
+            });
+        }
+        
+        // Add scroll to top button on scroll
+        window.addEventListener('scroll', function() {
+            const scrollTopButton = document.getElementById('scrollTopButton');
+            if (!scrollTopButton && window.scrollY > 300) {
+                const button = document.createElement('button');
+                button.id = 'scrollTopButton';
+                button.innerHTML = '<i class="fas fa-chevron-up"></i>';
+                button.className = 'fixed bottom-24 left-6 bg-gray-800 text-white p-3 rounded-full shadow-lg hover:bg-gray-900 transition duration-300 z-50';
+                button.onclick = scrollToTop;
+                document.body.appendChild(button);
+            } else if (scrollTopButton && window.scrollY <= 300) {
+                scrollTopButton.remove();
+            }
+        });
+    </script>
+    
+    {% block extra_js %}{% endblock %}
+</body>
+</html>

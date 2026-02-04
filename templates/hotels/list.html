@@ -1,0 +1,452 @@
+{% extends 'base.html' %}
+
+{% block title %}Hotels - AFCON 2027{% endblock %}
+
+{% block content %}
+<div class="animate-fade-in">
+    <!-- Hero Section -->
+    <div class="bg-gradient-to-r from-green-800 to-blue-800 text-white py-12">
+        <div class="container mx-auto px-4">
+            <h1 class="text-4xl font-bold mb-4">Find Your Perfect Stay</h1>
+            <p class="text-xl opacity-90">Book hotels in Dar es Salaam, Arusha, and Zanzibar for AFCON 2027</p>
+        </div>
+    </div>
+
+    <!-- Filters -->
+    <div class="bg-white shadow-lg py-6">
+        <div class="container mx-auto px-4">
+            <form method="get" class="flex flex-col md:flex-row gap-4 items-end">
+                <!-- City Filter -->
+                <div class="flex-1">
+                    <label class="block text-gray-700 mb-2 font-semibold">City</label>
+                    <select name="city" class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500">
+                        <option value="">All Cities</option>
+                        <option value="DAR" {% if selected_city == 'DAR' %}selected{% endif %}>Dar es Salaam</option>
+                        <option value="ARU" {% if selected_city == 'ARU' %}selected{% endif %}>Arusha</option>
+                        <option value="ZAN" {% if selected_city == 'ZAN' %}selected{% endif %}>Zanzibar</option>
+                    </select>
+                </div>
+                
+                <!-- Search -->
+                <div class="flex-1">
+                    <label class="block text-gray-700 mb-2 font-semibold">Search</label>
+                    <input type="text" name="search" value="{{ search_query }}" 
+                           placeholder="Hotel name or location" 
+                           class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500">
+                </div>
+                
+                <!-- Price Range -->
+                <div class="flex gap-4">
+                    <div>
+                        <label class="block text-gray-700 mb-2 font-semibold">Min Price ($)</label>
+                        <input type="number" name="min_price" placeholder="50" min="0"
+                               class="w-32 p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500">
+                    </div>
+                    <div>
+                        <label class="block text-gray-700 mb-2 font-semibold">Max Price ($)</label>
+                        <input type="number" name="max_price" placeholder="600" min="0"
+                               class="w-32 p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500">
+                    </div>
+                </div>
+                
+                <!-- Submit Button -->
+                <div>
+                    <button type="submit" 
+                            class="bg-green-600 text-white px-8 py-3 rounded-lg hover:bg-green-700 font-semibold focus:ring-2 focus:ring-green-500 focus:ring-offset-2">
+                        <i class="fas fa-search mr-2"></i>Search Hotels
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Hotels by City -->
+    <div class="container mx-auto px-4 py-12">
+        <!-- Dar es Salaam Hotels -->
+        {% if dar_hotels %}
+        <div class="mb-16">
+            <h2 class="text-3xl font-bold mb-8 text-green-800 border-b pb-2">
+                <i class="fas fa-city mr-3"></i>Dar es Salaam Hotels
+            </h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                {% for hotel in dar_hotels %}
+                <div class="bg-white rounded-xl shadow-lg overflow-hidden hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-2">
+                    <!-- Hotel Image -->
+                    <div class="h-56 relative overflow-hidden">
+                        <img src="{{ hotel.get_image_url }}" 
+                             alt="{{ hotel.name }}" 
+                             class="w-full h-full object-cover transition-transform duration-500 hover:scale-110">
+                        <div class="absolute top-4 right-4 bg-yellow-500 text-white px-3 py-1 rounded-full text-sm font-bold shadow-lg">
+                            {{ hotel.stars }}★
+                        </div>
+                        <div class="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/80 to-transparent p-4">
+                            <h3 class="text-white font-bold text-lg">{{ hotel.name }}</h3>
+                            <p class="text-white/90 text-sm">{{ hotel.get_city_display }}</p>
+                        </div>
+                    </div>
+                    
+                    <div class="p-6">
+                        <div class="flex items-center text-gray-600 mb-3">
+                            <i class="fas fa-map-marker-alt text-green-600 mr-2"></i>
+                            <span class="text-sm">{{ hotel.address|truncatechars:40 }}</span>
+                        </div>
+                        
+                        <p class="text-gray-700 text-sm mb-4 line-clamp-2">
+                            {{ hotel.description|truncatechars:120 }}
+                        </p>
+                        
+                        <div class="mb-4">
+                            <span class="text-2xl font-bold text-green-700">${{ hotel.price_per_night }}</span>
+                            <span class="text-gray-500"> / night</span>
+                        </div>
+                        
+                        <div class="flex flex-wrap gap-2 mb-6">
+                            {% if hotel.wifi %}
+                            <span class="bg-green-100 text-green-800 text-xs px-2 py-1 rounded-full flex items-center">
+                                <i class="fas fa-wifi mr-1"></i>WiFi
+                            </span>
+                            {% endif %}
+                            {% if hotel.pool %}
+                            <span class="bg-blue-100 text-blue-800 text-xs px-2 py-1 rounded-full flex items-center">
+                                <i class="fas fa-swimming-pool mr-1"></i>Pool
+                            </span>
+                            {% endif %}
+                            {% if hotel.restaurant %}
+                            <span class="bg-yellow-100 text-yellow-800 text-xs px-2 py-1 rounded-full flex items-center">
+                                <i class="fas fa-utensils mr-1"></i>Restaurant
+                            </span>
+                            {% endif %}
+                            {% if hotel.gym %}
+                            <span class="bg-purple-100 text-purple-800 text-xs px-2 py-1 rounded-full flex items-center">
+                                <i class="fas fa-dumbbell mr-1"></i>Gym
+                            </span>
+                            {% endif %}
+                            {% if hotel.parking %}
+                            <span class="bg-gray-100 text-gray-800 text-xs px-2 py-1 rounded-full flex items-center">
+                                <i class="fas fa-parking mr-1"></i>Parking
+                            </span>
+                            {% endif %}
+                        </div>
+                        
+                        <div class="flex gap-3">
+                            <a href="{% url 'hotel_detail' hotel.id %}" 
+                               class="flex-1 bg-green-600 text-white text-center py-3 rounded-lg hover:bg-green-700 font-semibold transition duration-300">
+                                View Details
+                            </a>
+                            {% if user.is_authenticated %}
+                            <a href="{% url 'hotel_detail' hotel.id %}" 
+                               class="bg-blue-600 text-white px-4 py-3 rounded-lg hover:bg-blue-700 font-semibold transition duration-300">
+                                <i class="fas fa-calendar-check"></i>
+                            </a>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+        {% endif %}
+
+        <!-- Arusha Hotels -->
+        {% if aru_hotels %}
+        <div class="mb-16">
+            <h2 class="text-3xl font-bold mb-8 text-blue-800 border-b pb-2">
+                <i class="fas fa-mountain mr-3"></i>Arusha Hotels
+            </h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                {% for hotel in aru_hotels %}
+                <div class="bg-white rounded-xl shadow-lg overflow-hidden hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-2">
+                    <!-- Hotel Image -->
+                    <div class="h-56 relative overflow-hidden">
+                        <img src="{{ hotel.get_image_url }}" 
+                             alt="{{ hotel.name }}" 
+                             class="w-full h-full object-cover transition-transform duration-500 hover:scale-110">
+                        <div class="absolute top-4 right-4 bg-yellow-500 text-white px-3 py-1 rounded-full text-sm font-bold shadow-lg">
+                            {{ hotel.stars }}★
+                        </div>
+                        <div class="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/80 to-transparent p-4">
+                            <h3 class="text-white font-bold text-lg">{{ hotel.name }}</h3>
+                            <p class="text-white/90 text-sm">{{ hotel.get_city_display }}</p>
+                        </div>
+                    </div>
+                    
+                    <div class="p-6">
+                        <div class="flex items-center text-gray-600 mb-3">
+                            <i class="fas fa-map-marker-alt text-blue-600 mr-2"></i>
+                            <span class="text-sm">{{ hotel.address|truncatechars:40 }}</span>
+                        </div>
+                        
+                        <p class="text-gray-700 text-sm mb-4 line-clamp-2">
+                            {{ hotel.description|truncatechars:120 }}
+                        </p>
+                        
+                        <div class="mb-4">
+                            <span class="text-2xl font-bold text-blue-700">${{ hotel.price_per_night }}</span>
+                            <span class="text-gray-500"> / night</span>
+                        </div>
+                        
+                        <div class="flex flex-wrap gap-2 mb-6">
+                            {% if hotel.wifi %}
+                            <span class="bg-green-100 text-green-800 text-xs px-2 py-1 rounded-full flex items-center">
+                                <i class="fas fa-wifi mr-1"></i>WiFi
+                            </span>
+                            {% endif %}
+                            {% if hotel.pool %}
+                            <span class="bg-blue-100 text-blue-800 text-xs px-2 py-1 rounded-full flex items-center">
+                                <i class="fas fa-swimming-pool mr-1"></i>Pool
+                            </span>
+                            {% endif %}
+                            {% if hotel.restaurant %}
+                            <span class="bg-yellow-100 text-yellow-800 text-xs px-2 py-1 rounded-full flex items-center">
+                                <i class="fas fa-utensils mr-1"></i>Restaurant
+                            </span>
+                            {% endif %}
+                            {% if hotel.gym %}
+                            <span class="bg-purple-100 text-purple-800 text-xs px-2 py-1 rounded-full flex items-center">
+                                <i class="fas fa-dumbbell mr-1"></i>Gym
+                            </span>
+                            {% endif %}
+                            {% if hotel.parking %}
+                            <span class="bg-gray-100 text-gray-800 text-xs px-2 py-1 rounded-full flex items-center">
+                                <i class="fas fa-parking mr-1"></i>Parking
+                            </span>
+                            {% endif %}
+                        </div>
+                        
+                        <div class="flex gap-3">
+                            <a href="{% url 'hotel_detail' hotel.id %}" 
+                               class="flex-1 bg-blue-600 text-white text-center py-3 rounded-lg hover:bg-blue-700 font-semibold transition duration-300">
+                                View Details
+                            </a>
+                            {% if user.is_authenticated %}
+                            <a href="{% url 'hotel_detail' hotel.id %}" 
+                               class="bg-green-600 text-white px-4 py-3 rounded-lg hover:bg-green-700 font-semibold transition duration-300">
+                                <i class="fas fa-calendar-check"></i>
+                            </a>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+        {% endif %}
+
+        <!-- Zanzibar Hotels -->
+        {% if zan_hotels %}
+        <div class="mb-16">
+            <h2 class="text-3xl font-bold mb-8 text-yellow-800 border-b pb-2">
+                <i class="fas fa-umbrella-beach mr-3"></i>Zanzibar Hotels
+            </h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                {% for hotel in zan_hotels %}
+                <div class="bg-white rounded-xl shadow-lg overflow-hidden hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-2">
+                    <!-- Hotel Image -->
+                    <div class="h-56 relative overflow-hidden">
+                        <img src="{{ hotel.get_image_url }}" 
+                             alt="{{ hotel.name }}" 
+                             class="w-full h-full object-cover transition-transform duration-500 hover:scale-110">
+                        <div class="absolute top-4 right-4 bg-yellow-500 text-white px-3 py-1 rounded-full text-sm font-bold shadow-lg">
+                            {{ hotel.stars }}★
+                        </div>
+                        <div class="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/80 to-transparent p-4">
+                            <h3 class="text-white font-bold text-lg">{{ hotel.name }}</h3>
+                            <p class="text-white/90 text-sm">{{ hotel.get_city_display }}</p>
+                        </div>
+                    </div>
+                    
+                    <div class="p-6">
+                        <div class="flex items-center text-gray-600 mb-3">
+                            <i class="fas fa-map-marker-alt text-yellow-600 mr-2"></i>
+                            <span class="text-sm">{{ hotel.address|truncatechars:40 }}</span>
+                        </div>
+                        
+                        <p class="text-gray-700 text-sm mb-4 line-clamp-2">
+                            {{ hotel.description|truncatechars:120 }}
+                        </p>
+                        
+                        <div class="mb-4">
+                            <span class="text-2xl font-bold text-yellow-700">${{ hotel.price_per_night }}</span>
+                            <span class="text-gray-500"> / night</span>
+                        </div>
+                        
+                        <div class="flex flex-wrap gap-2 mb-6">
+                            {% if hotel.wifi %}
+                            <span class="bg-green-100 text-green-800 text-xs px-2 py-1 rounded-full flex items-center">
+                                <i class="fas fa-wifi mr-1"></i>WiFi
+                            </span>
+                            {% endif %}
+                            {% if hotel.pool %}
+                            <span class="bg-blue-100 text-blue-800 text-xs px-2 py-1 rounded-full flex items-center">
+                                <i class="fas fa-swimming-pool mr-1"></i>Pool
+                            </span>
+                            {% endif %}
+                            {% if hotel.restaurant %}
+                            <span class="bg-yellow-100 text-yellow-800 text-xs px-2 py-1 rounded-full flex items-center">
+                                <i class="fas fa-utensils mr-1"></i>Restaurant
+                            </span>
+                            {% endif %}
+                            {% if hotel.gym %}
+                            <span class="bg-purple-100 text-purple-800 text-xs px-2 py-1 rounded-full flex items-center">
+                                <i class="fas fa-dumbbell mr-1"></i>Gym
+                            </span>
+                            {% endif %}
+                            {% if hotel.parking %}
+                            <span class="bg-gray-100 text-gray-800 text-xs px-2 py-1 rounded-full flex items-center">
+                                <i class="fas fa-parking mr-1"></i>Parking
+                            </span>
+                            {% endif %}
+                        </div>
+                        
+                        <div class="flex gap-3">
+                            <a href="{% url 'hotel_detail' hotel.id %}" 
+                               class="flex-1 bg-yellow-600 text-white text-center py-3 rounded-lg hover:bg-yellow-700 font-semibold transition duration-300">
+                                View Details
+                            </a>
+                            {% if user.is_authenticated %}
+                            <a href="{% url 'hotel_detail' hotel.id %}" 
+                               class="bg-green-600 text-white px-4 py-3 rounded-lg hover:bg-green-700 font-semibold transition duration-300">
+                                <i class="fas fa-calendar-check"></i>
+                            </a>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+        {% endif %}
+
+        <!-- No Results -->
+        {% if not dar_hotels and not aru_hotels and not zan_hotels %}
+        <div class="text-center py-16">
+            <div class="text-6xl mb-6 text-gray-300">
+                <i class="fas fa-hotel"></i>
+            </div>
+            <h3 class="text-2xl font-bold text-gray-600 mb-4">No hotels found</h3>
+            <p class="text-gray-500 mb-6">Try adjusting your search filters or explore our featured destinations</p>
+            <div class="flex flex-wrap justify-center gap-4">
+                <a href="{% url 'hotel_list' %}" class="bg-green-600 text-white px-6 py-3 rounded-lg font-semibold hover:bg-green-700">
+                    <i class="fas fa-redo mr-2"></i>Clear filters
+                </a>
+                <a href="{% url 'tourism' %}" class="bg-blue-600 text-white px-6 py-3 rounded-lg font-semibold hover:bg-blue-700">
+                    <i class="fas fa-map-marked-alt mr-2"></i>Explore Attractions
+                </a>
+                <a href="{% url 'chatbot' %}" class="bg-yellow-600 text-white px-6 py-3 rounded-lg font-semibold hover:bg-yellow-700">
+                    <i class="fas fa-robot mr-2"></i>Ask AI Assistant
+                </a>
+            </div>
+        </div>
+        {% endif %}
+
+        <!-- Call to Action -->
+        <div class="mt-16 bg-gradient-to-r from-green-600 to-blue-600 text-white rounded-2xl p-12 text-center">
+            <div class="max-w-3xl mx-auto">
+                <h2 class="text-3xl font-bold mb-4">Need Help Choosing?</h2>
+                <p class="text-xl mb-8 opacity-90">
+                    Our AI assistant can recommend the perfect hotel based on your preferences, 
+                    budget, and AFCON match schedule.
+                </p>
+                <div class="flex flex-wrap justify-center gap-6">
+                    <a href="{% url 'chatbot' %}" 
+                       class="bg-white text-green-800 px-8 py-4 rounded-full text-lg font-bold hover:bg-gray-100 transition duration-300">
+                        <i class="fas fa-robot mr-2"></i>Get Personalized Recommendations
+                    </a>
+                    <a href="{% url 'tourism' %}" 
+                       class="border-2 border-white text-white px-8 py-4 rounded-full text-lg font-bold hover:bg-white/10 transition duration-300">
+                        <i class="fas fa-map-marked-alt mr-2"></i>Explore Tourist Attractions
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Statistics -->
+        <div class="mt-12 grid grid-cols-2 md:grid-cols-4 gap-8">
+            <div class="text-center p-6 bg-white rounded-xl shadow">
+                <div class="text-4xl font-bold text-green-700 mb-2">{{ dar_hotels|length }}</div>
+                <div class="text-gray-600">Hotels in Dar es Salaam</div>
+            </div>
+            <div class="text-center p-6 bg-white rounded-xl shadow">
+                <div class="text-4xl font-bold text-blue-700 mb-2">{{ aru_hotels|length }}</div>
+                <div class="text-gray-600">Hotels in Arusha</div>
+            </div>
+            <div class="text-center p-6 bg-white rounded-xl shadow">
+                <div class="text-4xl font-bold text-yellow-700 mb-2">{{ zan_hotels|length }}</div>
+                <div class="text-gray-600">Hotels in Zanzibar</div>
+            </div>
+            <div class="text-center p-6 bg-white rounded-xl shadow">
+                <div class="text-4xl font-bold text-purple-700 mb-2">{{ dar_hotels|add:aru_hotels|add:zan_hotels|length }}</div>
+                <div class="text-gray-600">Total Hotels Available</div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Add some custom CSS for line clamping -->
+<style>
+    .line-clamp-2 {
+        display: -webkit-box;
+        -webkit-line-clamp: 2;
+        -webkit-box-orient: vertical;
+        overflow: hidden;
+    }
+    
+    /* Smooth image loading */
+    img {
+        transition: transform 0.5s ease;
+    }
+    
+    /* Card hover effects */
+    .card-hover {
+        transition: all 0.3s ease;
+    }
+    
+    .card-hover:hover {
+        transform: translateY(-8px);
+        box-shadow: 0 20px 40px rgba(0, 0, 0, 0.15);
+    }
+</style>
+
+<!-- Add loading animation for images -->
+<script>
+    // Add loading animation for images
+    document.addEventListener('DOMContentLoaded', function() {
+        const images = document.querySelectorAll('img');
+        images.forEach(img => {
+            // Add loading class
+            img.classList.add('opacity-0', 'transition-opacity', 'duration-500');
+            
+            // When image loads, fade it in
+            img.onload = function() {
+                this.classList.remove('opacity-0');
+                this.classList.add('opacity-100');
+            };
+            
+            // If image fails to load, use a fallback
+            img.onerror = function() {
+                this.src = 'https://images.unsplash.com/photo-1566073771259-6a8506099945?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80';
+                this.onload(); // Trigger load event again
+            };
+            
+            // Force load if already cached
+            if (img.complete) {
+                img.onload();
+            }
+        });
+        
+        // Add smooth scrolling for anchor links
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function (e) {
+                e.preventDefault();
+                const target = document.querySelector(this.getAttribute('href'));
+                if (target) {
+                    target.scrollIntoView({
+                        behavior: 'smooth',
+                        block: 'start'
+                    });
+                }
+            });
+        });
+    });
+</script>
+{% endblock %}

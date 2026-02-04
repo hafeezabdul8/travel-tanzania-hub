@@ -1,0 +1,565 @@
+{% extends 'base.html' %}
+
+{% block title %}Tour Packages - Tanzania AFCON 2027{% endblock %}
+
+{% block content %}
+<div class="animate-fade-in">
+    <!-- Hero Section -->
+    <div class="bg-gradient-to-r from-green-800 to-blue-800 text-white py-12 md:py-20">
+        <div class="container mx-auto px-4 text-center">
+            <h1 class="text-4xl md:text-5xl font-bold mb-6">
+                Tour Packages
+                <span class="block text-yellow-400 mt-2">Tanzania Adventures</span>
+            </h1>
+            <p class="text-xl mb-8 max-w-3xl mx-auto opacity-90">
+                Discover curated tour packages for Dar es Salaam, Arusha, and Zanzibar. 
+                Perfect combinations of football excitement and Tanzanian exploration.
+            </p>
+            
+            <!-- Quick Stats -->
+            <div class="grid grid-cols-2 md:grid-cols-4 gap-6 max-w-4xl mx-auto mt-12">
+                <div class="text-center">
+                    <div class="text-3xl font-bold mb-2">50+</div>
+                    <div class="text-sm opacity-90">Packages</div>
+                </div>
+                <div class="text-center">
+                    <div class="text-3xl font-bold mb-2">3</div>
+                    <div class="text-sm opacity-90">Cities</div>
+                </div>
+                <div class="text-center">
+                    <div class="text-3xl font-bold mb-2">24/7</div>
+                    <div class="text-sm opacity-90">Support</div>
+                </div>
+                <div class="text-center">
+                    <div class="text-3xl font-bold mb-2">5★</div>
+                    <div class="text-sm opacity-90">Ratings</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Filters -->
+    <div class="bg-white shadow-lg py-6 sticky top-0 z-10">
+        <div class="container mx-auto px-4">
+            <form method="get" class="flex flex-col md:flex-row gap-4 items-end">
+                <!-- City Filter -->
+                <div>
+                    <label class="block text-gray-700 mb-2 font-semibold">
+                        <i class="fas fa-map-marker-alt mr-2"></i>City
+                    </label>
+                    <select name="city" class="w-full md:w-48 p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500">
+                        <option value="">All Cities</option>
+                        <option value="DAR" {% if selected_city == 'DAR' %}selected{% endif %}>Dar es Salaam</option>
+                        <option value="ARU" {% if selected_city == 'ARU' %}selected{% endif %}>Arusha</option>
+                        <option value="ZAN" {% if selected_city == 'ZAN' %}selected{% endif %}>Zanzibar</option>
+                        <option value="ALL" {% if selected_city == 'ALL' %}selected{% endif %}>All Tanzania</option>
+                    </select>
+                </div>
+
+                <!-- Price Range -->
+                <div>
+                    <label class="block text-gray-700 mb-2 font-semibold">
+                        <i class="fas fa-tag mr-2"></i>Price Range
+                    </label>
+                    <div class="flex gap-2">
+                        <input type="number" 
+                               name="min_price" 
+                               placeholder="Min $"
+                               value="{{ request.GET.min_price }}"
+                               class="w-24 p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500">
+                        <span class="self-center text-gray-500">-</span>
+                        <input type="number" 
+                               name="max_price" 
+                               placeholder="Max $"
+                               value="{{ request.GET.max_price }}"
+                               class="w-24 p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500">
+                    </div>
+                </div>
+
+                <!-- Duration Filter -->
+                <div>
+                    <label class="block text-gray-700 mb-2 font-semibold">
+                        <i class="far fa-clock mr-2"></i>Duration
+                    </label>
+                    <select name="duration" class="w-full md:w-48 p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500">
+                        <option value="">Any Duration</option>
+                        <option value="half-day">Half Day (3-4 hours)</option>
+                        <option value="full-day">Full Day (8-10 hours)</option>
+                        <option value="multi-day">Multi Day (2+ days)</option>
+                    </select>
+                </div>
+
+                <!-- Search -->
+                <div class="flex-1">
+                    <label class="block text-gray-700 mb-2 font-semibold">
+                        <i class="fas fa-search mr-2"></i>Search Packages
+                    </label>
+                    <div class="flex">
+                        <input type="text" 
+                               name="search" 
+                               value="{{ request.GET.search }}"
+                               placeholder="Search by package name or description..."
+                               class="flex-1 p-3 border border-gray-300 rounded-l-lg focus:ring-2 focus:ring-green-500">
+                        <button type="submit" 
+                                class="bg-green-600 text-white px-6 py-3 rounded-r-lg hover:bg-green-700 font-semibold">
+                            Search
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Reset Button -->
+                <div>
+                    <a href="{% url 'tour_packages' %}" 
+                       class="bg-gray-200 text-gray-800 px-6 py-3 rounded-lg hover:bg-gray-300 font-semibold inline-block">
+                        Clear Filters
+                    </a>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Main Content -->
+    <div class="container mx-auto px-4 py-12">
+        {% if packages %}
+        <!-- Packages Count -->
+        <div class="mb-8">
+            <p class="text-gray-600">
+                Found <span class="font-bold text-green-700">{{ packages.count }}</span> 
+                tour package{% if packages.count != 1 %}s{% endif %}
+                {% if selected_city %} in {{ selected_city|title }}{% endif %}
+            </p>
+        </div>
+
+        <!-- Packages Grid -->
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 mb-12">
+            {% for package in packages %}
+            <div class="bg-white rounded-xl shadow-lg overflow-hidden hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-1">
+                <!-- Badge for Featured -->
+                {% if package.is_featured %}
+                <div class="absolute top-4 right-4 z-10">
+                    <span class="bg-yellow-500 text-white px-3 py-1 rounded-full text-sm font-bold">
+                        <i class="fas fa-star mr-1"></i> Featured
+                    </span>
+                </div>
+                {% endif %}
+
+                <!-- Package Image -->
+                <div class="h-56 relative overflow-hidden">
+                    <div class="absolute inset-0 bg-gradient-to-r from-{{ package.attraction.city|lower }}-500 to-{{ package.attraction.city|lower }}-700">
+                        <div class="absolute inset-0 flex items-center justify-center">
+                            <i class="fas fa-map-marked-alt text-white text-6xl opacity-50"></i>
+                        </div>
+                    </div>
+                    <div class="absolute bottom-0 left-0 right-0 p-4 bg-gradient-to-t from-black/70 to-transparent">
+                        <span class="text-white text-sm font-semibold">
+                            <i class="fas fa-map-marker-alt mr-1"></i>
+                            {{ package.attraction.get_city_display }}
+                        </span>
+                    </div>
+                </div>
+
+                <!-- Package Content -->
+                <div class="p-6">
+                    <!-- Category Tag -->
+                    <div class="mb-3">
+                        <span class="inline-block px-3 py-1 bg-gray-100 text-gray-800 text-xs rounded-full font-semibold">
+                            {{ package.attraction.get_category_display }}
+                        </span>
+                    </div>
+
+                    <!-- Title and Description -->
+                    <h3 class="text-xl font-bold mb-3 text-gray-800 line-clamp-1">
+                        {{ package.name }}
+                    </h3>
+                    <p class="text-gray-600 mb-4 line-clamp-2">
+                        {{ package.description }}
+                    </p>
+
+                    <!-- Attraction -->
+                    <div class="flex items-center text-gray-600 mb-4">
+                        <i class="fas fa-landmark mr-2 text-sm"></i>
+                        <span class="text-sm">{{ package.attraction.name|truncatechars:30 }}</span>
+                    </div>
+
+                    <!-- Details -->
+                    <div class="grid grid-cols-2 gap-4 mb-6">
+                        <div class="flex items-center">
+                            <i class="far fa-clock text-green-600 mr-2"></i>
+                            <div>
+                                <p class="text-xs text-gray-500">Duration</p>
+                                <p class="font-semibold">{{ package.duration }}</p>
+                            </div>
+                        </div>
+                        <div class="flex items-center">
+                            <i class="fas fa-users text-green-600 mr-2"></i>
+                            <div>
+                                <p class="text-xs text-gray-500">Group Size</p>
+                                <p class="font-semibold">2-12 people</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Price and Action -->
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <p class="text-xs text-gray-500">Starting from</p>
+                            <div class="flex items-baseline">
+                                <span class="text-2xl font-bold text-green-700">${{ package.price }}</span>
+                                <span class="text-gray-500 ml-1">/person</span>
+                            </div>
+                        </div>
+                        
+                        <div class="flex gap-2">
+                            <!-- View Details -->
+                            <a href="{% url 'attraction_detail' package.attraction.id %}" 
+                               class="border border-green-600 text-green-600 px-4 py-2 rounded-lg hover:bg-green-50 font-semibold text-sm transition duration-300">
+                                <i class="fas fa-info-circle mr-1"></i> Details
+                            </a>
+                            
+                            <!-- Book Now -->
+                            {% if user.is_authenticated %}
+                            <a href="{% url 'book_tour_package' package.id %}" 
+                               class="bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 font-semibold text-sm transition duration-300">
+                                <i class="fas fa-calendar-check mr-1"></i> Book Now
+                            </a>
+                            {% else %}
+                            <a href="{% url 'login' %}?next={% url 'book_tour_package' package.id %}" 
+                               class="bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 font-semibold text-sm transition duration-300">
+                                <i class="fas fa-calendar-check mr-1"></i> Book Now
+                            </a>
+                            {% endif %}
+                        </div>
+                    </div>
+
+                    <!-- Quick View Modal Trigger -->
+                    <div class="mt-4 pt-4 border-t border-gray-100">
+                        <button type="button" 
+                                onclick="showPackageDetails('{{ package.id }}')"
+                                class="text-green-600 hover:text-green-800 text-sm font-semibold w-full text-center">
+                            <i class="fas fa-eye mr-1"></i> Quick View
+                        </button>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+
+        <!-- Pagination (if needed) -->
+        {% if packages.has_other_pages %}
+        <div class="flex justify-center mt-12">
+            <nav class="flex items-center space-x-2">
+                {% if packages.has_previous %}
+                <a href="?page={{ packages.previous_page_number }}{% if selected_city %}&city={{ selected_city }}{% endif %}{% if request.GET.search %}&search={{ request.GET.search }}{% endif %}" 
+                   class="px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50">
+                    <i class="fas fa-chevron-left"></i>
+                </a>
+                {% endif %}
+
+                {% for num in packages.paginator.page_range %}
+                    {% if packages.number == num %}
+                    <span class="px-4 py-2 bg-green-600 text-white rounded-lg font-semibold">{{ num }}</span>
+                    {% else %}
+                    <a href="?page={{ num }}{% if selected_city %}&city={{ selected_city }}{% endif %}{% if request.GET.search %}&search={{ request.GET.search }}{% endif %}" 
+                       class="px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50">{{ num }}</a>
+                    {% endif %}
+                {% endfor %}
+
+                {% if packages.has_next %}
+                <a href="?page={{ packages.next_page_number }}{% if selected_city %}&city={{ selected_city }}{% endif %}{% if request.GET.search %}&search={{ request.GET.search }}{% endif %}" 
+                   class="px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50">
+                    <i class="fas fa-chevron-right"></i>
+                </a>
+                {% endif %}
+            </nav>
+        </div>
+        {% endif %}
+
+        {% else %}
+        <!-- No Packages Found -->
+        <div class="bg-white rounded-xl shadow-lg p-12 text-center">
+            <div class="text-6xl text-gray-300 mb-6">
+                <i class="fas fa-compass"></i>
+            </div>
+            <h2 class="text-2xl font-bold mb-4 text-gray-800">No Tour Packages Found</h2>
+            <p class="text-gray-600 mb-8 max-w-md mx-auto">
+                We couldn't find any tour packages matching your criteria. 
+                Try adjusting your filters or browse our featured attractions.
+            </p>
+            <div class="flex flex-col sm:flex-row gap-4 justify-center">
+                <a href="{% url 'tour_packages' %}" 
+                   class="bg-green-600 text-white px-8 py-3 rounded-lg font-bold hover:bg-green-700 transition duration-300">
+                    <i class="fas fa-redo mr-2"></i>Clear Filters
+                </a>
+                <a href="{% url 'tourism' %}" 
+                   class="border-2 border-green-600 text-green-600 px-8 py-3 rounded-lg font-bold hover:bg-green-50 transition duration-300">
+                    <i class="fas fa-map-marked-alt mr-2"></i>Explore Attractions
+                </a>
+                <a href="{% url 'chatbot' %}" 
+                   class="border-2 border-blue-600 text-blue-600 px-8 py-3 rounded-lg font-bold hover:bg-blue-50 transition duration-300">
+                    <i class="fas fa-robot mr-2"></i>Ask AI Assistant
+                </a>
+            </div>
+        </div>
+        {% endif %}
+
+        <!-- Cities Section -->
+        <div class="mt-16">
+            <h2 class="text-3xl font-bold text-center mb-12 text-gray-800">Explore by City</h2>
+            
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+                <!-- Dar es Salaam -->
+                <div class="relative overflow-hidden rounded-2xl group">
+                    <div class="h-64 bg-gradient-to-br from-green-500 to-green-700 relative">
+                        <div class="absolute inset-0 flex items-center justify-center">
+                            <span class="text-white text-4xl font-black">DAR</span>
+                        </div>
+                        <div class="absolute inset-0 bg-gradient-to-t from-black/70 to-transparent opacity-0 group-hover:opacity-100 transition duration-500"></div>
+                    </div>
+                    <div class="absolute bottom-0 left-0 right-0 p-6 text-white transform translate-y-full group-hover:translate-y-0 transition duration-500">
+                        <h3 class="text-2xl font-bold mb-2">Dar es Salaam</h3>
+                        <p class="mb-4">City tours, museums, and coastal adventures.</p>
+                        <a href="?city=DAR" class="bg-white text-green-800 px-6 py-2 rounded-lg font-semibold hover:bg-gray-100 inline-block">
+                            View Packages
+                        </a>
+                    </div>
+                    <div class="p-6 bg-white">
+                        <h3 class="text-2xl font-bold mb-2 text-green-800">Dar es Salaam</h3>
+                        <p class="text-gray-600 mb-4">City tours, museums, and coastal adventures.</p>
+                        <a href="?city=DAR" class="text-green-600 hover:text-green-800 font-semibold">
+                            View Packages <i class="fas fa-arrow-right ml-1"></i>
+                        </a>
+                    </div>
+                </div>
+
+                <!-- Arusha -->
+                <div class="relative overflow-hidden rounded-2xl group">
+                    <div class="h-64 bg-gradient-to-br from-blue-500 to-blue-700 relative">
+                        <div class="absolute inset-0 flex items-center justify-center">
+                            <span class="text-white text-4xl font-black">ARU</span>
+                        </div>
+                        <div class="absolute inset-0 bg-gradient-to-t from-black/70 to-transparent opacity-0 group-hover:opacity-100 transition duration-500"></div>
+                    </div>
+                    <div class="absolute bottom-0 left-0 right-0 p-6 text-white transform translate-y-full group-hover:translate-y-0 transition duration-500">
+                        <h3 class="text-2xl font-bold mb-2">Arusha</h3>
+                        <p class="mb-4">Safari adventures and mountain expeditions.</p>
+                        <a href="?city=ARU" class="bg-white text-blue-800 px-6 py-2 rounded-lg font-semibold hover:bg-gray-100 inline-block">
+                            View Packages
+                        </a>
+                    </div>
+                    <div class="p-6 bg-white">
+                        <h3 class="text-2xl font-bold mb-2 text-blue-800">Arusha</h3>
+                        <p class="text-gray-600 mb-4">Safari adventures and mountain expeditions.</p>
+                        <a href="?city=ARU" class="text-blue-600 hover:text-blue-800 font-semibold">
+                            View Packages <i class="fas fa-arrow-right ml-1"></i>
+                        </a>
+                    </div>
+                </div>
+
+                <!-- Zanzibar -->
+                <div class="relative overflow-hidden rounded-2xl group">
+                    <div class="h-64 bg-gradient-to-br from-yellow-500 to-yellow-700 relative">
+                        <div class="absolute inset-0 flex items-center justify-center">
+                            <span class="text-white text-4xl font-black">ZAN</span>
+                        </div>
+                        <div class="absolute inset-0 bg-gradient-to-t from-black/70 to-transparent opacity-0 group-hover:opacity-100 transition duration-500"></div>
+                    </div>
+                    <div class="absolute bottom-0 left-0 right-0 p-6 text-white transform translate-y-full group-hover:translate-y-0 transition duration-500">
+                        <h3 class="text-2xl font-bold mb-2">Zanzibar</h3>
+                        <p class="mb-4">Beach resorts and historic Stone Town tours.</p>
+                        <a href="?city=ZAN" class="bg-white text-yellow-800 px-6 py-2 rounded-lg font-semibold hover:bg-gray-100 inline-block">
+                            View Packages
+                        </a>
+                    </div>
+                    <div class="p-6 bg-white">
+                        <h3 class="text-2xl font-bold mb-2 text-yellow-800">Zanzibar</h3>
+                        <p class="text-gray-600 mb-4">Beach resorts and historic Stone Town tours.</p>
+                        <a href="?city=ZAN" class="text-yellow-600 hover:text-yellow-800 font-semibold">
+                            View Packages <i class="fas fa-arrow-right ml-1"></i>
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- CTA Section -->
+        <div class="mt-16 bg-gradient-to-r from-green-800 to-green-900 rounded-2xl p-8 md:p-12 text-center text-white">
+            <h2 class="text-3xl font-bold mb-6">Need Help Choosing?</h2>
+            <p class="text-xl mb-8 max-w-2xl mx-auto opacity-90">
+                Our AI Assistant can recommend the perfect tour package based on your interests, 
+                budget, and available time.
+            </p>
+            <div class="flex flex-col sm:flex-row gap-4 justify-center">
+                <a href="{% url 'chatbot' %}" 
+                   class="bg-white text-green-800 px-8 py-4 rounded-lg font-bold hover:bg-gray-100 transition duration-300">
+                    <i class="fas fa-robot mr-3"></i>Chat with AI Assistant
+                </a>
+                <a href="tel:+255123456789" 
+                   class="border-2 border-white text-white px-8 py-4 rounded-lg font-bold hover:bg-white/10 transition duration-300">
+                    <i class="fas fa-phone-alt mr-3"></i>Call Our Experts
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Quick View Modal -->
+<div id="packageModal" class="fixed inset-0 bg-black/50 z-50 hidden items-center justify-center p-4">
+    <div class="bg-white rounded-xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
+        <div class="sticky top-0 bg-white border-b p-4 flex justify-between items-center">
+            <h3 class="text-xl font-bold text-gray-800" id="modalTitle"></h3>
+            <button onclick="closePackageModal()" class="text-gray-500 hover:text-gray-700 text-2xl">
+                &times;
+            </button>
+        </div>
+        <div class="p-6" id="modalContent">
+            <!-- Content loaded via JavaScript -->
+        </div>
+        <div class="border-t p-4 flex justify-end gap-3">
+            <button onclick="closePackageModal()" 
+                    class="px-6 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 font-semibold">
+                Close
+            </button>
+            <a href="#" id="modalBookBtn" 
+               class="px-6 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 font-semibold">
+                Book Now
+            </a>
+        </div>
+    </div>
+</div>
+
+<style>
+.line-clamp-1 {
+    overflow: hidden;
+    display: -webkit-box;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 1;
+    line-clamp: 1;
+}
+.line-clamp-2 {
+    overflow: hidden;
+    display: -webkit-box;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 2;
+    line-clamp: 2;
+}
+</style>
+
+<script>
+// Quick View Modal Functions
+async function showPackageDetails(packageId) {
+    try {
+        const response = await fetch(`/api/package/${packageId}/quick-view/`);
+        const data = await response.json();
+        
+        if (data.success) {
+            document.getElementById('modalTitle').textContent = data.package.name;
+            
+            const content = `
+                <div class="space-y-4">
+                    <div class="flex items-center text-gray-600">
+                        <i class="fas fa-map-marker-alt mr-2"></i>
+                        <span>${data.package.attraction} - ${data.package.city}</span>
+                    </div>
+                    <div class="flex items-center text-gray-600">
+                        <i class="far fa-clock mr-2"></i>
+                        <span>Duration: ${data.package.duration}</span>
+                    </div>
+                    <div class="flex items-center text-gray-600">
+                        <i class="fas fa-tag mr-2"></i>
+                        <span class="text-2xl font-bold text-green-700">$${data.package.price}</span>
+                        <span class="text-gray-500 ml-1">per person</span>
+                    </div>
+                    
+                    <div class="mt-4">
+                        <h4 class="font-semibold mb-2">Description:</h4>
+                        <p class="text-gray-700">${data.package.description}</p>
+                    </div>
+                    
+                    <div class="mt-4">
+                        <h4 class="font-semibold mb-2">Includes:</h4>
+                        <ul class="list-disc pl-5 space-y-1 text-gray-700">
+                            ${data.package.includes.map(item => `<li>${item}</li>`).join('')}
+                        </ul>
+                    </div>
+                    
+                    ${data.package.excludes.length > 0 ? `
+                    <div class="mt-4">
+                        <h4 class="font-semibold mb-2">Excludes:</h4>
+                        <ul class="list-disc pl-5 space-y-1 text-gray-700">
+                            ${data.package.excludes.map(item => `<li>${item}</li>`).join('')}
+                        </ul>
+                    </div>
+                    ` : ''}
+                    
+                    <div class="mt-6 p-4 bg-gray-50 rounded-lg">
+                        <h4 class="font-semibold mb-2">Need to know:</h4>
+                        <ul class="space-y-2 text-sm text-gray-600">
+                            <li class="flex items-center">
+                                <i class="fas fa-check-circle text-green-500 mr-2"></i>
+                                Free cancellation up to 24 hours before tour
+                            </li>
+                            <li class="flex items-center">
+                                <i class="fas fa-check-circle text-green-500 mr-2"></i>
+                                Hotel pickup available
+                            </li>
+                            <li class="flex items-center">
+                                <i class="fas fa-check-circle text-green-500 mr-2"></i>
+                                English-speaking guide
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+            `;
+            
+            document.getElementById('modalContent').innerHTML = content;
+            
+            // Set book now link
+            const bookBtn = document.getElementById('modalBookBtn');
+             if (user.is_authenticated )
+            bookBtn.href = `/tourism/package/book/${packageId}/`;
+             else 
+            bookBtn.href = `/accounts/login/?next=/tourism/package/book/${packageId}/`;
+             endif 
+            
+            // Show modal
+            document.getElementById('packageModal').classList.remove('hidden');
+            document.body.classList.add('overflow-hidden');
+        }
+    } catch (error) {
+        console.error('Error loading package details:', error);
+        alert('Unable to load package details. Please try again.');
+    }
+}
+
+function closePackageModal() {
+    document.getElementById('packageModal').classList.add('hidden');
+    document.body.classList.remove('overflow-hidden');
+}
+
+// Close modal on escape key
+document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape') {
+        closePackageModal();
+    }
+});
+
+// Close modal on background click
+document.getElementById('packageModal').addEventListener('click', (e) => {
+    if (e.target.id === 'packageModal') {
+        closePackageModal();
+    }
+});
+
+// Initialize filters with URL parameters
+document.addEventListener('DOMContentLoaded', function() {
+    // Update price range display
+    const minPrice = document.querySelector('input[name="min_price"]');
+    const maxPrice = document.querySelector('input[name="max_price"]');
+    
+    if (minPrice.value && maxPrice.value) {
+        document.querySelector('input[name="min_price"]').placeholder = minPrice.value;
+        document.querySelector('input[name="max_price"]').placeholder = maxPrice.value;
+    }
+});
+</script>
+{% endblock %}

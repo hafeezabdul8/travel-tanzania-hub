@@ -1,0 +1,281 @@
+<!-- templates/partners/earnings.html -->
+{% extends 'base.html' %}
+
+{% block title %}Earnings Report - Partner Dashboard{% endblock %}
+
+{% block content %}
+<div class="animate-fade-in">
+  <!-- Header with Back Navigation -->
+  <div class="bg-gradient-to-r from-green-800 to-blue-800 text-white py-8">
+    <div class="container mx-auto px-4">
+      <div class="flex flex-col md:flex-row justify-between items-center">
+        <div class="mb-4 md:mb-0">
+          <div class="flex items-center mb-2">
+            <a href="{% url 'partner_dashboard' %}" 
+               class="mr-4 text-white hover:text-gray-200">
+              <i class="fas fa-arrow-left text-xl"></i>
+            </a>
+            <div>
+              <h1 class="text-3xl font-bold">Earnings Report</h1>
+              <p class="opacity-90">View your earnings, commissions, and payout history</p>
+            </div>
+          </div>
+        </div>
+        <div class="flex flex-col md:flex-row items-center space-y-2 md:space-y-0 md:space-x-4">
+          <div class="inline-block bg-white text-green-800 px-4 py-2 rounded-full font-bold">
+            {{ partner.commission_rate }}% Commission Rate
+          </div>
+          <a href="{% url 'partner_dashboard' %}" 
+             class="bg-gray-700 hover:bg-gray-600 text-white px-4 py-2 rounded-lg font-semibold">
+            <i class="fas fa-tachometer-alt mr-2"></i>Back to Dashboard
+          </a>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="container mx-auto px-4 py-8">
+    <!-- Earnings Summary -->
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+      <div class="bg-white rounded-xl shadow-lg p-6 hover-lift">
+        <div class="flex items-center mb-4">
+          <div class="w-12 h-12 bg-green-100 rounded-full flex items-center justify-center mr-4">
+            <i class="fas fa-money-bill-wave text-green-600 text-xl"></i>
+          </div>
+          <div>
+            <div class="text-2xl font-bold text-green-700">${{ partner.total_earnings|floatformat:2 }}</div>
+            <div class="text-gray-600 text-sm">Total Earnings</div>
+          </div>
+        </div>
+        <div class="text-sm text-gray-500">Lifetime earnings from platform</div>
+      </div>
+
+      <div class="bg-white rounded-xl shadow-lg p-6 hover-lift">
+        <div class="flex items-center mb-4">
+          <div class="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center mr-4">
+            <i class="fas fa-clock text-blue-600 text-xl"></i>
+          </div>
+          <div>
+            <div class="text-2xl font-bold text-blue-700">${{ partner.pending_payout|floatformat:2 }}</div>
+            <div class="text-gray-600 text-sm">Pending Payout</div>
+          </div>
+        </div>
+        <div class="text-sm text-gray-500">Available for next payment cycle</div>
+      </div>
+
+      <div class="bg-white rounded-xl shadow-lg p-6 hover-lift">
+        <div class="flex items-center mb-4">
+          <div class="w-12 h-12 bg-purple-100 rounded-full flex items-center justify-center mr-4">
+            <i class="fas fa-calendar-alt text-purple-600 text-xl"></i>
+          </div>
+          <div>
+            <div class="text-2xl font-bold text-purple-700">${{ partner.total_paid|default:"0.00"|floatformat:2 }}</div>
+            <div class="text-gray-600 text-sm">Total Paid</div>
+          </div>
+        </div>
+        <div class="text-sm text-gray-500">Already received payouts</div>
+      </div>
+    </div>
+
+    <!-- Monthly Earnings Chart -->
+    <div class="bg-white rounded-xl shadow-lg p-6 mb-8">
+      <div class="flex justify-between items-center mb-6">
+        <h2 class="text-xl font-bold text-gray-800">Monthly Earnings</h2>
+        <div class="flex gap-4">
+          <select id="timePeriod" class="p-2 border border-gray-300 rounded-lg">
+            <option value="6">Last 6 Months</option>
+            <option value="12">Last 12 Months</option>
+            <option value="24">Last 2 Years</option>
+          </select>
+        </div>
+      </div>
+      
+      <div class="h-64 flex items-end justify-between gap-2">
+        {% for month in monthly_earnings %}
+        <div class="flex-1 flex flex-col items-center">
+          {% if max_earning > 0 %}
+            <!-- Fixed: Using widthratio for percentage calculation -->
+            {% widthratio month.earnings max_earning 100 as percentage %}
+            <div class="w-full bg-blue-100 rounded-t-lg relative" 
+                 style="height: percentage  ">
+              <div class="absolute -top-8 left-1/2 transform -translate-x-1/2 text-xs font-semibold text-gray-700">
+                ${{ month.earnings|floatformat:0 }}
+              </div>
+            </div>
+          {% else %}
+            <div class="w-full bg-blue-100 rounded-t-lg relative" 
+                 style="height: 0%">
+              <div class="absolute -top-8 left-1/2 transform -translate-x-1/2 text-xs font-semibold text-gray-700">
+                ${{ month.earnings|floatformat:0 }}
+              </div>
+            </div>
+          {% endif %}
+          <div class="text-xs text-gray-600 mt-2">{{ month.month }}</div>
+        </div>
+        {% empty %}
+        <div class="flex-1 flex flex-col items-center justify-center h-full">
+          <i class="fas fa-chart-line text-gray-300 text-4xl mb-4"></i>
+          <p class="text-gray-500">No earnings data yet</p>
+        </div>
+        {% endfor %}
+      </div>
+    </div>
+
+    <!-- Recent Payouts -->
+    <div class="bg-white rounded-xl shadow-lg p-6">
+      <div class="flex justify-between items-center mb-6">
+        <h2 class="text-xl font-bold text-gray-800">Recent Payouts</h2>
+        <a href="#" class="text-green-600 hover:text-green-800 text-sm font-semibold">
+          View All Payouts
+        </a>
+      </div>
+      
+      <div class="overflow-x-auto">
+        <table class="w-full">
+          <thead class="bg-gray-100">
+            <tr>
+              <th class="p-4 text-left font-semibold">Payout Date</th>
+              <th class="p-4 text-left font-semibold">Reference</th>
+              <th class="p-4 text-left font-semibold">Period</th>
+              <th class="p-4 text-left font-semibold">Amount</th>
+              <th class="p-4 text-left font-semibold">Commission</th>
+              <th class="p-4 text-left font-semibold">Net Amount</th>
+              <th class="p-4 text-left font-semibold">Status</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for payout in recent_transactions %}
+            <tr class="border-b hover:bg-gray-50">
+              <td class="p-4">{{ payout.created_at|date:"M d, Y" }}</td>
+              <td class="p-4 font-mono text-sm">{{ payout.reference_number|default:"N/A" }}</td>
+              <td class="p-4">{{ payout.period_start|date:"M d" }} - {{ payout.period_end|date:"M d, Y" }}</td>
+              <td class="p-4 font-bold">${{ payout.amount|floatformat:2 }}</td>
+              <td class="p-4 text-red-600">${{ payout.commission_deducted|floatformat:2 }}</td>
+              <td class="p-4 font-bold text-green-700">${{ payout.net_amount|floatformat:2 }}</td>
+              <td class="p-4">
+                <span class="px-3 py-1 rounded-full text-sm font-semibold 
+                  {% if payout.status == 'completed' %}bg-green-100 text-green-800
+                  {% elif payout.status == 'pending' %}bg-yellow-100 text-yellow-800
+                  {% else %}bg-red-100 text-red-800{% endif %}">
+                  {{ payout.get_status_display }}
+                </span>
+              </td>
+            </tr>
+            {% empty %}
+            <tr>
+              <td colspan="7" class="p-8 text-center text-gray-500">
+                <i class="fas fa-money-bill-wave text-gray-300 text-4xl mb-4"></i>
+                <p>No payouts yet</p>
+                <p class="text-sm text-gray-400 mt-2">Payouts are processed every 2 weeks</p>
+              </td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- Commission Breakdown -->
+    <div class="bg-white rounded-xl shadow-lg p-6 mt-8">
+      <h2 class="text-xl font-bold mb-6 text-gray-800">Commission Breakdown</h2>
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div>
+          <h3 class="font-semibold mb-4">Current Commission Structure</h3>
+          <div class="space-y-4">
+            <div class="flex justify-between items-center p-3 bg-gray-50 rounded-lg">
+              <span>Hotel Bookings</span>
+              <span class="font-bold text-green-700">{{ partner.commission_rate }}%</span>
+            </div>
+            <div class="flex justify-between items-center p-3 bg-gray-50 rounded-lg">
+              <span>Tour Packages</span>
+              <span class="font-bold text-green-700">{{ partner.commission_rate }}%</span>
+            </div>
+            <div class="flex justify-between items-center p-3 bg-gray-50 rounded-lg">
+              <span>You Receive</span>
+              <!-- Fixed calculation without 'sub' filter -->
+              {% with partner.commission_rate as rate %}
+                {% if rate == 15 or rate == "15.00" or rate == 15.0 %}
+                  <span class="font-bold text-blue-700">85%</span>
+                {% elif rate == 20 or rate == "20.00" or rate == 20.0 %}
+                  <span class="font-bold text-blue-700">80%</span>
+                {% elif rate == 10 or rate == "10.00" or rate == 10.0 %}
+                  <span class="font-bold text-blue-700">90%</span>
+                {% elif rate == 5 or rate == "5.00" or rate == 5.0 %}
+                  <span class="font-bold text-blue-700">95%</span>
+                {% else %}
+                  <!-- Using Django's built-in filters for subtraction -->
+                  {% with "100" as base %}
+                    {% with base|add:"-"|add:rate as partner_percentage %}
+                      <span class="font-bold text-blue-700">{{ partner_percentage|floatformat:"0" }}%</span>
+                    {% endwith %}
+                  {% endwith %}
+                {% endif %}
+              {% endwith %}
+            </div>
+          </div>
+        </div>
+        
+        <div>
+          <h3 class="font-semibold mb-4">Next Payout Information</h3>
+          <div class="bg-green-50 p-4 rounded-lg">
+            <div class="flex items-center mb-3">
+              <i class="fas fa-calendar-check text-green-600 mr-3"></i>
+              <div>
+                <div class="font-bold text-green-800">Next Payout Date</div>
+                <div class="text-green-700">15th of every month</div>
+              </div>
+            </div>
+            <div class="flex items-center">
+              <i class="fas fa-money-check-alt text-green-600 mr-3"></i>
+              <div>
+                <div class="font-bold text-green-800">Minimum Payout</div>
+                <div class="text-green-700">$50.00</div>
+              </div>
+            </div>
+          </div>
+          
+          <div class="mt-6">
+            <button onclick="downloadReport()" class="inline-block bg-green-600 text-white px-6 py-3 rounded-lg hover:bg-green-700 font-semibold">
+              <i class="fas fa-download mr-2"></i>Download Earnings Report
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Bottom Navigation -->
+    <div class="flex justify-between items-center mt-8 pt-8 border-t border-gray-200">
+      <div>
+        <a href="{% url 'partner_dashboard' %}" 
+           class="text-gray-600 hover:text-gray-800 font-semibold">
+          <i class="fas fa-arrow-left mr-2"></i>Back to Dashboard
+        </a>
+      </div>
+      <div class="flex space-x-4">
+        <a href="{% url 'partner_listings' %}" 
+           class="bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-lg font-semibold">
+          <i class="fas fa-hotel mr-2"></i>Manage Listings
+        </a>
+        <a href="{% url 'partner_bookings' %}" 
+           class="bg-green-600 hover:bg-green-700 text-white px-6 py-3 rounded-lg font-semibold">
+          <i class="fas fa-calendar-check mr-2"></i>View Bookings
+        </a>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+// Update chart when time period changes
+document.getElementById('timePeriod').addEventListener('change', function() {
+  const period = this.value;
+  // In a real app, this would fetch new data from the server
+  console.log('Loading data for last', period, 'months');
+  alert('This feature would load data for the last ' + period + ' months. For now, showing last 6 months.');
+});
+
+function downloadReport() {
+  alert('Earnings report download feature coming soon!');
+}
+</script>
+{% endblock %}

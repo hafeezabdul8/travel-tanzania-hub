@@ -1,0 +1,177 @@
+{% extends 'base.html' %}
+
+{% block title %}Book {{ package.name }} - AFCON 2027{% endblock %}
+
+{% block content %}
+<div class="container mx-auto px-4 py-8 animate-fade-in">
+    <div class="max-w-4xl mx-auto">
+        <!-- Breadcrumb -->
+        <nav class="mb-6">
+            <ol class="flex items-center space-x-2 text-gray-600">
+                <li><a href="{% url 'tourism' %}" class="hover:text-green-600">Tourism</a></li>
+                <li><i class="fas fa-chevron-right"></i></li>
+                <li><a href="{% url 'tour_packages' %}" class="hover:text-green-600">Packages</a></li>
+                <li><i class="fas fa-chevron-right"></i></li>
+                <li class="text-gray-800 font-semibold">Book Package</li>
+            </ol>
+        </nav>
+        
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+            <!-- Package Info -->
+            <div class="lg:col-span-2">
+                <div class="bg-white rounded-xl shadow-lg p-6 mb-6">
+                    <h1 class="text-3xl font-bold mb-4 text-gray-800">Book: {{ package.name }}</h1>
+                    
+                    <div class="mb-6">
+                        <h2 class="text-xl font-semibold mb-2">Package Details</h2>
+                        <div class="space-y-2 text-gray-600">
+                            <div class="flex items-center">
+                                <i class="fas fa-map-marker-alt w-6"></i>
+                                <span class="ml-2">{{ package.attraction.name }}, {{ package.attraction.get_city_display }}</span>
+                            </div>
+                            <div class="flex items-center">
+                                <i class="far fa-clock w-6"></i>
+                                <span class="ml-2">{{ package.duration }}</span>
+                            </div>
+                            <div class="flex items-center">
+                                <i class="fas fa-tag w-6"></i>
+                                <span class="ml-2">${{ package.price }} per person</span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="mb-6">
+                        <h2 class="text-xl font-semibold mb-2">What's Included</h2>
+                        <ul class="list-disc pl-5 space-y-1 text-gray-600">
+                            {% for item in package.get_includes_list %}
+                            <li>{{ item }}</li>
+                            {% endfor %}
+                        </ul>
+                    </div>
+                    
+                    {% if package.get_excludes_list %}
+                    <div class="mb-6">
+                        <h2 class="text-xl font-semibold mb-2">Not Included</h2>
+                        <ul class="list-disc pl-5 space-y-1 text-gray-600">
+                            {% for item in package.get_excludes_list %}
+                            <li>{{ item }}</li>
+                            {% endfor %}
+                        </ul>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+            
+            <!-- Booking Form -->
+            <div class="lg:col-span-1">
+                <div class="bg-white rounded-xl shadow-lg p-6 sticky top-24">
+                    <h2 class="text-2xl font-bold mb-6 text-gray-800">Booking Details</h2>
+                    
+                    <form method="POST" action="{% url 'book_tour_package' package.id %}">
+                        {% csrf_token %}
+                        
+                        <!-- Booking Date -->
+                        <div class="mb-4">
+                            <label class="block text-gray-700 mb-2 font-semibold" for="booking_date">
+                                <i class="fas fa-calendar-alt mr-2"></i>Booking Date
+                            </label>
+                            <input type="date" 
+                                   id="booking_date" 
+                                   name="booking_date" 
+                                   value="{{ default_date }}"
+                                   min="{{ default_date }}"
+                                   max="{{ max_date }}"
+                                   class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500"
+                                   required>
+                            <p class="text-sm text-gray-500 mt-1">Select your preferred tour date</p>
+                        </div>
+                        
+                        <!-- Number of People -->
+                        <div class="mb-4">
+                            <label class="block text-gray-700 mb-2 font-semibold" for="number_of_people">
+                                <i class="fas fa-users mr-2"></i>Number of People
+                            </label>
+                            <select id="number_of_people" 
+                                    name="number_of_people" 
+                                    class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500"
+                                    onchange="updateTotalPrice()">
+                                {% for i in "1234567890"|make_list %}
+                                <option value="{{ forloop.counter }}">{{ forloop.counter }} person{{ forloop.counter|pluralize }}</option>
+                                {% endfor %}
+                                <option value="12">12+ people (contact for group rates)</option>
+                            </select>
+                        </div>
+                        
+                        <!-- Special Requests -->
+                        <div class="mb-6">
+                            <label class="block text-gray-700 mb-2 font-semibold" for="special_requests">
+                                <i class="fas fa-comment-alt mr-2"></i>Special Requests
+                            </label>
+                            <textarea id="special_requests" 
+                                      name="special_requests" 
+                                      rows="3"
+                                      placeholder="Any dietary requirements, accessibility needs, or special requests..."
+                                      class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500"></textarea>
+                        </div>
+                        
+                        <!-- Price Summary -->
+                        <div class="mb-6 p-4 bg-gray-50 rounded-lg">
+                            <div class="flex justify-between mb-2">
+                                <span class="text-gray-600">Price per person:</span>
+                                <span class="font-semibold">${{ package.price }}</span>
+                            </div>
+                            <div class="flex justify-between mb-2">
+                                <span class="text-gray-600">Number of people:</span>
+                                <span id="peopleCount" class="font-semibold">1</span>
+                            </div>
+                            <div class="border-t pt-2 mt-2">
+                                <div class="flex justify-between text-lg font-bold">
+                                    <span>Total Price:</span>
+                                    <span id="totalPrice">${{ package.price }}</span>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Submit Button -->
+                        <button type="submit" 
+                                class="w-full bg-gradient-to-r from-green-600 to-blue-600 text-white py-3 rounded-lg font-bold hover:opacity-90 transition duration-300">
+                            <i class="fas fa-check-circle mr-2"></i>Confirm Booking
+                        </button>
+                        
+                        <p class="text-sm text-gray-500 text-center mt-4">
+                            <i class="fas fa-lock mr-1"></i>Secure booking · Free cancellation within 24 hours
+                        </p>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+function updateTotalPrice() {
+    const peopleSelect = document.getElementById('number_of_people');
+    const peopleCount = document.getElementById('peopleCount');
+    const totalPrice = document.getElementById('totalPrice');
+    
+    const selectedPeople = parseInt(peopleSelect.value);
+    const pricePerPerson = package.price ;
+    
+    if (selectedPeople <= 11) {
+        const total = pricePerPerson * selectedPeople;
+        peopleCount.textContent = selectedPeople;
+        totalPrice.textContent = '$' + total.toFixed(2);
+    } else {
+        peopleCount.textContent = '12+';
+        totalPrice.textContent = 'Contact for quote';
+    }
+}
+
+// Initialize date picker
+document.addEventListener('DOMContentLoaded', function() {
+    const today = new Date().toISOString().split('T')[0];
+    const dateInput = document.getElementById('booking_date');
+    dateInput.min = today;
+});
+</script>
+{% endblock %}

@@ -1,0 +1,63 @@
+# Core Django
+Django>=4.2.0
+django-cors-headers>=4.0.0
+
+# Database
+psycopg2-binary>=2.9.0  # For PostgreSQL, or use mysqlclient for MySQL
+
+# AI/ML
+google-genai>=0.3.0
+python-dotenv>=1.0.0
+
+# Utilities
+Pillow>=10.0.0  # For image handling
+requests>=2.31.0
+
+```txt
+# Django
+Django==4.2.0
+django-cors-headers==4.0.0
+django-environ==0.10.0
+django-debug-toolbar==4.0.0
+
+# Database
+psycopg2-binary==2.9.7
+django-dbbackup==3.3.0
+
+# AI/ML
+google-genai==0.3.0
+openai==1.3.0
+requests==2.31.0
+pandas==2.1.0
+numpy==1.24.0
+scikit-learn==1.3.0
+
+# Data Processing
+python-dotenv==1.0.0
+python-dateutil==2.8.2
+pytz==2023.3
+
+# API & Web
+djangorestframework==3.14.0
+drf-yasg==1.21.5
+celery==5.3.0
+redis==5.0.0
+
+# Frontend
+django-bootstrap5==23.2
+django-crispy-forms==2.0
+
+# Development
+black==23.9.0
+flake8==6.1.0
+pytest-django==4.5.2
+pytest-cov==4.1.0
+
+# Production
+gunicorn==21.2.0
+whitenoise==6.5.0
+dj-database-url==2.0.0
+
+# CSV Processing
+django-import-export==3.3.0
+csvkit==1.1.1

@@ -1,0 +1,203 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}My Tour Bookings - AFCON 2027{% endblock %}
+
+{% block content %}
+<div class="container mx-auto px-4 py-8 animate-fade-in">
+    <div class="max-w-6xl mx-auto">
+        <!-- Header -->
+        <div class="mb-8">
+            <h1 class="text-3xl font-bold mb-4 text-gray-800">My Tour Bookings</h1>
+            <p class="text-gray-600">Manage all your tour package bookings in one place</p>
+        </div>
+        
+        {% if bookings %}
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+            <!-- Bookings List -->
+            <div class="lg:col-span-2">
+                <div class="bg-white rounded-xl shadow-lg p-6">
+                    <h2 class="text-2xl font-bold mb-6 text-gray-800">Upcoming Tours</h2>
+                    
+                    <div class="space-y-6">
+                        {% for booking in bookings %}
+                        <div class="border border-gray-200 rounded-lg p-6 hover:border-green-300 transition duration-300">
+                            <div class="flex flex-col md:flex-row md:items-center justify-between mb-4">
+                                <div>
+                                    <h3 class="text-xl font-bold mb-2">{{ booking.tour_package.name }}</h3>
+                                    <div class="flex items-center text-gray-600 mb-2">
+                                        <i class="fas fa-map-marker-alt mr-2"></i>
+                                        <span>{{ booking.tour_package.attraction.name }}</span>
+                                    </div>
+                                </div>
+                                <div class="mt-4 md:mt-0">
+                                    <span class="px-3 py-1 rounded-full text-sm font-semibold 
+                                        {% if booking.status == 'confirmed' %}bg-green-100 text-green-800
+                                        {% elif booking.status == 'pending' %}bg-yellow-100 text-yellow-800
+                                        {% elif booking.status == 'cancelled' %}bg-red-100 text-red-800
+                                        {% elif booking.status == 'completed' %}bg-blue-100 text-blue-800
+                                        {% else %}bg-gray-100 text-gray-800{% endif %}">
+                                        {{ booking.get_status_display }}
+                                    </span>
+                                </div>
+                            </div>
+                            
+                            <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
+                                <div class="flex items-center">
+                                    <i class="far fa-calendar-alt text-green-600 mr-3"></i>
+                                    <div>
+                                        <p class="text-sm text-gray-600">Tour Date</p>
+                                        <p class="font-semibold">{{ booking.booking_date|date:"M d, Y" }}</p>
+                                    </div>
+                                </div>
+                                <div class="flex items-center">
+                                    <i class="fas fa-users text-green-600 mr-3"></i>
+                                    <div>
+                                        <p class="text-sm text-gray-600">People</p>
+                                        <p class="font-semibold">{{ booking.number_of_people }}</p>
+                                    </div>
+                                </div>
+                                <div class="flex items-center">
+                                    <i class="fas fa-tag text-green-600 mr-3"></i>
+                                    <div>
+                                        <p class="text-sm text-gray-600">Total</p>
+                                        <p class="font-semibold">${{ booking.total_price }}</p>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            {% if booking.special_requests %}
+                            <div class="mb-4">
+                                <p class="text-sm text-gray-600 mb-1">Special Requests:</p>
+                                <p class="text-gray-800">{{ booking.special_requests }}</p>
+                            </div>
+                            {% endif %}
+                            
+                            <div class="flex flex-wrap gap-3">
+                                <a href="{% url 'tour_booking_confirmation' booking.id %}" 
+                                   class="bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 font-semibold text-sm">
+                                    <i class="fas fa-eye mr-1"></i> View Details
+                                </a>
+                                {% if booking.status == 'pending' %}
+                                <form method="POST" action="{% url 'cancel_tour_booking' booking.id %}" class="inline">
+                                    {% csrf_token %}
+                                    <button type="submit" 
+                                            onclick="return confirm('Are you sure you want to cancel this booking?')"
+                                            class="bg-red-600 text-white px-4 py-2 rounded-lg hover:bg-red-700 font-semibold text-sm">
+                                        <i class="fas fa-times mr-1"></i> Cancel
+                                    </button>
+                                </form>
+                                {% endif %}
+                                <a href="{% url 'attraction_detail' booking.tour_package.attraction.id %}" 
+                                   class="border border-green-600 text-green-600 px-4 py-2 rounded-lg hover:bg-green-50 font-semibold text-sm">
+                                    <i class="fas fa-info-circle mr-1"></i> Attraction Info
+                                </a>
+                            </div>
+                            
+                            <div class="text-xs text-gray-500 mt-4">
+                                Booked on {{ booking.created_at|date:"M d, Y H:i" }}
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Sidebar -->
+            <div class="lg:col-span-1">
+                <div class="space-y-6">
+                    <!-- Stats Card -->
+                    <div class="bg-gradient-to-r from-green-600 to-blue-600 text-white rounded-xl shadow-lg p-6">
+                        <h3 class="text-xl font-bold mb-4">Booking Summary</h3>
+                        <div class="space-y-4">
+                            <div class="flex justify-between items-center">
+                                <span>Total Bookings</span>
+                                <span class="text-2xl font-bold">{{ bookings.count }}</span>
+                            </div>
+                            <div class="flex justify-between items-center">
+                                <span>Confirmed</span>
+                                <span class="text-lg font-semibold">
+                                    {{ confirmed_count }}
+                                </span>
+                            </div>
+                            <div class="flex justify-between items-center">
+                                <span>Pending</span>
+                                <span class="text-lg font-semibold">
+                                    {{ pending_count }}
+                                </span>
+                            </div>
+                            <div class="flex justify-between items-center">
+                                <span>Cancelled</span>
+                                <span class="text-lg font-semibold">
+                                    {{ cancelled_count }}
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Quick Actions -->
+                    <div class="bg-white rounded-xl shadow-lg p-6">
+                        <h3 class="text-xl font-bold mb-4 text-gray-800">Quick Actions</h3>
+                        <div class="space-y-3">
+                            <a href="{% url 'tour_packages' %}" 
+                               class="flex items-center p-3 bg-green-50 text-green-700 rounded-lg hover:bg-green-100 transition duration-300">
+                                <i class="fas fa-plus mr-3"></i>
+                                <span class="font-semibold">Book New Tour</span>
+                            </a>
+                            <a href="{% url 'chatbot' %}" 
+                               class="flex items-center p-3 bg-blue-50 text-blue-700 rounded-lg hover:bg-blue-100 transition duration-300">
+                                <i class="fas fa-robot mr-3"></i>
+                                <span class="font-semibold">Ask AI Assistant</span>
+                            </a>
+                            <a href="{% url 'tourism' %}" 
+                               class="flex items-center p-3 bg-yellow-50 text-yellow-700 rounded-lg hover:bg-yellow-100 transition duration-300">
+                                <i class="fas fa-compass mr-3"></i>
+                                <span class="font-semibold">Explore Attractions</span>
+                            </a>
+                        </div>
+                    </div>
+                    
+                    <!-- Help Card -->
+                    <div class="bg-gray-50 rounded-xl shadow-lg p-6">
+                        <h3 class="text-lg font-bold mb-3 text-gray-800">Need Help?</h3>
+                        <p class="text-gray-600 mb-4">Our support team is here to assist you</p>
+                        <div class="space-y-3">
+                            <a href="tel:+255123456789" class="flex items-center text-gray-700 hover:text-green-600">
+                                <i class="fas fa-phone-alt mr-3"></i>
+                                <span>+255 123 456 789</span>
+                            </a>
+                            <a href="mailto:tours@afcon2027.tz" class="flex items-center text-gray-700 hover:text-green-600">
+                                <i class="fas fa-envelope mr-3"></i>
+                                <span>tours@afcon2027.tz</span>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        {% else %}
+        <!-- No bookings yet -->
+        <div class="bg-white rounded-xl shadow-lg p-12 text-center">
+            <div class="text-6xl text-gray-300 mb-6">
+                <i class="fas fa-compass"></i>
+            </div>
+            <h2 class="text-2xl font-bold mb-4 text-gray-800">No Tour Bookings Yet</h2>
+            <p class="text-gray-600 mb-8 max-w-md mx-auto">
+                You haven't booked any tour packages yet. Explore our amazing tour packages and start your Tanzanian adventure!
+            </p>
+            <div class="flex flex-col sm:flex-row gap-4 justify-center">
+                <a href="{% url 'tour_packages' %}" 
+                   class="bg-green-600 text-white px-8 py-3 rounded-lg font-bold hover:bg-green-700 transition duration-300">
+                    <i class="fas fa-search mr-2"></i>Browse Tour Packages
+                </a>
+                <a href="{% url 'tourism' %}" 
+                   class="border-2 border-green-600 text-green-600 px-8 py-3 rounded-lg font-bold hover:bg-green-50 transition duration-300">
+                    <i class="fas fa-map-marked-alt mr-2"></i>Explore Attractions
+                </a>
+            </div>
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

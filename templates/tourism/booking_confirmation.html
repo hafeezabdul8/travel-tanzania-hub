@@ -1,0 +1,747 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Booking Confirmed - AFCON 2027{% endblock %}
+
+{% block extra_css %}
+<style>
+    .confetti {
+        position: fixed;
+        width: 15px;
+        height: 15px;
+        background-color: var(--color);
+        top: -10%;
+        border-radius: 50%;
+        animation: fall linear forwards;
+        z-index: 9999;
+    }
+    
+    @keyframes fall {
+        to {
+            transform: translateY(100vh) rotate(360deg);
+            opacity: 0;
+        }
+    }
+    
+    .confetti-container {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        pointer-events: none;
+        z-index: 9998;
+    }
+    
+    .receipt-card {
+        background: linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%);
+        border-radius: 20px;
+        border: 1px solid rgba(0, 168, 89, 0.1);
+        box-shadow: 0 20px 60px rgba(0, 168, 89, 0.15);
+        overflow: hidden;
+    }
+    
+    .receipt-header {
+        background: linear-gradient(135deg, #00A859 0%, #1EB2E6 100%);
+        color: white;
+        padding: 30px;
+        text-align: center;
+        position: relative;
+        overflow: hidden;
+    }
+    
+    .receipt-header::before {
+        content: '';
+        position: absolute;
+        top: -50%;
+        left: -50%;
+        width: 200%;
+        height: 200%;
+        background: radial-gradient(circle, rgba(255,255,255,0.1) 1px, transparent 1px);
+        background-size: 20px 20px;
+        opacity: 0.3;
+    }
+    
+    .booking-badge {
+        display: inline-block;
+        padding: 8px 20px;
+        background: rgba(255, 255, 255, 0.2);
+        border-radius: 50px;
+        font-weight: 600;
+        letter-spacing: 1px;
+        margin-bottom: 15px;
+        backdrop-filter: blur(10px);
+    }
+    
+    .qr-code {
+        width: 150px;
+        height: 150px;
+        margin: 20px auto;
+        background: white;
+        padding: 10px;
+        border-radius: 10px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+    
+    .detail-item {
+        display: flex;
+        justify-content: space-between;
+        padding: 15px 0;
+        border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+    }
+    
+    .detail-item:last-child {
+        border-bottom: none;
+    }
+    
+    .timeline {
+        position: relative;
+        padding-left: 30px;
+        margin: 30px 0;
+    }
+    
+    .timeline::before {
+        content: '';
+        position: absolute;
+        left: 0;
+        top: 0;
+        bottom: 0;
+        width: 3px;
+        background: linear-gradient(to bottom, #00A859, #1EB2E6);
+        border-radius: 3px;
+    }
+    
+    .timeline-item {
+        position: relative;
+        margin-bottom: 25px;
+        padding-left: 20px;
+    }
+    
+    .timeline-item::before {
+        content: '';
+        position: absolute;
+        left: -33px;
+        top: 5px;
+        width: 15px;
+        height: 15px;
+        background: #00A859;
+        border-radius: 50%;
+        border: 3px solid white;
+        box-shadow: 0 0 0 3px rgba(0, 168, 89, 0.2);
+    }
+    
+    .download-btn {
+        background: linear-gradient(135deg, #00A859 0%, #1EB2E6 100%);
+        color: white;
+        border: none;
+        padding: 12px 30px;
+        border-radius: 10px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.3s;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 10px;
+    }
+    
+    .download-btn:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 10px 20px rgba(0, 168, 89, 0.3);
+    }
+    
+    .status-badge {
+        display: inline-flex;
+        align-items: center;
+        padding: 8px 20px;
+        border-radius: 50px;
+        font-weight: 600;
+        font-size: 0.9rem;
+    }
+    
+    .status-pending {
+        background: #FFF3CD;
+        color: #856404;
+        border: 1px solid #FFEAA7;
+    }
+    
+    .status-confirmed {
+        background: #D1ECF1;
+        color: #0C5460;
+        border: 1px solid #BEE5EB;
+    }
+    
+    .print-only {
+        display: none;
+    }
+    
+    @media print {
+        .no-print {
+            display: none !important;
+        }
+        
+        .print-only {
+            display: block;
+        }
+        
+        .receipt-card {
+            box-shadow: none;
+            border: 2px solid #000;
+        }
+        
+        body {
+            background: white !important;
+            color: black !important;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="animate-fade-in">
+    <!-- Confetti Container -->
+    <div id="confettiContainer" class="confetti-container"></div>
+    
+    <!-- Success Celebration -->
+    <div class="bg-gradient-to-r from-green-50 via-blue-50 to-green-50 py-12">
+        <div class="container mx-auto px-4">
+            <div class="max-w-4xl mx-auto">
+                <!-- Header -->
+                <div class="text-center mb-12">
+                    <div class="w-32 h-32 bg-gradient-to-r from-green-500 to-blue-500 rounded-full flex items-center justify-center mx-auto mb-6">
+                        <i class="fas fa-check text-white text-5xl"></i>
+                    </div>
+                    <h1 class="text-4xl md:text-5xl font-bold mb-4 text-gray-800">
+                        Booking Confirmed!
+                    </h1>
+                    <p class="text-xl text-gray-600">
+                        Your AFCON 2027 tour adventure is officially booked
+                    </p>
+                </div>
+                
+                <!-- Receipt Card -->
+                <div class="receipt-card mb-12">
+                    <!-- Receipt Header -->
+                    <div class="receipt-header">
+                        <div class="booking-badge">
+                            <i class="fas fa-ticket-alt mr-2"></i>
+                            TOUR BOOKING RECEIPT
+                        </div>
+                        <h2 class="text-3xl font-bold mb-2">{{ booking.tour_package.name }}</h2>
+                        <p class="opacity-90">AFCON 2027 Tanzania Tourism</p>
+                        
+                        <!-- Booking ID -->
+                        <div class="mt-6">
+                            <div class="text-sm opacity-80">Booking Reference</div>
+                            <div class="text-2xl font-mono font-bold tracking-wider">#{{ booking.id|stringformat:"06d" }}</div>
+                        </div>
+                        
+                        <!-- Status Badge -->
+                        <div class="mt-6">
+                            <span class="status-badge status-{{ booking.status }}">
+                                <i class="fas fa-circle mr-2" style="font-size: 8px;"></i>
+                                {{ booking.get_status_display|upper }}
+                            </span>
+                        </div>
+                    </div>
+                    
+                    <!-- Receipt Body -->
+                    <div class="p-8">
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                            <!-- Left Column: Booking Details -->
+                            <div>
+                                <h3 class="text-2xl font-bold mb-6 text-gray-800 border-b pb-3">
+                                    <i class="fas fa-info-circle mr-2 text-green-600"></i>
+                                    Booking Details
+                                </h3>
+                                
+                                <div class="space-y-4">
+                                    <div class="detail-item">
+                                        <span class="text-gray-600">
+                                            <i class="fas fa-calendar-day mr-2 text-green-600"></i>
+                                            Tour Date
+                                        </span>
+                                        <span class="font-semibold text-gray-800">
+                                            {{ booking.booking_date|date:"F d, Y" }}
+                                        </span>
+                                    </div>
+                                    
+                                    <div class="detail-item">
+                                        <span class="text-gray-600">
+                                            <i class="fas fa-users mr-2 text-green-600"></i>
+                                            Number of People
+                                        </span>
+                                        <span class="font-semibold text-gray-800">
+                                            {{ booking.number_of_people }}
+                                        </span>
+                                    </div>
+                                    
+                                    <div class="detail-item">
+                                        <span class="text-gray-600">
+                                            <i class="fas fa-map-marker-alt mr-2 text-green-600"></i>
+                                            Location
+                                        </span>
+                                        <span class="font-semibold text-gray-800">
+                                            {{ booking.tour_package.attraction.get_city_display }}
+                                        </span>
+                                    </div>
+                                    
+                                    <div class="detail-item">
+                                        <span class="text-gray-600">
+                                            <i class="far fa-clock mr-2 text-green-600"></i>
+                                            Duration
+                                        </span>
+                                        <span class="font-semibold text-gray-800">
+                                            {{ booking.tour_package.duration }}
+                                        </span>
+                                    </div>
+                                    
+                                    <div class="detail-item">
+                                        <span class="text-gray-600">
+                                            <i class="fas fa-calendar-plus mr-2 text-green-600"></i>
+                                            Booked On
+                                        </span>
+                                        <span class="font-semibold text-gray-800">
+                                            {{ booking.created_at|date:"M d, Y H:i" }}
+                                        </span>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <!-- Right Column: Price & Attraction -->
+                            <div>
+                                <h3 class="text-2xl font-bold mb-6 text-gray-800 border-b pb-3">
+                                    <i class="fas fa-tag mr-2 text-green-600"></i>
+                                    Price Details
+                                </h3>
+                                
+                                <!-- Price Breakdown -->
+                                <div class="space-y-3 mb-6">
+                                    <div class="flex justify-between items-center">
+                                        <span class="text-gray-600">Package Price</span>
+                                        <span class="font-semibold">${{ booking.tour_package.price }}</span>
+                                    </div>
+                                    
+                                    <div class="flex justify-between items-center">
+                                        <span class="text-gray-600">× {{ booking.number_of_people }} Person(s)</span>
+                                        <span class="text-gray-600">{{ booking.number_of_people }} × ${{ booking.tour_package.price }}</span>
+                                    </div>
+                                    
+                                    <div class="border-t pt-3 mt-3">
+                                        <div class="flex justify-between items-center text-lg">
+                                            <span class="font-bold text-gray-800">Total Amount</span>
+                                            <span class="text-2xl font-bold text-green-700">${{ booking.total_price }}</span>
+                                        </div>
+                                        <p class="text-sm text-gray-500 mt-1">All taxes and fees included</p>
+                                    </div>
+                                </div>
+                                
+                                <!-- Attraction Info -->
+                                <div class="bg-gray-50 rounded-xl p-5">
+                                    <h4 class="font-bold mb-3 text-gray-800">
+                                        <i class="fas fa-landmark mr-2 text-blue-600"></i>
+                                        Attraction
+                                    </h4>
+                                    <p class="text-gray-700 mb-2">
+                                        {{ booking.tour_package.attraction.name }}
+                                    </p>
+                                    <p class="text-gray-600 text-sm">
+                                        {{ booking.tour_package.attraction.location|truncatechars:50 }}
+                                    </p>
+                                    <a href="{% url 'attraction_detail' booking.tour_package.attraction.id %}" 
+                                       class="inline-flex items-center text-green-600 hover:text-green-800 text-sm font-semibold mt-3">
+                                        View attraction details
+                                        <i class="fas fa-arrow-right ml-1"></i>
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Special Requests -->
+                        {% if booking.special_requests %}
+                        <div class="mt-8 p-6 bg-yellow-50 rounded-xl border-l-4 border-yellow-500">
+                            <h4 class="font-bold mb-3 text-gray-800">
+                                <i class="fas fa-comment-alt mr-2 text-yellow-600"></i>
+                                Your Special Requests
+                            </h4>
+                            <p class="text-gray-700">{{ booking.special_requests }}</p>
+                        </div>
+                        {% endif %}
+                        
+                        <!-- Package Includes -->
+                        <div class="mt-8 p-6 bg-green-50 rounded-xl">
+                            <h4 class="text-xl font-bold mb-4 text-gray-800">
+                                <i class="fas fa-check-circle mr-2 text-green-600"></i>
+                                What's Included in Your Package
+                            </h4>
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+                                {% for item in booking.tour_package.get_includes_list %}
+                                <div class="flex items-center">
+                                    <i class="fas fa-check text-green-500 mr-3"></i>
+                                    <span class="text-gray-700">{{ item }}</span>
+                                </div>
+                                {% endfor %}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Next Steps Timeline -->
+                <div class="bg-white rounded-2xl shadow-lg p-8 mb-12">
+                    <h3 class="text-2xl font-bold mb-8 text-gray-800 text-center">
+                        <i class="fas fa-road mr-2 text-blue-600"></i>
+                        What Happens Next?
+                    </h3>
+                    
+                    <div class="timeline">
+                        <div class="timeline-item">
+                            <h4 class="font-bold text-lg mb-2 text-gray-800">Step 1: Confirmation Email</h4>
+                            <p class="text-gray-600">
+                                You'll receive a detailed confirmation email within 15 minutes. 
+                                Check your inbox (and spam folder) for booking details.
+                            </p>
+                        </div>
+                        
+                        <div class="timeline-item">
+                            <h4 class="font-bold text-lg mb-2 text-gray-800">Step 2: Tour Guide Contact</h4>
+                            <p class="text-gray-600">
+                                Your assigned tour guide will contact you 24 hours before the tour 
+                                via WhatsApp/SMS with meeting point details.
+                            </p>
+                        </div>
+                        
+                        <div class="timeline-item">
+                            <h4 class="font-bold text-lg mb-2 text-gray-800">Step 3: Day of the Tour</h4>
+                            <p class="text-gray-600">
+                                Arrive 15 minutes early at the meeting point with your 
+                                booking ID and valid ID/passport.
+                            </p>
+                        </div>
+                        
+                        <div class="timeline-item">
+                            <h4 class="font-bold text-lg mb-2 text-gray-800">Step 4: Enjoy Your Tour!</h4>
+                            <p class="text-gray-600">
+                                Experience the best of Tanzania with our expert guides. 
+                                Don't forget to share your photos with #AFCON2027Tanzania
+                            </p>
+                        </div>
+                    </div>
+                    
+                    <!-- Important Notes -->
+                    <div class="mt-8 p-6 bg-red-50 rounded-xl border-l-4 border-red-500">
+                        <h4 class="font-bold mb-3 text-gray-800">
+                            <i class="fas fa-exclamation-triangle mr-2 text-red-600"></i>
+                            Important Information
+                        </h4>
+                        <ul class="space-y-2 text-gray-700">
+                            <li class="flex items-start">
+                                <i class="fas fa-circle text-red-500 mr-2 mt-1" style="font-size: 6px;"></i>
+                                Free cancellation available up to 24 hours before the tour
+                            </li>
+                            <li class="flex items-start">
+                                <i class="fas fa-circle text-red-500 mr-2 mt-1" style="font-size: 6px;"></i>
+                                Bring your booking confirmation (digital or printed)
+                            </li>
+                            <li class="flex items-start">
+                                <i class="fas fa-circle text-red-500 mr-2 mt-1" style="font-size: 6px;"></i>
+                                Wear comfortable shoes and bring water for outdoor tours
+                            </li>
+                            <li class="flex items-start">
+                                <i class="fas fa-circle text-red-500 mr-2 mt-1" style="font-size: 6px;"></i>
+                                For AFCON match days, allow extra travel time
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+                
+                <!-- Action Buttons -->
+                <div class="text-center mb-12">
+                    <div class="flex flex-col sm:flex-row gap-4 justify-center mb-8">
+                        <button onclick="downloadReceipt()" class="download-btn no-print">
+                            <i class="fas fa-download"></i>
+                            Download Receipt
+                        </button>
+                        
+                        <button onclick="window.print()" class="bg-white border-2 border-green-600 text-green-600 px-8 py-3 rounded-lg font-semibold hover:bg-green-50 no-print">
+                            <i class="fas fa-print mr-2"></i>
+                            Print Confirmation
+                        </button>
+                        
+                        <a href="{% url 'my_tour_bookings' %}" class="bg-gray-800 text-white px-8 py-3 rounded-lg font-semibold hover:bg-gray-900 no-print">
+                            <i class="fas fa-list mr-2"></i>
+                            View All Bookings
+                        </a>
+                    </div>
+                    
+                    <div class="flex flex-col sm:flex-row gap-4 justify-center">
+                        <a href="{% url 'tour_packages' %}" class="border-2 border-blue-600 text-blue-600 px-8 py-3 rounded-lg font-semibold hover:bg-blue-50 no-print">
+                            <i class="fas fa-plus mr-2"></i>
+                            Book Another Tour
+                        </a>
+                        
+                        <a href="{% url 'tourism' %}" class="border-2 border-yellow-600 text-yellow-600 px-8 py-3 rounded-lg font-semibold hover:bg-yellow-50 no-print">
+                            <i class="fas fa-compass mr-2"></i>
+                            Explore More Attractions
+                        </a>
+                        
+                        <a href="{% url 'chatbot' %}?message=Help with booking {{ booking.id }}" class="border-2 border-purple-600 text-purple-600 px-8 py-3 rounded-lg font-semibold hover:bg-purple-50 no-print">
+                            <i class="fas fa-robot mr-2"></i>
+                            Ask AI Assistant
+                        </a>
+                    </div>
+                </div>
+                
+                <!-- Contact Support -->
+                <div class="bg-gradient-to-r from-gray-900 to-gray-800 text-white rounded-2xl p-8 text-center">
+                    <h3 class="text-2xl font-bold mb-6">Need Help With Your Booking?</h3>
+                    <p class="text-gray-300 mb-8 max-w-2xl mx-auto">
+                        Our support team is available 24/7 to assist you with any questions about your tour.
+                    </p>
+                    
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                        <div class="flex flex-col items-center p-4">
+                            <div class="w-16 h-16 bg-green-600 rounded-full flex items-center justify-center mb-4">
+                                <i class="fas fa-phone-alt text-2xl"></i>
+                            </div>
+                            <h4 class="font-bold mb-2">Call Us</h4>
+                            <p class="text-gray-300">+255 123 456 789</p>
+                            <p class="text-sm text-gray-400">24/7 Support Line</p>
+                        </div>
+                        
+                        <div class="flex flex-col items-center p-4">
+                            <div class="w-16 h-16 bg-blue-600 rounded-full flex items-center justify-center mb-4">
+                                <i class="fas fa-envelope text-2xl"></i>
+                            </div>
+                            <h4 class="font-bold mb-2">Email Us</h4>
+                            <p class="text-gray-300">support@afcon2027tours.tz</p>
+                            <p class="text-sm text-gray-400">Response within 1 hour</p>
+                        </div>
+                        
+                        <div class="flex flex-col items-center p-4">
+                            <div class="w-16 h-16 bg-purple-600 rounded-full flex items-center justify-center mb-4">
+                                <i class="fas fa-comments text-2xl"></i>
+                            </div>
+                            <h4 class="font-bold mb-2">Live Chat</h4>
+                            <p class="text-gray-300">Available Now</p>
+                            <p class="text-sm text-gray-400">Click the AI Assistant button</p>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Print Only Section -->
+                <div class="print-only mt-12">
+                    <div class="text-center">
+                        <h4 class="text-xl font-bold mb-2">AFCON 2027 Tanzania Tourism</h4>
+                        <p class="text-gray-600">Official Tourism Partner for Africa Cup of Nations 2027</p>
+                        <p class="text-gray-600 mt-2">Booking ID: #{{ booking.id|stringformat:"06d" }}</p>
+                        <p class="text-gray-600">Printed on: {% now "F d, Y H:i" %}</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // Confetti Effect
+    function createConfetti() {
+        const colors = ['#00A859', '#1EB2E6', '#FFC72C', '#FFFFFF', '#FF6B6B'];
+        const container = document.getElementById('confettiContainer');
+        
+        for (let i = 0; i < 150; i++) {
+            const confetti = document.createElement('div');
+            confetti.className = 'confetti';
+            
+            // Random properties
+            const color = colors[Math.floor(Math.random() * colors.length)];
+            const size = Math.random() * 10 + 5;
+            const left = Math.random() * 100;
+            const duration = Math.random() * 3 + 2;
+            const delay = Math.random() * 5;
+            
+            confetti.style.setProperty('--color', color);
+            confetti.style.width = `${size}px`;
+            confetti.style.height = `${size}px`;
+            confetti.style.left = `${left}vw`;
+            confetti.style.animationDuration = `${duration}s`;
+            confetti.style.animationDelay = `${delay}s`;
+            
+            container.appendChild(confetti);
+            
+            // Remove after animation
+            setTimeout(() => {
+                confetti.remove();
+            }, (duration + delay) * 1000);
+        }
+    }
+    
+    // Download Receipt as PDF
+    function downloadReceipt() {
+        // Create a temporary iframe for printing
+        const iframe = document.createElement('iframe');
+        iframe.style.display = 'none';
+        document.body.appendChild(iframe);
+        
+        // Get the receipt content
+        const receiptContent = document.querySelector('.receipt-card').outerHTML;
+        
+        // Create a simple HTML page for printing
+        const printContent = `
+            <!DOCTYPE html>
+            <html>
+            <head>
+                <title>AFCON 2027 Tour Booking Receipt</title>
+                <style>
+                    body { font-family: Arial, sans-serif; padding: 20px; }
+                    .receipt { border: 2px solid #000; padding: 20px; border-radius: 10px; }
+                    .header { background: #00A859; color: white; padding: 20px; text-align: center; border-radius: 10px 10px 0 0; }
+                    .details { margin: 20px 0; }
+                    .detail-row { display: flex; justify-content: space-between; padding: 10px 0; border-bottom: 1px solid #eee; }
+                    .total { font-size: 24px; font-weight: bold; text-align: right; margin-top: 20px; }
+                    .footer { text-align: center; margin-top: 30px; color: #666; font-size: 12px; }
+                </style>
+            </head>
+            <body>
+                <div class="receipt">
+                    <div class="header">
+                        <h1>Tour Booking Receipt</h1>
+                        <p>AFCON 2027 Tanzania Tourism</p>
+                        <p>Booking ID: #{{ booking.id|stringformat:"06d" }}</p>
+                    </div>
+                    <div class="details">
+                        <div class="detail-row">
+                            <span>Package:</span>
+                            <span>{{ booking.tour_package.name }}</span>
+                        </div>
+                        <div class="detail-row">
+                            <span>Date:</span>
+                            <span>{{ booking.booking_date|date:"F d, Y" }}</span>
+                        </div>
+                        <div class="detail-row">
+                            <span>People:</span>
+                            <span>{{ booking.number_of_people }}</span>
+                        </div>
+                        <div class="detail-row">
+                            <span>Attraction:</span>
+                            <span>{{ booking.tour_package.attraction.name }}</span>
+                        </div>
+                        <div class="detail-row">
+                            <span>Location:</span>
+                            <span>{{ booking.tour_package.attraction.get_city_display }}</span>
+                        </div>
+                        <div class="detail-row">
+                            <span>Booked On:</span>
+                            <span>{{ booking.created_at|date:"M d, Y H:i" }}</span>
+                        </div>
+                    </div>
+                    <div class="total">
+                        Total: ${{ booking.total_price }}
+                    </div>
+                    <div class="footer">
+                        <p>Thank you for booking with AFCON 2027 Tourism!</p>
+                        <p>Contact: support@afcon2027tours.tz | +255 123 456 789</p>
+                    </div>
+                </div>
+                <script>
+                    window.onload = function() {
+                        window.print();
+                        setTimeout(() => {
+                            window.close();
+                        }, 1000);
+                    };
+                <\/script>
+            </body>
+            </html>
+        `;
+        
+        iframe.contentDocument.write(printContent);
+        iframe.contentDocument.close();
+        
+        // Clean up
+        setTimeout(() => {
+            document.body.removeChild(iframe);
+        }, 5000);
+    }
+    
+    // Share Booking
+    function shareBooking() {
+        const shareData = {
+            title: 'My AFCON 2027 Tour Booking',
+            text: `I just booked ${booking.tour_package.name} for AFCON 2027 in Tanzania!`,
+            url: window.location.href,
+        };
+        
+        if (navigator.share) {
+            navigator.share(shareData)
+                .then(() => console.log('Booking shared successfully'))
+                .catch(error => console.log('Error sharing:', error));
+        } else {
+            // Fallback: Copy link to clipboard
+            navigator.clipboard.writeText(window.location.href)
+                .then(() => {
+                    alert('Booking link copied to clipboard! Share it with your friends.');
+                })
+                .catch(err => {
+                    console.error('Failed to copy: ', err);
+                });
+        }
+    }
+    
+    // Initialize on page load
+    document.addEventListener('DOMContentLoaded', function() {
+        // Start confetti animation
+        createConfetti();
+        
+        // Auto-refresh status (optional)
+        setTimeout(() => {
+            // You could add AJAX status check here
+            console.log('Booking confirmed successfully!');
+        }, 2000);
+        
+        // Add booking to local storage for quick access
+        const bookingData = {
+            id: { booking,id },
+            package: '{{ booking.tour_package.name|escapejs }}',
+            date: '{{ booking.booking_date|date:"Y-m-d" }}',
+            total: { booking,total_price },
+            status: '{{ booking.status }}'
+        };
+        
+        // Store recent bookings in localStorage
+        let recentBookings = JSON.parse(localStorage.getItem('afcon_recent_bookings') || '[]');
+        recentBookings = recentBookings.filter(b => b.id !== bookingData.id);
+        recentBookings.unshift(bookingData);
+        recentBookings = recentBookings.slice(0, 5); // Keep only 5 most recent
+        localStorage.setItem('afcon_recent_bookings', JSON.stringify(recentBookings));
+        
+        // Send analytics event (optional)
+        if (typeof gtag !== 'undefined') {
+            gtag('event', 'purchase', {
+                transaction_id: '{{ booking.id }}',
+                value: { booking,total_price },
+                currency: 'USD',
+                items: [{
+                    item_name: '{{ booking.tour_package.name|escapejs }}',
+                    item_category: 'tour_package',
+                    price: {booking,tour_package,price },
+                    quantity: { booking,number_of_people }
+                }]
+            });
+        }
+    });
+    
+    // Handle print event
+    window.addEventListener('beforeprint', () => {
+        // Add any print-specific modifications here
+        document.body.classList.add('printing');
+    });
+    
+    window.addEventListener('afterprint', () => {
+        document.body.classList.remove('printing');
+    });
+</script>
+{% endblock %}
