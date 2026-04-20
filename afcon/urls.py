@@ -13,6 +13,11 @@ urlpatterns = [
     path('chatbot/', include('chatbot.urls')),
     path('tourism/', include('tourism.urls')),
     path('dashboard/', include('dashboard.urls')),  
-    path('partners/', include('partners.urls')),
+    path('partners/', include('partners.urls', namespace='partners')),
+    path('football/', include('football.urls')),
+    path('city/', include('city.urls')),
+    
+    path('api/', include('hotels.urls_api')),
+    path('api/tourism/', include('tourism.urls_api')),
       
 ]

@@ -1,0 +1,83 @@
+{% extends 'football/football_base.html' %}
+
+{% block title %}Top Scorers - AFCON 2027{% endblock %}
+
+{% block football_content %}
+<div class="container mx-auto px-4 py-8">
+    <div class="text-center mb-8">
+        <h1 class="text-3xl md:text-4xl font-bold text-gray-800 mb-2">Golden Boot Race</h1>
+        <p class="text-gray-600">Top goal scorers of AFCON 2027</p>
+    </div>
+
+    <div class="bg-white rounded-xl shadow-lg overflow-hidden">
+        <div class="overflow-x-auto">
+            <table class="w-full">
+                <thead class="bg-gradient-to-r from-green-600 to-blue-600 text-white">
+                    <tr>
+                        <th class="p-4 text-left">Rank</th>
+                        <th class="p-4 text-left">Player</th>
+                        <th class="p-4 text-left">Team</th>
+                        <th class="p-4 text-center">Goals</th>
+                        <th class="p-4 text-center">Assists</th>
+                        <th class="p-4 text-center">Matches</th>
+                        <th class="p-4 text-center">Goals/Game</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for player in top_scorers %}
+                    <tr class="border-b hover:bg-gray-50 transition">
+                        <td class="p-4">
+                            {% if forloop.counter == 1 %}
+                                <span class="text-3xl">🥇</span>
+                            {% elif forloop.counter == 2 %}
+                                <span class="text-3xl">🥈</span>
+                            {% elif forloop.counter == 3 %}
+                                <span class="text-3xl">🥉</span>
+                            {% else %}
+                                <span class="text-xl font-bold text-gray-600">{{ forloop.counter }}</span>
+                            {% endif %}
+                        </td>
+                        <td class="p-4">
+                            <div>
+                                <div class="font-semibold text-gray-800">{{ player.name }}</div>
+                                <div class="text-sm text-gray-500">#{{ player.jersey_number }}</div>
+                            </div>
+                        </td>
+                        <td class="p-4">
+                            <div class="flex items-center">
+                                <div class="w-8 h-8 bg-gradient-to-r from-green-100 to-blue-100 rounded-full flex items-center justify-center mr-2">
+                                    {{ player.team.short_name }}
+                                </div>
+                                <span>{{ player.team.name }}</span>
+                            </div>
+                        </td>
+                        <td class="p-4 text-center">
+                            <span class="text-2xl font-bold text-green-600">{{ player.goals }}</span>
+                        </td>
+                        <td class="p-4 text-center">{{ player.assists }}</td>
+                        <td class="p-4 text-center">{{ player.appearances }}</td>
+                        <td class="p-4 text-center">
+                            {% widthratio player.goals player.appearances 1 as ratio %}
+                            {{ ratio|floatformat:2 }}
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="7" class="p-8 text-center text-gray-500">
+                            <i class="fas fa-futbol text-4xl mb-2"></i>
+                            <p>No goals scored yet</p>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- Stats Note -->
+    <div class="mt-6 bg-gray-100 rounded-lg p-4 text-center text-sm text-gray-600">
+        <i class="fas fa-info-circle mr-2"></i>
+        Goals scored in penalty shootouts are not counted towards individual goal tallies
+    </div>
+</div>
+{% endblock %}

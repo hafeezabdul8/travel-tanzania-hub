@@ -1,0 +1,1020 @@
+{% extends 'base.html' %}
+
+{% block title %}AI Assistant - AFCON 2027{% endblock %}
+
+{% block extra_css %}
+<style>
+    .chat-container {
+        height: calc(100vh - 200px);
+    }
+    
+    .message-bubble {
+        max-width: 80%;
+        border-radius: 1rem;
+        padding: 1rem;
+        margin-bottom: 1rem;
+        position: relative;
+    }
+    
+    .user-message {
+        background: linear-gradient(135deg, #00A859, #1EB2E6);
+        color: white;
+        margin-left: auto;
+        border-bottom-right-radius: 0.25rem;
+    }
+    
+    .bot-message {
+        background: #f3f4f6;
+        color: #374151;
+        margin-right: auto;
+        border-bottom-left-radius: 0.25rem;
+    }
+    
+    .typing-indicator {
+        display: flex;
+        align-items: center;
+        padding: 1rem;
+    }
+    
+    .typing-dot {
+        width: 8px;
+        height: 8px;
+        border-radius: 50%;
+        background-color: #9ca3af;
+        margin: 0 2px;
+        animation: typing 1.4s infinite ease-in-out;
+    }
+    
+    .typing-dot:nth-child(1) { animation-delay: -0.32s; }
+    .typing-dot:nth-child(2) { animation-delay: -0.16s; }
+    
+    @keyframes typing {
+        0%, 80%, 100% { transform: scale(0); }
+        40% { transform: scale(1); }
+    }
+    
+    .session-item.active {
+        background: linear-gradient(135deg, #00A859, #1EB2E6);
+        color: white;
+    }
+    
+    /* Voice Controls Styles */
+    .voice-controls {
+        background: white;
+        border-radius: 10px;
+        padding: 15px;
+        margin-bottom: 15px;
+        box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+    }
+    
+    .voice-btn {
+        width: 45px;
+        height: 45px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border: none;
+        transition: all 0.3s;
+        cursor: pointer;
+    }
+    
+    .voice-btn:hover {
+        transform: scale(1.05);
+    }
+    
+    .voice-btn.active {
+        animation: pulse 1.5s infinite;
+    }
+    
+    @keyframes pulse {
+        0% { box-shadow: 0 0 0 0 rgba(220, 53, 69, 0.7); }
+        70% { box-shadow: 0 0 0 10px rgba(220, 53, 69, 0); }
+        100% { box-shadow: 0 0 0 0 rgba(220, 53, 69, 0); }
+    }
+    
+    .voice-indicator {
+        display: inline-block;
+        width: 12px;
+        height: 12px;
+        border-radius: 50%;
+        margin-right: 8px;
+    }
+    
+    .voice-indicator.speaking {
+        background-color: #28a745;
+        animation: blink 1s infinite;
+    }
+    
+    @keyframes blink {
+        0%, 100% { opacity: 1; }
+        50% { opacity: 0.5; }
+    }
+    
+    .speech-status {
+        font-size: 12px;
+        padding: 4px 8px;
+        border-radius: 12px;
+        display: inline-block;
+    }
+    
+    .speech-actions {
+        display: flex;
+        gap: 10px;
+        margin-top: 10px;
+    }
+    
+    .speech-action-btn {
+        padding: 6px 12px;
+        border-radius: 20px;
+        font-size: 12px;
+        display: flex;
+        align-items: center;
+        gap: 5px;
+    }
+    
+    /* Voice Toggle Switch */
+    .voice-toggle {
+        position: relative;
+        display: inline-block;
+        width: 50px;
+        height: 24px;
+    }
+    
+    .voice-toggle input {
+        opacity: 0;
+        width: 0;
+        height: 0;
+    }
+    
+    .voice-toggle-slider {
+        position: absolute;
+        cursor: pointer;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background-color: #ccc;
+        transition: .4s;
+        border-radius: 34px;
+    }
+    
+    .voice-toggle-slider:before {
+        position: absolute;
+        content: "";
+        height: 16px;
+        width: 16px;
+        left: 4px;
+        bottom: 4px;
+        background-color: white;
+        transition: .4s;
+        border-radius: 50%;
+    }
+    
+    .voice-toggle input:checked + .voice-toggle-slider {
+        background-color: #00A859;
+    }
+    
+    .voice-toggle input:checked + .voice-toggle-slider:before {
+        transform: translateX(26px);
+    }
+    
+    .voice-status-badge {
+        font-size: 11px;
+        padding: 2px 8px;
+        border-radius: 10px;
+        display: inline-block;
+    }
+    
+    .voice-enabled {
+        background-color: #d1fae5;
+        color: #065f46;
+    }
+    
+    .voice-disabled {
+        background-color: #f3f4f6;
+        color: #6b7280;
+    }
+    
+    /* Voice Settings Modal */
+    .voice-settings-modal {
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: rgba(0,0,0,0.5);
+        display: none;
+        align-items: center;
+        justify-content: center;
+        z-index: 1000;
+    }
+    
+    .voice-settings-content {
+        background: white;
+        border-radius: 15px;
+        padding: 25px;
+        width: 90%;
+        max-width: 400px;
+        box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+    }
+    
+    /* Chat-specific voice settings */
+    .chat-voice-controls {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        margin-left: auto;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="animate-fade-in">
+    <!-- Header -->
+    <div class="bg-gradient-to-r from-green-800 to-blue-800 text-white py-8">
+        <div class="container mx-auto px-4">
+            <div class="flex justify-between items-center">
+                <div>
+                    <h1 class="text-4xl font-bold mb-2">AI Travel Assistant</h1>
+                    <p class="text-xl opacity-90">Personalized help for AFCON 2027 bookings and travel planning</p>
+                </div>
+                <div class="text-right">
+                    <div class="speech-status bg-green-500 text-white" id="speechStatus">
+                        <i class="fas fa-volume-up mr-1"></i>Voice Ready
+                    </div>
+                    <div class="mt-2">
+                        <button class="bg-white text-green-800 px-3 py-1 rounded-full text-sm font-semibold hover:bg-gray-100" onclick="openVoiceSettings()">
+                            <i class="fas fa-sliders-h mr-1"></i>Global Voice Settings
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="container mx-auto px-4 py-8">
+        <div class="grid grid-cols-1 lg:grid-cols-4 gap-8">
+            <!-- Sidebar -->
+            <div class="lg:col-span-1">
+                <!-- Voice Controls Card -->
+                <div class="voice-controls">
+                    <div class="flex justify-between items-center mb-3">
+                        <h3 class="font-bold text-lg">
+                            <i class="fas fa-microphone mr-2"></i>Voice Controls
+                        </h3>
+                        <span id="currentChatVoiceStatus" class="voice-status-badge {% if session.voice_enabled %}voice-enabled{% else %}voice-disabled{% endif %}">
+                            {% if session.voice_enabled %}Active{% else %}Disabled{% endif %}
+                        </span>
+                    </div>
+                    
+                    <!-- Chat-specific voice toggle -->
+                    <div class="mb-4">
+                        <div class="flex items-center justify-between mb-2">
+                            <span class="text-sm font-medium">Voice for this chat:</span>
+                            <label class="voice-toggle">
+                                <input type="checkbox" id="chatVoiceToggle" {% if session.voice_enabled %}checked{% endif %} onchange="toggleChatVoice(this)">
+                                <span class="voice-toggle-slider"></span>
+                            </label>
+                        </div>
+                        <p class="text-xs text-gray-600">Turn voice features on/off for this specific conversation</p>
+                    </div>
+                    
+                    <!-- Voice controls (only show if voice is enabled for this chat) -->
+                    <div id="voiceActionButtons">
+                        {% if session.voice_enabled %}
+                        <div class="grid grid-cols-2 gap-3 mb-3">
+                            <button id="voiceToggle" class="voice-btn bg-red-500 text-white hover:bg-red-600" onclick="toggleVoiceInput()">
+                                <i class="fas fa-microphone"></i>
+                            </button>
+                            <button id="speakBtn" class="voice-btn bg-green-500 text-white hover:bg-green-600" onclick="speakLastResponse()">
+                                <i class="fas fa-volume-up"></i>
+                            </button>
+                        </div>
+                        
+                        <div class="mt-3">
+                            <div class="flex items-center">
+                                <input type="checkbox" id="chatAutoSpeak" {% if session.auto_speak %}checked{% endif %} onchange="toggleChatAutoSpeak(this)" class="mr-2">
+                                <label for="chatAutoSpeak" class="text-sm">Auto-speak responses in this chat</label>
+                            </div>
+                        </div>
+                        
+                        <div class="speech-actions">
+                            <button class="speech-action-btn bg-blue-100 text-blue-800 hover:bg-blue-200" onclick="speakAllConversation()">
+                                <i class="fas fa-play"></i> Read All
+                            </button>
+                            <button class="speech-action-btn bg-purple-100 text-purple-800 hover:bg-purple-200" onclick="copyConversation()">
+                                <i class="fas fa-copy"></i> Copy
+                            </button>
+                            <button class="speech-action-btn bg-yellow-100 text-yellow-800 hover:bg-yellow-200" onclick="showVoiceCommands()">
+                                <i class="fas fa-question"></i> Help
+                            </button>
+                        </div>
+                        {% else %}
+                        <div class="text-center p-4 bg-gray-50 rounded-lg">
+                            <i class="fas fa-volume-mute text-2xl text-gray-400 mb-2"></i>
+                            <p class="text-sm text-gray-600">Voice is disabled for this chat</p>
+                            <button onclick="enableChatVoice()" class="mt-2 px-3 py-1 bg-green-500 text-white text-sm rounded-lg hover:bg-green-600">
+                                Enable Voice
+                            </button>
+                        </div>
+                        {% endif %}
+                    </div>
+                    
+                    <div class="mt-3 text-xs text-gray-600">
+                        <div id="voiceFeedback">{% if session.voice_enabled %}Click microphone to start speaking{% else %}Voice features are disabled{% endif %}</div>
+                    </div>
+                </div>
+
+                <!-- Profile Card -->
+                <div class="bg-white rounded-xl shadow-lg p-6 mb-6">
+                    <div class="flex items-center mb-4">
+                        <div class="w-16 h-16 bg-gradient-to-r from-green-500 to-blue-500 rounded-full flex items-center justify-center text-white text-2xl mr-4">
+                            <i class="fas fa-robot"></i>
+                        </div>
+                        <div>
+                            <h3 class="font-bold text-lg">{{ request.user.username }}</h3>
+                            <p class="text-gray-600 text-sm">AFCON 2027 Assistant</p>
+                        </div>
+                    </div>
+                    
+                    <div class="mb-4">
+                        <label class="block text-gray-700 text-sm font-bold mb-2">Preferred Language</label>
+                        <select id="languageSelect" class="w-full p-2 border border-gray-300 rounded">
+                            <option value="en" {% if profile.preferred_language == 'en' %}selected{% endif %}>English</option>
+                            <option value="sw" {% if profile.preferred_language == 'sw' %}selected{% endif %}>Swahili</option>
+                            <option value="fr" {% if profile.preferred_language == 'fr' %}selected{% endif %}>French</option>
+                            <option value="ar" {% if profile.preferred_language == 'ar' %}selected{% endif %}>Arabic</option>
+                        </select>
+                    </div>
+                    
+                    <div class="mb-6">
+                        <label class="block text-gray-700 text-sm font-bold mb-2">Your Interests</label>
+                        <select id="interestsSelect" class="w-full p-2 border border-gray-300 rounded">
+                            <option value="football" {% if profile.interests == 'football' %}selected{% endif %}>⚽ Football</option>
+                            <option value="safari" {% if profile.interests == 'safari' %}selected{% endif %}>🦁 Safari & Wildlife</option>
+                            <option value="beach" {% if profile.interests == 'beach' %}selected{% endif %}>🏖️ Beach & Relaxation</option>
+                            <option value="culture" {% if profile.interests == 'culture' %}selected{% endif %}>🎭 Culture & History</option>
+                            <option value="adventure" {% if profile.interests == 'adventure' %}selected{% endif %}>🗻 Adventure & Hiking</option>
+                        </select>
+                    </div>
+                    
+                    <button id="updateProfileBtn" class="w-full bg-green-600 text-white py-2 rounded-lg hover:bg-green-700 font-semibold">
+                        Update Preferences
+                    </button>
+                </div>
+
+                <!-- Travel Preferences Card -->
+                <div class="bg-white rounded-xl shadow-lg p-6 mb-6">
+                    <h3 class="font-bold text-lg mb-4">Travel Preferences</h3>
+                    
+                    <div class="mb-4">
+                        <label class="block text-gray-700 text-sm font-bold mb-2">Travel Budget</label>
+                        <select id="budgetSelect" class="w-full p-2 border border-gray-300 rounded">
+                            <option value="budget" {% if profile.travel_budget == 'budget' %}selected{% endif %}>💰 Budget (< $100/night)</option>
+                            <option value="midrange" {% if profile.travel_budget == 'midrange' %}selected{% endif %}>💵 Mid-range ($100-$300)</option>
+                            <option value="luxury" {% if profile.travel_budget == 'luxury' %}selected{% endif %}>💎 Luxury ($300+)</option>
+                        </select>
+                    </div>
+                    
+                    <div class="mb-6">
+                        <label class="block text-gray-700 text-sm font-bold mb-2">Travel Group</label>
+                        <select id="groupSelect" class="w-full p-2 border border-gray-300 rounded">
+                            <option value="solo" {% if profile.travel_group == 'solo' %}selected{% endif %}>👤 Solo Traveler</option>
+                            <option value="couple" {% if profile.travel_group == 'couple' %}selected{% endif %}>👫 Couple</option>
+                            <option value="family" {% if profile.travel_group == 'family' %}selected{% endif %}>👨‍👩‍👧‍👦 Family</option>
+                            <option value="friends" {% if profile.travel_group == 'friends' %}selected{% endif %}>👥 Friends</option>
+                            <option value="business" {% if profile.travel_group == 'business' %}selected{% endif %}>💼 Business</option>
+                        </select>
+                    </div>
+                </div>
+
+                <!-- Quick Stats -->
+                <div class="bg-white rounded-xl shadow-lg p-6 mb-6">
+                    <h3 class="font-bold text-lg mb-4">Your Travel Stats</h3>
+                    <div class="space-y-3">
+                        <div class="flex justify-between items-center">
+                            <span class="text-gray-600">Conversations</span>
+                            <span class="font-bold text-green-600">{{ profile.conversation_count }}</span>
+                        </div>
+                        <div class="flex justify-between items-center">
+                            <span class="text-gray-600">Available Hotels</span>
+                            <span class="font-bold text-blue-600">{{ hotels_count }}</span>
+                        </div>
+                        <div class="flex justify-between items-center">
+                            <span class="text-gray-600">Attractions</span>
+                            <span class="font-bold text-yellow-600">{{ attractions_count }}</span>
+                        </div>
+                        {% if user_bookings > 0 %}
+                        <div class="flex justify-between items-center">
+                            <span class="text-gray-600">Your Bookings</span>
+                            <span class="font-bold text-purple-600">{{ user_bookings }}</span>
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+
+                <!-- Conversation History -->
+                <div class="bg-white rounded-xl shadow-lg p-6">
+                    <h3 class="font-bold text-lg mb-4">Recent Conversations</h3>
+                    <div class="space-y-2">
+                        <a href="{% url 'chatbot' %}" class="block p-3 bg-green-50 rounded-lg hover:bg-green-100">
+                            <div class="font-semibold">➕ New Chat</div>
+                            <div class="text-sm text-gray-600">Start a new conversation</div>
+                        </a>
+                        {% for s in sessions %}
+                        <a href="{% url 'chatbot' %}?session={{ s.session_id }}" 
+                           class="block p-3 rounded-lg hover:bg-gray-100 {% if s.session_id == session.session_id %}bg-gray-100 font-semibold{% endif %}">
+                            <div class="flex justify-between items-center">
+                                <div>{{ s.title }}</div>
+                                <span class="text-xs px-2 py-1 rounded-full {% if s.voice_enabled %}bg-green-100 text-green-800{% else %}bg-gray-100 text-gray-800{% endif %}">
+                                    {% if s.voice_enabled %}🎤{% else %}🔇{% endif %}
+                                </span>
+                            </div>
+                            <div class="text-sm text-gray-600">{{ s.updated_at|date:"M d, H:i" }}</div>
+                            {% if s.session_id == session.session_id %}
+                            <button onclick="deleteSession('{{ s.session_id }}')" 
+                                    class="text-red-500 text-xs mt-1 hover:text-red-700">
+                                <i class="fas fa-trash mr-1"></i>Delete
+                            </button>
+                            {% endif %}
+                        </a>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+
+            <!-- Chat Window -->
+            <div class="lg:col-span-3">
+                <div class="bg-white rounded-xl shadow-lg overflow-hidden">
+                    <!-- Chat Header -->
+                    <div class="bg-gradient-to-r from-green-600 to-blue-600 text-white p-6">
+                        <div class="flex justify-between items-center">
+                            <div>
+                                <h2 class="text-2xl font-bold">{{ session.title }}</h2>
+                                <div class="flex items-center mt-1">
+                                    <div class="voice-indicator" id="headerVoiceIndicator"></div>
+                                    <p class="opacity-90">AI Assistant • {{ profile.get_preferred_language_display }} • {{ profile.get_interests_display }}</p>
+                                </div>
+                            </div>
+                            
+                            <!-- Per-chat voice toggle -->
+                            <div class="chat-voice-controls">
+                                <span class="text-sm">Voice:</span>
+                                <label class="voice-toggle">
+                                    <input type="checkbox" id="headerChatVoiceToggle" {% if session.voice_enabled %}checked{% endif %} onchange="toggleChatVoice(this)">
+                                    <span class="voice-toggle-slider"></span>
+                                </label>
+                                <span id="chatVoiceStatusText" class="text-sm">
+                                    {% if session.voice_enabled %}On{% else %}Off{% endif %}
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Messages Container -->
+                    <div id="messagesContainer" class="h-96 overflow-y-auto p-6 space-y-4">
+                        {% for message in messages %}
+                        <div class="message-bubble {% if message.message_type == 'user' %}user-message{% else %}bot-message{% endif %}" id="msg-{{ forloop.counter }}">
+                            <div class="flex items-start">
+                                <div class="mr-3">
+                                    {% if message.message_type == 'user' %}
+                                    <div class="w-8 h-8 bg-white rounded-full flex items-center justify-center text-green-600">
+                                        <i class="fas fa-user"></i>
+                                    </div>
+                                    {% else %}
+                                    <div class="w-8 h-8 bg-gradient-to-r from-green-500 to-blue-500 rounded-full flex items-center justify-center text-white">
+                                        <i class="fas fa-robot"></i>
+                                    </div>
+                                    {% endif %}
+                                </div>
+                                <div class="flex-1">
+                                    <div class="flex justify-between items-center mb-1">
+                                        <div class="font-semibold">
+                                            {% if message.message_type == 'user' %}You{% else %}AFCON Assistant{% endif %}
+                                            <span class="text-xs opacity-75 ml-2">{{ message.timestamp|date:"H:i" }}</span>
+                                        </div>
+                                        <div class="flex space-x-1">
+                                            {% if message.message_type == 'bot' and session.voice_enabled %}
+                                            <button class="text-xs text-green-600 hover:text-green-800" onclick="speakMessage(this, '{{ message.content|escapejs }}')" title="Speak">
+                                                <i class="fas fa-volume-up"></i>
+                                            </button>
+                                            {% endif %}
+                                            <button class="text-xs text-blue-600 hover:text-blue-800" onclick="copyMessage('{{ message.content|escapejs }}')" title="Copy">
+                                                <i class="fas fa-copy"></i>
+                                            </button>
+                                        </div>
+                                    </div>
+                                    <div>{{ message.content }}</div>
+                                </div>
+                            </div>
+                        </div>
+                        {% empty %}
+                        <div class="text-center py-12 text-gray-500">
+                            <div class="text-6xl mb-6 opacity-50">
+                                <i class="fas fa-robot"></i>
+                            </div>
+                            <h3 class="text-2xl font-bold mb-4">Start a Conversation</h3>
+                            <p class="mb-6">I'm your AFCON 2027 assistant. Ask me about:</p>
+                            <div class="grid grid-cols-2 gap-3 max-w-md mx-auto">
+                                <div class="bg-gray-100 p-3 rounded-lg">🏨 Hotel bookings</div>
+                                <div class="bg-gray-100 p-3 rounded-lg">🗺️ Tourist attractions</div>
+                                <div class="bg-gray-100 p-3 rounded-lg">⚽ Match schedules</div>
+                                <div class="bg-gray-100 p-3 rounded-lg">🚗 Transportation</div>
+                            </div>
+                        </div>
+                        {% endfor %}
+                        
+                        <!-- Typing Indicator (hidden by default) -->
+                        <div id="typingIndicator" class="typing-indicator hidden">
+                            <div class="w-8 h-8 bg-gradient-to-r from-green-500 to-blue-500 rounded-full flex items-center justify-center text-white mr-3">
+                                <i class="fas fa-robot"></i>
+                            </div>
+                            <div class="flex">
+                                <div class="typing-dot"></div>
+                                <div class="typing-dot"></div>
+                                <div class="typing-dot"></div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Input Area -->
+                    <div class="border-t p-6">
+                        <form id="chatForm" class="flex gap-3">
+                            <input type="hidden" id="sessionId" value="{{ session.session_id }}">
+                            <div class="flex-1 relative">
+                                <textarea 
+                                    id="messageInput" 
+                                    placeholder="{% if session.voice_enabled %}Type your message or click microphone to speak...{% else %}Type your message here...{% endif %} (Try: 'hotels in Dar es Salaam' or 'tourist attractions')" 
+                                    class="w-full p-4 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 pr-12"
+                                    autocomplete="off"
+                                    rows="2"></textarea>
+                                <button type="button" 
+                                        id="voiceInputBtn"
+                                        class="absolute right-3 top-3 {% if session.voice_enabled %}bg-gray-100 hover:bg-gray-200 text-gray-700{% else %}bg-gray-300 text-gray-500 cursor-not-allowed{% endif %} w-10 h-10 rounded-full flex items-center justify-center"
+                                        onclick="toggleVoiceInput()"
+                                        {% if not session.voice_enabled %}disabled{% endif %}>
+                                    <i class="fas fa-microphone"></i>
+                                </button>
+                            </div>
+                            <button type="submit" 
+                                    class="bg-gradient-to-r from-green-600 to-blue-600 text-white px-8 py-4 rounded-lg hover:opacity-90 font-semibold self-end">
+                                <i class="fas fa-paper-plane mr-2"></i>Send
+                            </button>
+                        </form>
+                        <div class="mt-4 flex flex-wrap gap-2">
+                            <button class="quick-question bg-gray-200 px-4 py-2 rounded-lg hover:bg-gray-300" data-question="Hotels in Dar es Salaam">
+                                🏨 Dar Hotels
+                            </button>
+                            <button class="quick-question bg-gray-200 px-4 py-2 rounded-lg hover:bg-gray-300" data-question="Best safari near Arusha">
+                                🦁 Arusha Safari
+                            </button>
+                            <button class="quick-question bg-gray-200 px-4 py-2 rounded-lg hover:bg-gray-300" data-question="Beach resorts in Zanzibar">
+                                🏖️ Zanzibar Resorts
+                            </button>
+                            <button class="quick-question bg-gray-200 px-4 py-2 rounded-lg hover:bg-gray-300" data-question="AFCON match schedule">
+                                ⚽ Match Info
+                            </button>
+                            <button class="quick-question bg-gray-200 px-4 py-2 rounded-lg hover:bg-gray-300" data-question="Tourist attractions">
+                                🗺️ Attractions
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Voice Commands Help -->
+                <div class="mt-8 bg-white p-6 rounded-xl shadow">
+                    <h4 class="font-bold mb-3 text-lg">
+                        <i class="fas fa-microphone-alt mr-2"></i>Voice Commands
+                    </h4>
+                    <div class="grid grid-cols-2 md:grid-cols-4 gap-3">
+                        <div class="bg-blue-50 p-3 rounded-lg">
+                            <div class="font-semibold text-blue-800">Find</div>
+                            <div class="text-sm text-gray-600">"Find hotels in Dar es Salaam"</div>
+                        </div>
+                        <div class="bg-green-50 p-3 rounded-lg">
+                            <div class="font-semibold text-green-800">Book</div>
+                            <div class="text-sm text-gray-600">"Book a room for 3 nights"</div>
+                        </div>
+                        <div class="bg-yellow-50 p-3 rounded-lg">
+                            <div class="font-semibold text-yellow-800">Show</div>
+                            <div class="text-sm text-gray-600">"Show tourist attractions"</div>
+                        </div>
+                        <div class="bg-purple-50 p-3 rounded-lg">
+                            <div class="font-semibold text-purple-800">Schedule</div>
+                            <div class="text-sm text-gray-600">"AFCON match schedule"</div>
+                        </div>
+                    </div>
+                    <div class="mt-3 text-sm text-gray-600">
+                        <i class="fas fa-lightbulb mr-1"></i> 
+                        Pro tip: Use voice input for faster queries. Click microphone button to start.
+                        <span id="voiceStatusInfo" class="ml-2 font-medium {% if session.voice_enabled %}text-green-600{% else %}text-gray-500{% endif %}">
+                            (Voice: {% if session.voice_enabled %}Enabled{% else %}Disabled{% endif %} for this chat)
+                        </span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Global Voice Settings Modal -->
+<div id="voiceSettingsModal" class="voice-settings-modal">
+    <div class="voice-settings-content">
+        <div class="flex justify-between items-center mb-6">
+            <h3 class="text-xl font-bold">
+                <i class="fas fa-sliders-h mr-2"></i>Global Voice Settings
+            </h3>
+            <button onclick="closeVoiceSettings()" class="text-gray-500 hover:text-gray-700">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+        
+        <div class="mb-4">
+            <label class="block text-gray-700 text-sm font-bold mb-2">Select Voice</label>
+            <select id="voiceSelect" class="w-full p-3 border border-gray-300 rounded-lg">
+                <option value="">Default System Voice</option>
+            </select>
+        </div>
+        
+        <div class="mb-6">
+            <label class="block text-gray-700 text-sm font-bold mb-2">
+                Speech Rate: <span id="rateValue">1.0</span>x
+            </label>
+            <input type="range" id="rateSlider" class="w-full" min="0.5" max="2" step="0.1" value="1.0">
+            <div class="flex justify-between text-xs text-gray-600 mt-1">
+                <span>Slow</span>
+                <span>Normal</span>
+                <span>Fast</span>
+            </div>
+        </div>
+        
+        <div class="mb-6">
+            <div class="flex items-center mb-2">
+                <input type="checkbox" id="modalAutoSpeak" class="mr-2" checked>
+                <label for="modalAutoSpeak" class="font-semibold">Default auto-speak for new chats</label>
+            </div>
+            <div class="flex items-center mb-2">
+                <input type="checkbox" id="voiceFeedbackEnabled" class="mr-2" checked>
+                <label for="voiceFeedbackEnabled" class="font-semibold">Voice feedback sounds</label>
+            </div>
+        </div>
+        
+        <div class="flex justify-end space-x-3">
+            <button onclick="testVoice()" class="px-4 py-2 bg-blue-100 text-blue-800 rounded-lg hover:bg-blue-200">
+                <i class="fas fa-play mr-1"></i> Test
+            </button>
+            <button onclick="saveVoiceSettings()" class="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700">
+                <i class="fas fa-save mr-1"></i> Save
+            </button>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // ==================== PER-CHAT VOICE MANAGEMENT ====================
+    
+    // Chat-specific voice settings
+    let currentChatSettings = {
+        voiceEnabled: { session,voice_enabled |lower }
+        autoSpeak: {{ session.auto_speak|lower }}
+        sessionId: '{{ session.session_id|escapejs }}'
+    };
+    
+    // Initialize chat-specific voice controller
+    function initChatVoiceController() {
+        updateChatVoiceUI();
+        
+        if (!currentChatSettings.voiceEnabled) {
+            disableChatVoiceFeatures();
+        } else {
+            enableChatVoiceFeatures();
+        }
+    }
+    
+    // Toggle voice for current chat
+    function toggleChatVoice(checkbox) {
+        const enabled = checkbox.checked;
+        currentChatSettings.voiceEnabled = enabled;
+        
+        // Update UI
+        updateChatVoiceUI();
+        
+        // Save to server
+        saveChatVoiceSettingsToServer();
+    }
+    
+    // Enable voice for this chat
+    function enableChatVoice() {
+        const toggle = document.getElementById('chatVoiceToggle');
+        const headerToggle = document.getElementById('headerChatVoiceToggle');
+        
+        if (toggle) toggle.checked = true;
+        if (headerToggle) headerToggle.checked = true;
+        
+        currentChatSettings.voiceEnabled = true;
+        updateChatVoiceUI();
+        saveChatVoiceSettingsToServer();
+    }
+    
+    // Toggle auto-speak for current chat
+    function toggleChatAutoSpeak(checkbox) {
+        currentChatSettings.autoSpeak = checkbox.checked;
+        saveChatVoiceSettingsToServer();
+    }
+    
+    // Update chat voice UI
+    function updateChatVoiceUI() {
+        // Update status badges
+        const statusBadge = document.getElementById('currentChatVoiceStatus');
+        if (statusBadge) {
+            statusBadge.textContent = currentChatSettings.voiceEnabled ? 'Active' : 'Disabled';
+            statusBadge.className = `voice-status-badge ${currentChatSettings.voiceEnabled ? 'voice-enabled' : 'voice-disabled'}`;
+        }
+        
+        // Update status text
+        const statusText = document.getElementById('chatVoiceStatusText');
+        if (statusText) {
+            statusText.textContent = currentChatSettings.voiceEnabled ? 'On' : 'Off';
+        }
+        
+        // Update voice status info
+        const voiceStatusInfo = document.getElementById('voiceStatusInfo');
+        if (voiceStatusInfo) {
+            voiceStatusInfo.textContent = `(Voice: ${currentChatSettings.voiceEnabled ? 'Enabled' : 'Disabled'} for this chat)`;
+            voiceStatusInfo.className = `ml-2 font-medium ${currentChatSettings.voiceEnabled ? 'text-green-600' : 'text-gray-500'}`;
+        }
+        
+        // Update voice feedback
+        const voiceFeedback = document.getElementById('voiceFeedback');
+        if (voiceFeedback) {
+            voiceFeedback.textContent = currentChatSettings.voiceEnabled ? 'Click microphone to start speaking' : 'Voice features are disabled';
+        }
+        
+        // Update voice input button
+        const voiceInputBtn = document.getElementById('voiceInputBtn');
+        if (voiceInputBtn) {
+            if (currentChatSettings.voiceEnabled) {
+                voiceInputBtn.className = 'absolute right-3 top-3 bg-gray-100 hover:bg-gray-200 text-gray-700 w-10 h-10 rounded-full flex items-center justify-center';
+                voiceInputBtn.onclick = toggleVoiceInput;
+                voiceInputBtn.disabled = false;
+            } else {
+                voiceInputBtn.className = 'absolute right-3 top-3 bg-gray-300 text-gray-500 cursor-not-allowed w-10 h-10 rounded-full flex items-center justify-center';
+                voiceInputBtn.onclick = null;
+                voiceInputBtn.disabled = true;
+            }
+        }
+        
+        // Update message input placeholder
+        const messageInput = document.getElementById('messageInput');
+        if (messageInput) {
+            messageInput.placeholder = currentChatSettings.voiceEnabled 
+                ? 'Type your message or click microphone to speak... (Try: "hotels in Dar es Salaam" or "tourist attractions")'
+                : 'Type your message here... (Try: "hotels in Dar es Salaam" or "tourist attractions")';
+        }
+        
+        // Update voice action buttons
+        const voiceActionButtons = document.getElementById('voiceActionButtons');
+        if (voiceActionButtons) {
+            if (currentChatSettings.voiceEnabled) {
+                voiceActionButtons.innerHTML = `
+                    <div class="grid grid-cols-2 gap-3 mb-3">
+                        <button id="voiceToggle" class="voice-btn bg-red-500 text-white hover:bg-red-600" onclick="toggleVoiceInput()">
+                            <i class="fas fa-microphone"></i>
+                        </button>
+                        <button id="speakBtn" class="voice-btn bg-green-500 text-white hover:bg-green-600" onclick="speakLastResponse()">
+                            <i class="fas fa-volume-up"></i>
+                        </button>
+                    </div>
+                    
+                    <div class="mt-3">
+                        <div class="flex items-center">
+                            <input type="checkbox" id="chatAutoSpeak" ${currentChatSettings.autoSpeak ? 'checked' : ''} onchange="toggleChatAutoSpeak(this)" class="mr-2">
+                            <label for="chatAutoSpeak" class="text-sm">Auto-speak responses in this chat</label>
+                        </div>
+                    </div>
+                    
+                    <div class="speech-actions">
+                        <button class="speech-action-btn bg-blue-100 text-blue-800 hover:bg-blue-200" onclick="speakAllConversation()">
+                            <i class="fas fa-play"></i> Read All
+                        </button>
+                        <button class="speech-action-btn bg-purple-100 text-purple-800 hover:bg-purple-200" onclick="copyConversation()">
+                            <i class="fas fa-copy"></i> Copy
+                        </button>
+                        <button class="speech-action-btn bg-yellow-100 text-yellow-800 hover:bg-yellow-200" onclick="showVoiceCommands()">
+                            <i class="fas fa-question"></i> Help
+                        </button>
+                    </div>
+                `;
+            } else {
+                voiceActionButtons.innerHTML = `
+                    <div class="text-center p-4 bg-gray-50 rounded-lg">
+                        <i class="fas fa-volume-mute text-2xl text-gray-400 mb-2"></i>
+                        <p class="text-sm text-gray-600">Voice is disabled for this chat</p>
+                        <button onclick="enableChatVoice()" class="mt-2 px-3 py-1 bg-green-500 text-white text-sm rounded-lg hover:bg-green-600">
+                            Enable Voice
+                        </button>
+                    </div>
+                `;
+            }
+        }
+    }
+    
+    // Enable chat voice features
+    function enableChatVoiceFeatures() {
+        if (window.speechController && currentChatSettings.voiceEnabled) {
+            window.speechController.autoSpeak = currentChatSettings.autoSpeak;
+        }
+    }
+    
+    // Disable chat voice features
+    function disableChatVoiceFeatures() {
+        // Stop any ongoing speech
+        if (window.speechController) {
+            window.speechController.stopSpeaking();
+            window.speechController.stopListening();
+        }
+    }
+    
+    // Modified speak function that checks chat settings
+    function chatAwareSpeak(text) {
+        if (!currentChatSettings.voiceEnabled || !window.speechController) {
+            return false;
+        }
+        
+        return window.speechController.speak(text);
+    }
+    
+    // Save voice settings to server
+    function saveChatVoiceSettingsToServer() {
+        const data = {
+            session_id: currentChatSettings.sessionId,
+            voice_enabled: currentChatSettings.voiceEnabled,
+            auto_speak: currentChatSettings.autoSpeak
+        };
+        
+        fetch('/chatbot/update-chat-voice/', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': csrfToken
+            },
+            body: JSON.stringify(data)
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                showNotification('Voice settings saved for this chat', 'success');
+            }
+        })
+        .catch(error => {
+            console.error('Error saving voice settings:', error);
+            showNotification('Error saving voice settings', 'error');
+        });
+    }
+    
+    // ==================== EXISTING VOICE FUNCTIONS (Modified) ====================
+    
+    function speakMessage(button, text = null) {
+        if (!currentChatSettings.voiceEnabled) {
+            showNotification('Voice is disabled for this chat', 'warning');
+            return;
+        }
+        
+        if (!text) {
+            const messageDiv = button.closest('.message-bubble');
+            const textElement = messageDiv.querySelector('div > div:last-child');
+            if (textElement) {
+                text = textElement.textContent;
+            }
+        }
+        
+        if (text && window.speechController) {
+            window.speechController.speak(text, (status) => {
+                const indicator = button.closest('.message-bubble').querySelector('.voice-indicator');
+                if (indicator) {
+                    indicator.classList.toggle('speaking', status === 'start');
+                }
+            });
+        }
+    }
+    
+    function speakLastResponse() {
+        if (!currentChatSettings.voiceEnabled) {
+            showNotification('Voice is disabled for this chat', 'warning');
+            return;
+        }
+        
+        const botMessages = document.querySelectorAll('.bot-message');
+        if (botMessages.length > 0 && window.speechController) {
+            const lastMessage = botMessages[botMessages.length - 1];
+            const textElement = lastMessage.querySelector('div > div:last-child');
+            if (textElement) {
+                window.speechController.speak(textElement.textContent);
+            }
+        }
+    }
+    
+    function speakAllConversation() {
+        if (!currentChatSettings.voiceEnabled) {
+            showNotification('Voice is disabled for this chat', 'warning');
+            return;
+        }
+        
+        const botMessages = document.querySelectorAll('.bot-message');
+        if (botMessages.length > 0 && window.speechController) {
+            let fullText = '';
+            botMessages.forEach(msg => {
+                const textElement = msg.querySelector('div > div:last-child');
+                if (textElement) {
+                    fullText += textElement.textContent + '\n\n';
+                }
+            });
+            
+            if (fullText) {
+                window.speechController.speak(fullText);
+                window.speechController.showStatus('Reading all messages...', 'info');
+            }
+        }
+    }
+    
+    function toggleVoiceInput() {
+        if (!currentChatSettings.voiceEnabled) {
+            showNotification('Voice is disabled for this chat', 'warning');
+            return;
+        }
+        
+        if (window.speechController) {
+            window.speechController.startListening();
+        }
+    }
+    
+    // ==================== MODIFIED MESSAGE DISPLAY FUNCTION ====================
+    
+    function addMessageToUI(type, content, analysis = null) {
+        // ... existing code to create message ...
+        
+        // Add speak button only if voice is enabled for this chat
+        if (type === 'bot' && currentChatSettings.voiceEnabled) {
+            // Add speak button to message
+            const speakButton = `
+                <button class="text-xs text-green-600 hover:text-green-800" 
+                        onclick="speakMessage(this, '${content.replace(/'/g, "\\'")}')" 
+                        title="Speak">
+                    <i class="fas fa-volume-up"></i>
+                </button>
+            `;
+            // Add to message HTML
+        }
+        
+        // Auto-speak if enabled for this chat
+        if (type === 'bot' && currentChatSettings.autoSpeak && currentChatSettings.voiceEnabled && window.speechController) {
+            setTimeout(() => {
+                window.speechController.speak(content);
+            }, 500);
+        }
+        
+        // ... rest of existing code ...
+    }
+    
+    // ==================== INITIALIZATION ====================
+    
+    function initChat() {
+        // Initialize speech controller
+        window.speechController = new SpeechController();
+        
+        // Initialize chat voice controller
+        initChatVoiceController();
+        
+        // Load chat history
+        const savedHistory = localStorage.getItem('chatHistory');
+        if (savedHistory) {
+            chatHistory = JSON.parse(savedHistory);
+        }
+        
+        // Load global voice settings
+        if (window.speechController) {
+            window.speechController.loadSettings();
+        }
+        
+        // Setup event listeners
+        setupEventListeners();
+        
+        // Check microphone permission
+        checkMicrophonePermission();
+    }
+    
+    // Initialize when page loads
+    window.addEventListener('load', function() {
+        initChat();
+        scrollToBottom();
+    });
+    
+    // ==================== REST OF YOUR EXISTING CODE ====================
+    // (Keep all your existing SpeechController class and other functions)
+    
+    // ... rest of your existing JavaScript code ...
+</script>
+{% endblock %}

@@ -1,0 +1,90 @@
+{% extends 'base.html' %}
+
+{% block title %}AFCON 2027 - Football{% endblock %}
+
+{% block extra_css %}
+<style>
+    .football-nav {
+        background: linear-gradient(135deg, #1a4731 0%, #0d2818 100%);
+    }
+    .match-card {
+        transition: transform 0.3s, box-shadow 0.3s;
+    }
+    .match-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
+    }
+    .team-badge {
+        width: 50px;
+        height: 50px;
+        border-radius: 50%;
+        background: white;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: bold;
+        font-size: 20px;
+    }
+    .standing-row {
+        transition: background 0.2s;
+    }
+    .standing-row:hover {
+        background: #f3f4f6;
+    }
+    .player-card {
+        transition: all 0.3s;
+    }
+    .player-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+    }
+    .live-badge {
+        animation: pulse 1.5s infinite;
+    }
+    @keyframes pulse {
+        0% { opacity: 1; }
+        50% { opacity: 0.5; }
+        100% { opacity: 1; }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<!-- Football Navigation -->
+<div class="football-nav text-white">
+    <div class="container mx-auto px-4">
+        <div class="flex flex-wrap justify-center space-x-1 md:space-x-4 py-3">
+            <a href="{% url 'football:match_schedule' %}" 
+               class="px-3 md:px-4 py-2 rounded-lg hover:bg-white/20 transition {% if request.resolver_match.url_name == 'match_schedule' %}bg-white/20{% endif %}">
+                <i class="fas fa-calendar-alt mr-1 md:mr-2"></i><span class="text-sm md:text-base">Matches</span>
+            </a>
+            <a href="{% url 'football:standings' %}" 
+               class="px-3 md:px-4 py-2 rounded-lg hover:bg-white/20 transition {% if request.resolver_match.url_name == 'standings' %}bg-white/20{% endif %}">
+                <i class="fas fa-trophy mr-1 md:mr-2"></i><span class="text-sm md:text-base">Standings</span>
+            </a>
+            <a href="{% url 'football:teams' %}" 
+               class="px-3 md:px-4 py-2 rounded-lg hover:bg-white/20 transition {% if 'teams' in request.resolver_match.url_name %}bg-white/20{% endif %}">
+                <i class="fas fa-users mr-1 md:mr-2"></i><span class="text-sm md:text-base">Teams</span>
+            </a>
+            <a href="{% url 'football:top_scorers' %}" 
+               class="px-3 md:px-4 py-2 rounded-lg hover:bg-white/20 transition {% if request.resolver_match.url_name == 'top_scorers' %}bg-white/20{% endif %}">
+                <i class="fas fa-futbol mr-1 md:mr-2"></i><span class="text-sm md:text-base">Top Scorers</span>
+            </a>
+            <a href="{% url 'football:stadiums' %}" 
+               class="px-3 md:px-4 py-2 rounded-lg hover:bg-white/20 transition {% if request.resolver_match.url_name == 'stadiums' %}bg-white/20{% endif %}">
+                <i class="fas fa-map-marker-alt mr-1 md:mr-2"></i><span class="text-sm md:text-base">Stadiums</span>
+            </a>
+            <a href="{% url 'football:news' %}" 
+               class="px-3 md:px-4 py-2 rounded-lg hover:bg-white/20 transition {% if request.resolver_match.url_name == 'news' %}bg-white/20{% endif %}">
+                <i class="fas fa-newspaper mr-1 md:mr-2"></i><span class="text-sm md:text-base">News</span>
+            </a>
+            <a href="{% url 'football:players_list' %}" 
+                class="px-3 md:px-4 py-2 rounded-lg hover:bg-white/20 transition {% if request.resolver_match.url_name == 'players_list' %}bg-white/20{% endif %}">
+                <i class="fas fa-user-friends mr-1 md:mr-2"></i><span class="text-sm md:text-base">Players</span>
+            </a>
+        </div>
+    </div>
+</div>
+
+{% block football_content %}{% endblock %}
+{% endblock %}

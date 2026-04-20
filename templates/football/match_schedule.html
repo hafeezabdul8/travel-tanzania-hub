@@ -1,0 +1,176 @@
+{% extends 'football/football_base.html' %}
+
+{% block title %}Match Schedule - AFCON 2027{% endblock %}
+
+{% block football_content %}
+<div class="container mx-auto px-4 py-8">
+    <!-- Header -->
+    <div class="text-center mb-8">
+        <h1 class="text-3xl md:text-4xl font-bold text-gray-800 mb-2">AFCON 2027 Match Schedule</h1>
+        <p class="text-gray-600">All matches across Dar es Salaam, Arusha, and Zanzibar</p>
+    </div>
+
+    <!-- Filters -->
+    <div class="bg-white rounded-xl shadow-lg p-6 mb-8">
+        <form method="get" class="flex flex-wrap gap-4 items-end">
+            <div>
+                <label class="block text-gray-700 mb-2 font-semibold">Match Status</label>
+                <select name="status" class="p-2 border rounded-lg">
+                    <option value="">All Matches</option>
+                    <option value="scheduled" {% if status_filter == 'scheduled' %}selected{% endif %}>Scheduled</option>
+                    <option value="live" {% if status_filter == 'live' %}selected{% endif %}>Live</option>
+                    <option value="finished" {% if status_filter == 'finished' %}selected{% endif %}>Finished</option>
+                </select>
+            </div>
+            <div>
+                <label class="block text-gray-700 mb-2 font-semibold">Match Type</label>
+                <select name="type" class="p-2 border rounded-lg">
+                    <option value="">All Types</option>
+                    <option value="group" {% if type_filter == 'group' %}selected{% endif %}>Group Stage</option>
+                    <option value="quarterfinal" {% if type_filter == 'quarterfinal' %}selected{% endif %}>Quarter Final</option>
+                    <option value="semifinal" {% if type_filter == 'semifinal' %}selected{% endif %}>Semi Final</option>
+                    <option value="final" {% if type_filter == 'final' %}selected{% endif %}>Final</option>
+                </select>
+            </div>
+            <div>
+                <button type="submit" class="bg-green-600 text-white px-6 py-2 rounded-lg hover:bg-green-700">
+                    <i class="fas fa-filter mr-2"></i>Filter
+                </button>
+                <a href="{% url 'football:match_schedule' %}" class="bg-gray-300 text-gray-700 px-6 py-2 rounded-lg hover:bg-gray-400 ml-2">
+                    <i class="fas fa-redo mr-2"></i>Reset
+                </a>
+            </div>
+        </form>
+    </div>
+
+    <!-- Matches by Date -->
+    {% for date, matches in matches_by_date.items %}
+    <div class="mb-12">
+        <div class="flex items-center mb-4">
+            <div class="w-1 h-8 bg-green-600 rounded mr-3"></div>
+            <h2 class="text-2xl font-bold text-gray-800">
+                {{ date|date:"l, F j, Y" }}
+            </h2>
+        </div>
+        
+        <div class="grid gap-4">
+            {% for match in matches %}
+            <div class="match-card bg-white rounded-xl shadow-lg overflow-hidden hover:shadow-2xl transition">
+                <div class="md:flex">
+                    <!-- Match Info -->
+                    <div class="flex-1 p-6">
+                        <div class="flex items-center justify-between mb-4">
+                            <span class="text-sm text-gray-500">
+                                <i class="far fa-clock mr-1"></i>{{ match.time|time:"g:i A" }}
+                            </span>
+                            <span class="px-3 py-1 rounded-full text-xs font-semibold 
+                                {% if match.status == 'live' %}bg-red-500 text-white live-badge
+                                {% elif match.status == 'finished' %}bg-gray-500 text-white
+                                {% else %}bg-green-100 text-green-700{% endif %}">
+                                {% if match.status == 'live' %}
+                                    <i class="fas fa-circle text-xs mr-1"></i>LIVE
+                                {% elif match.status == 'finished' %}
+                                    <i class="fas fa-check-circle mr-1"></i>FT
+                                {% else %}
+                                    <i class="far fa-calendar mr-1"></i>Scheduled
+                                {% endif %}
+                            </span>
+                        </div>
+                        
+                        <div class="flex items-center justify-between mb-4">
+                            <!-- Home Team -->
+                            <div class="flex-1 text-center">
+                                <div class="flex items-center justify-center mb-2">
+                                    <!-- Home Team Flag -->
+                                    <div class="w-12 h-12 rounded-full overflow-hidden bg-gray-100 flex items-center justify-center shadow-md">
+                                        {% if match.home_team.get_flag_url %}
+                                            <img src="{{ match.home_team.get_flag_url }}" 
+                                                 alt="{{ match.home_team.name }} flag" 
+                                                 class="w-full h-full object-cover">
+                                        {% else %}
+                                            <span class="text-sm font-bold">{{ match.home_team.short_name }}</span>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                                <div class="font-semibold text-gray-800">{{ match.home_team.name }}</div>
+                            </div>
+                            
+                            <!-- Score -->
+                            <div class="mx-4 text-center">
+                                {% if match.status == 'finished' or match.status == 'live' %}
+                                    <div class="text-3xl font-bold text-gray-800">
+                                        {{ match.home_score|default:"0" }} - {{ match.away_score|default:"0" }}
+                                    </div>
+                                    {% if match.home_penalty_score %}
+                                    <div class="text-sm text-gray-500">
+                                        ({{ match.home_penalty_score }} - {{ match.away_penalty_score }} pens)
+                                    </div>
+                                    {% endif %}
+                                {% else %}
+                                    <div class="text-xl text-gray-400">VS</div>
+                                {% endif %}
+                            </div>
+                            
+                            <!-- Away Team -->
+                            <div class="flex-1 text-center">
+                                <div class="flex items-center justify-center mb-2">
+                                    <!-- Away Team Flag -->
+                                    <div class="w-12 h-12 rounded-full overflow-hidden bg-gray-100 flex items-center justify-center shadow-md">
+                                        {% if match.away_team.get_flag_url %}
+                                            <img src="{{ match.away_team.get_flag_url }}" 
+                                                 alt="{{ match.away_team.name }} flag" 
+                                                 class="w-full h-full object-cover">
+                                        {% else %}
+                                            <span class="text-sm font-bold">{{ match.away_team.short_name }}</span>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                                <div class="font-semibold text-gray-800">{{ match.away_team.name }}</div>
+                            </div>
+                        </div>
+                        
+                        <!-- Venue -->
+                        <div class="text-center text-sm text-gray-500">
+                            <i class="fas fa-map-marker-alt mr-1"></i>
+                            {{ match.stadium.name }} - {{ match.stadium.city }}
+                        </div>
+                    </div>
+                    
+                    <!-- Action Button -->
+                    <div class="bg-gray-50 p-6 flex items-center justify-center border-t md:border-t-0 md:border-l">
+                        <a href="{% url 'football:match_detail' match.id %}" 
+                           class="bg-green-600 text-white px-6 py-2 rounded-lg hover:bg-green-700 transition">
+                            <i class="fas fa-info-circle mr-2"></i>Details
+                        </a>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+    {% empty %}
+    <div class="text-center py-12">
+        <i class="fas fa-futbol text-6xl text-gray-300 mb-4"></i>
+        <h3 class="text-2xl font-semibold text-gray-600">No matches found</h3>
+        <p class="text-gray-500 mt-2">Check back later for match schedules</p>
+    </div>
+    {% endfor %}
+</div>
+
+<style>
+    .live-badge {
+        animation: pulse 1.5s infinite;
+    }
+    @keyframes pulse {
+        0% { opacity: 1; }
+        50% { opacity: 0.5; }
+        100% { opacity: 1; }
+    }
+    .match-card {
+        transition: transform 0.3s, box-shadow 0.3s;
+    }
+    .match-card:hover {
+        transform: translateY(-3px);
+    }
+</style>
+{% endblock %}

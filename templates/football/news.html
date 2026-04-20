@@ -1,0 +1,62 @@
+{% extends 'football/football_base.html' %}
+
+{% block title %}News - AFCON 2027{% endblock %}
+
+{% block football_content %}
+<div class="container mx-auto px-4 py-8">
+    <div class="text-center mb-8">
+        <h1 class="text-3xl md:text-4xl font-bold text-gray-800 mb-2">AFCON 2027 News</h1>
+        <p class="text-gray-600">Latest updates and stories</p>
+    </div>
+
+    <!-- Category Filter -->
+    <div class="flex flex-wrap gap-2 mb-8 justify-center">
+        <a href="{% url 'football:news' %}" 
+           class="px-4 py-2 rounded-full {% if not selected_category %}bg-green-600 text-white{% else %}bg-gray-200 text-gray-700 hover:bg-gray-300{% endif %} transition">
+            All
+        </a>
+        {% for cat_value, cat_label in categories %}
+        <a href="?category={{ cat_value }}" 
+           class="px-4 py-2 rounded-full {% if selected_category == cat_value %}bg-green-600 text-white{% else %}bg-gray-200 text-gray-700 hover:bg-gray-300{% endif %} transition">
+            {{ cat_label }}
+        </a>
+        {% endfor %}
+    </div>
+
+    <!-- News Grid -->
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+        {% for item in news %}
+        <article class="bg-white rounded-xl shadow-lg overflow-hidden hover:shadow-2xl transition">
+            {% if item.image_url %}
+            <img src="{{ item.image_url }}" alt="{{ item.title }}" class="w-full h-48 object-cover">
+            {% else %}
+            <div class="h-48 bg-gradient-to-r from-green-400 to-blue-500 flex items-center justify-center">
+                <i class="fas fa-newspaper text-white text-5xl"></i>
+            </div>
+            {% endif %}
+            <div class="p-6">
+                <div class="flex items-center mb-3">
+                    <span class="text-xs text-gray-500">
+                        <i class="far fa-calendar mr-1"></i>{{ item.published_at|date:"M d, Y" }}
+                    </span>
+                    <span class="mx-2">•</span>
+                    <span class="text-xs bg-gray-100 px-2 py-1 rounded">{{ item.get_category_display }}</span>
+                </div>
+                <h3 class="text-xl font-bold mb-2 line-clamp-2">{{ item.title }}</h3>
+                <p class="text-gray-600 mb-4 line-clamp-3">{{ item.excerpt|default:item.content|truncatewords:30 }}</p>
+                <a href="{% url 'football:news_detail' item.slug %}" 
+                   class="text-green-600 hover:text-green-800 font-semibold">
+                    Read More <i class="fas fa-arrow-right ml-1"></i>
+                </a>
+            </div>
+        </article>
+        {% empty %}
+        <div class="col-span-3 text-center py-12">
+            <i class="fas fa-newspaper text-6xl text-gray-300 mb-4"></i>
+            <h3 class="text-2xl font-semibold text-gray-600">No news found</h3>
+            <p class="text-gray-500 mt-2">Check back later for updates</p>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+{% endblock %}

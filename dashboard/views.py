@@ -1,7 +1,13 @@
+import csv
+from pathlib import Path
+from pyexpat.errors import messages
+
+from django.http import JsonResponse
 from django.shortcuts import redirect, render
 from django.contrib.auth.decorators import login_required, user_passes_test
 from django.db.models import Sum, Count, Q
 from django.utils import timezone
+from django.core.paginator import Paginator
 from datetime import datetime, timedelta
 from hotels.models import Booking, Hotel
 from tourism.models import TourPackage, TourBooking
@@ -233,3 +239,228 @@ def booking_management(request):
     }
     
     return render(request, 'dashboard/booking_management.html', context)
+
+
+
+@login_required
+@user_passes_test(is_admin)
+def add_training_example(request):
+    """Add a new training example to the chatbot CSV file"""
+    
+    if request.method == 'POST':
+        text = request.POST.get('text', '').strip()
+        intent = request.POST.get('intent', '').strip()
+        response = request.POST.get('response', '').strip()
+        category = request.POST.get('category', 'general')
+        keywords = request.POST.get('keywords', '')
+        
+        if not text or not intent or not response:
+            # Use a simple error message without messages framework
+            context = {
+                'error': 'Please fill in all required fields',
+                'training_stats': get_training_stats(),
+                'intents': [...],  # Your intents list
+                'categories': [...],  # Your categories list
+            }
+            return render(request, 'chatbot/add_training.html', context)
+        
+        # Path to CSV file
+        csv_path = Path('chatbot/data/training_data.csv')
+        csv_path.parent.mkdir(exist_ok=True, parents=True)
+        
+        file_exists = csv_path.exists()
+        
+        # Append to CSV
+        with open(csv_path, 'a', newline='', encoding='utf-8') as f:
+            writer = csv.writer(f)
+            if not file_exists:
+                writer.writerow(['text', 'intent', 'response', 'category', 'keywords'])
+            writer.writerow([text, intent, response, category, keywords])
+        
+        # Success message
+        context = {
+            'success': f'✅ Training example added successfully! The chatbot will now respond to "{text[:50]}..."',
+            'training_stats': get_training_stats(),
+            'intents': [
+                {'value': 'greeting', 'label': '👋 Greeting', 'color': 'blue'},
+                {'value': 'hotel_booking', 'label': '🏨 Hotel Booking', 'color': 'green'},
+                {'value': 'tourism', 'label': '🦁 Tourism', 'color': 'yellow'},
+                {'value': 'afcon', 'label': '⚽ AFCON', 'color': 'pink'},
+                {'value': 'price_query', 'label': '💰 Price Query', 'color': 'indigo'},
+                {'value': 'transport', 'label': '🚗 Transport', 'color': 'orange'},
+                {'value': 'food', 'label': '🍲 Food', 'color': 'emerald'},
+                {'value': 'emergency', 'label': '🚨 Emergency', 'color': 'red'},
+                {'value': 'farewell', 'label': '👋 Farewell', 'color': 'gray'},
+                {'value': 'general', 'label': '📝 General', 'color': 'purple'},
+            ],
+            'categories': [
+                'general', 'booking', 'tourism', 'afcon', 'pricing', 'transport', 'food', 'emergency'
+            ]
+        }
+        
+        return render(request, 'chatbot/add_training.html', context)
+    
+    # GET request - show the form
+    context = {
+        'training_stats': get_training_stats(),
+        'intents': [
+            {'value': 'greeting', 'label': '👋 Greeting', 'color': 'blue'},
+            {'value': 'hotel_booking', 'label': '🏨 Hotel Booking', 'color': 'green'},
+            {'value': 'tourism', 'label': '🦁 Tourism', 'color': 'yellow'},
+            {'value': 'afcon', 'label': '⚽ AFCON', 'color': 'pink'},
+            {'value': 'price_query', 'label': '💰 Price Query', 'color': 'indigo'},
+            {'value': 'transport', 'label': '🚗 Transport', 'color': 'orange'},
+            {'value': 'food', 'label': '🍲 Food', 'color': 'emerald'},
+            {'value': 'emergency', 'label': '🚨 Emergency', 'color': 'red'},
+            {'value': 'farewell', 'label': '👋 Farewell', 'color': 'gray'},
+            {'value': 'general', 'label': '📝 General', 'color': 'purple'},
+        ],
+        'categories': [
+            'general', 'booking', 'tourism', 'afcon', 'pricing', 'transport', 'food', 'emergency'
+        ]
+    }
+    
+    return render(request, 'chatbot/add_training.html', context)
+def get_training_stats():
+    """Get statistics about training data"""
+    csv_path = Path('chatbot/data/training_data.csv')
+    
+    if not csv_path.exists():
+        return {
+            'total_examples': 0,
+            'intents_count': 0,
+            'last_updated': None,
+            'intents_distribution': {},
+        }
+    
+    try:
+        import pandas as pd
+        df = pd.read_csv(csv_path)
+        
+        stats = {
+            'total_examples': len(df),
+            'intents_count': df['intent'].nunique() if 'intent' in df.columns else 0,
+            'last_updated': datetime.fromtimestamp(csv_path.stat().st_mtime).strftime('%Y-%m-%d %H:%M:%S'),
+            'intents_distribution': df['intent'].value_counts().to_dict() if 'intent' in df.columns else {},
+        }
+        return stats
+    except:
+        return {
+            'total_examples': 0,
+            'intents_count': 0,
+            'last_updated': None,
+            'intents_distribution': {},
+        }
+
+@login_required
+@user_passes_test(is_admin)
+def training_stats_view(request):
+    """AJAX endpoint to get training statistics"""
+    stats = get_training_stats()
+    return JsonResponse(stats)
+
+@login_required
+@user_passes_test(is_admin)
+def bulk_import_training(request):
+    """Bulk import training examples from a CSV file"""
+    
+    if request.method == 'POST' and request.FILES.get('csv_file'):
+        csv_file = request.FILES['csv_file']
+        
+        # Validate file type
+        if not csv_file.name.endswith('.csv'):
+            messages.error(request, 'Please upload a CSV file')
+            return redirect('dashboard:add_training_example')
+        
+        # Path to save uploaded file
+        upload_path = Path('chatbot/data/uploaded_training.csv')
+        upload_path.parent.mkdir(exist_ok=True, parents=True)
+        
+        # Save uploaded file
+        with open(upload_path, 'wb+') as destination:
+            for chunk in csv_file.chunks():
+                destination.write(chunk)
+        
+        # Merge with existing training data
+        main_csv_path = Path('chatbot/data/training_data.csv')
+        
+        try:
+            import pandas as pd
+            existing_df = pd.read_csv(main_csv_path) if main_csv_path.exists() else pd.DataFrame()
+            new_df = pd.read_csv(upload_path)
+            
+            # Combine dataframes
+            combined_df = pd.concat([existing_df, new_df], ignore_index=True)
+            combined_df.drop_duplicates(subset=['text'], keep='first', inplace=True)
+            
+            # Save merged data
+            combined_df.to_csv(main_csv_path, index=False)
+            
+            messages.success(request, f'✅ Successfully imported {len(new_df)} new training examples! Total examples: {len(combined_df)}')
+            
+            # Clean up uploaded file
+            upload_path.unlink()
+            
+        except Exception as e:
+            messages.error(request, f'Error processing CSV: {str(e)}')
+        
+        return redirect('dashboard:add_training_example')
+    
+    return JsonResponse({'error': 'Method not allowed'}, status=405)
+
+@login_required
+@user_passes_test(is_admin)
+def export_training_data(request):
+    """Export all training data as CSV"""
+    
+    csv_path = Path('chatbot/data/training_data.csv')
+    
+    if not csv_path.exists():
+        messages.error(request, 'No training data found')
+        return redirect('dashboard:add_training_example')
+    
+    import csv
+    from django.http import HttpResponse
+    
+    response = HttpResponse(content_type='text/csv')
+    response['Content-Disposition'] = 'attachment; filename="chatbot_training_data.csv"'
+    
+    with open(csv_path, 'r', encoding='utf-8') as f:
+        writer = csv.writer(response)
+        reader = csv.reader(f)
+        for row in reader:
+            writer.writerow(row)
+    
+    return response
+
+def get_training_stats():
+    """Get statistics about training data"""
+    csv_path = Path('chatbot/data/training_data.csv')
+    
+    if not csv_path.exists():
+        return {
+            'total_examples': 0,
+            'intents_count': 0,
+            'last_updated': None,
+            'intents_distribution': {},
+        }
+    
+    try:
+        import pandas as pd
+        df = pd.read_csv(csv_path)
+        
+        stats = {
+            'total_examples': len(df),
+            'intents_count': df['intent'].nunique() if 'intent' in df.columns else 0,
+            'last_updated': datetime.fromtimestamp(csv_path.stat().st_mtime).strftime('%Y-%m-%d %H:%M:%S'),
+            'intents_distribution': df['intent'].value_counts().to_dict() if 'intent' in df.columns else {},
+        }
+        return stats
+    except:
+        return {
+            'total_examples': 0,
+            'intents_count': 0,
+            'last_updated': None,
+            'intents_distribution': {},
+        }
+

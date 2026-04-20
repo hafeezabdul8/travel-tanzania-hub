@@ -1,51 +1,56 @@
 {% extends 'base.html' %}
 
-{% block title %}Tourist Attractions - Tanzania AFCON 2027{% endblock %}
+{% block title %}Discover Tanzania - Travel To Tanzania Hub{% endblock %}
 
 {% block content %}
 <div class="animate-fade-in">
     <!-- Hero Section -->
-    <div class="bg-gradient-to-r from-green-800 to-blue-800 text-white py-16">
-        <div class="container mx-auto px-4 text-center">
-            <h1 class="text-4xl md:text-5xl font-bold mb-6">
+    <div class="relative bg-gradient-to-r from-emerald-700 via-teal-700 to-sky-700 text-white py-20 overflow-hidden">
+        <div class="absolute inset-0 bg-black/30"></div>
+        <div class="container mx-auto px-4 text-center relative z-10">
+            <div class="flex justify-center mb-6">
+                <div class="inline-flex items-center bg-white/10 backdrop-blur-sm rounded-full px-4 py-2">
+                    <img src="https://flagcdn.com/w80/tz.png" alt="Tanzania Flag" class="w-6 h-4 rounded-sm mr-2">
+                    <span class="text-sm font-semibold">Welcome to Tanzania</span>
+                </div>
+            </div>
+            <h1 class="text-4xl md:text-6xl font-bold mb-6">
                 Discover Tanzania
-                <span class="block text-yellow-400 mt-2">Beyond Football</span>
+                <span class="block text-amber-300 mt-2">Your African Adventure Awaits</span>
             </h1>
-            <p class="text-xl mb-8 max-w-3xl mx-auto opacity-90">
-                Explore breathtaking attractions across Dar es Salaam, Arusha, and Zanzibar during AFCON 2027. 
+            <p class="text-xl md:text-2xl mb-8 max-w-3xl mx-auto opacity-90">
+                Explore breathtaking attractions across Dar es Salaam, Arusha, and Zanzibar. 
                 From wildlife safaris to pristine beaches and rich cultural heritage.
             </p>
             
-            <!-- Quick Stats -->
             <div class="grid grid-cols-2 md:grid-cols-4 gap-6 max-w-4xl mx-auto mt-12">
-                <div class="text-center">
+                <div class="text-center bg-white/10 backdrop-blur-sm rounded-2xl p-4">
                     <div class="text-3xl font-bold mb-2">50+</div>
                     <div class="text-sm opacity-90">Attractions</div>
                 </div>
-                <div class="text-center">
+                <div class="text-center bg-white/10 backdrop-blur-sm rounded-2xl p-4">
                     <div class="text-3xl font-bold mb-2">3</div>
-                    <div class="text-sm opacity-90">Host Cities</div>
+                    <div class="text-sm opacity-90">Cities</div>
                 </div>
-                <div class="text-center">
+                <div class="text-center bg-white/10 backdrop-blur-sm rounded-2xl p-4">
                     <div class="text-3xl font-bold mb-2">24/7</div>
-                    <div class="text-sm opacity-90">Tour Guides</div>
+                    <div class="text-sm opacity-90">Support</div>
                 </div>
-                <div class="text-center">
+                <div class="text-center bg-white/10 backdrop-blur-sm rounded-2xl p-4">
                     <div class="text-3xl font-bold mb-2">100+</div>
-                    <div class="text-sm opacity-90">Tour Packages</div>
+                    <div class="text-sm opacity-90">Packages</div>
                 </div>
             </div>
         </div>
     </div>
 
     <!-- Filters -->
-    <div class="bg-white shadow-lg py-6 sticky top-0 z-10">
+    <div class="bg-white shadow-lg py-6 sticky top-0 z-10 border-b border-gray-100">
         <div class="container mx-auto px-4">
             <form method="get" class="flex flex-col md:flex-row gap-4 items-end">
-                <!-- City Filter -->
                 <div>
                     <label class="block text-gray-700 mb-2 font-semibold">City</label>
-                    <select name="city" class="w-full p-3 border border-gray-300 rounded-lg">
+                    <select name="city" class="w-full p-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-emerald-500 focus:border-transparent">
                         <option value="">All Cities</option>
                         <option value="DAR" {% if selected_city == 'DAR' %}selected{% endif %}>Dar es Salaam</option>
                         <option value="ARU" {% if selected_city == 'ARU' %}selected{% endif %}>Arusha</option>
@@ -54,10 +59,9 @@
                     </select>
                 </div>
                 
-                <!-- Category Filter -->
                 <div>
                     <label class="block text-gray-700 mb-2 font-semibold">Category</label>
-                    <select name="category" class="w-full p-3 border border-gray-300 rounded-lg">
+                    <select name="category" class="w-full p-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-emerald-500 focus:border-transparent">
                         <option value="">All Categories</option>
                         <option value="nature" {% if selected_category == 'nature' %}selected{% endif %}>🌿 Nature & Wildlife</option>
                         <option value="beach" {% if selected_category == 'beach' %}selected{% endif %}>🏖️ Beach & Coast</option>
@@ -68,24 +72,22 @@
                     </select>
                 </div>
                 
-                <!-- Search -->
                 <div class="flex-1">
                     <label class="block text-gray-700 mb-2 font-semibold">Search Attractions</label>
                     <div class="flex">
                         <input type="text" name="search" value="{{ search_query }}" 
                                placeholder="Search by name, location, or description..." 
-                               class="flex-1 p-3 border border-gray-300 rounded-l-lg">
+                               class="flex-1 p-3 border border-gray-300 rounded-l-xl focus:ring-2 focus:ring-emerald-500 focus:border-transparent">
                         <button type="submit" 
-                                class="bg-green-600 text-white px-6 rounded-r-lg hover:bg-green-700 font-semibold">
+                                class="bg-gradient-to-r from-emerald-600 to-teal-600 text-white px-6 rounded-r-xl hover:from-emerald-700 hover:to-teal-700 transition">
                             <i class="fas fa-search"></i>
                         </button>
                     </div>
                 </div>
                 
-                <!-- Reset Button -->
                 <div>
                     <a href="{% url 'tourism' %}" 
-                       class="bg-gray-200 text-gray-800 px-6 py-3 rounded-lg hover:bg-gray-300 font-semibold inline-block">
+                       class="bg-gray-200 text-gray-800 px-6 py-3 rounded-xl hover:bg-gray-300 transition inline-block">
                         Clear Filters
                     </a>
                 </div>
@@ -93,27 +95,28 @@
         </div>
     </div>
 
-    <!-- Main Content -->
     <div class="container mx-auto px-4 py-12">
-        <!-- Featured Tour Packages -->
         {% if featured_packages %}
         <div class="mb-16">
             <div class="flex justify-between items-center mb-8">
-                <h2 class="text-3xl font-bold text-gray-800">🏆 Featured Tour Packages</h2>
-                <a href="{% url 'tour_packages' %}" class="text-green-600 hover:text-green-800 font-semibold">
-                    View All Packages <i class="fas fa-arrow-right ml-1"></i>
+                <h2 class="text-3xl font-bold text-gray-800 flex items-center">
+                    <i class="fas fa-trophy text-amber-500 mr-3"></i>
+                    Featured Tour Packages
+                </h2>
+                <a href="{% url 'tour_packages' %}" class="text-emerald-600 hover:text-emerald-800 font-semibold flex items-center gap-2">
+                    View All Packages <i class="fas fa-arrow-right"></i>
                 </a>
             </div>
             
             <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
                 {% for package in featured_packages %}
-                <div class="bg-white rounded-xl shadow-lg overflow-hidden hover:shadow-2xl transition duration-300 transform hover:-translate-y-2">
-                    <div class="h-48 bg-gradient-to-r from-green-500 to-blue-500 relative">
+                <div class="bg-white rounded-2xl shadow-lg overflow-hidden hover:shadow-2xl transition duration-300 transform hover:-translate-y-2">
+                    <div class="h-48 bg-gradient-to-r from-emerald-500 to-teal-500 relative">
                         <div class="absolute inset-0 flex items-center justify-center">
-                            <i class="fas fa-map-marked-alt text-white text-4xl"></i>
+                            <i class="fas fa-map-marked-alt text-white text-4xl opacity-50"></i>
                         </div>
-                        <div class="absolute top-4 right-4 bg-yellow-500 text-white px-3 py-1 rounded-full text-sm font-bold">
-                            Featured
+                        <div class="absolute top-4 right-4 bg-amber-500 text-white px-3 py-1 rounded-full text-sm font-bold shadow-lg">
+                            <i class="fas fa-star mr-1"></i>Featured
                         </div>
                     </div>
                     <div class="p-6">
@@ -124,11 +127,11 @@
                             <span>{{ package.duration }}</span>
                         </div>
                         <div class="mb-4">
-                            <span class="text-2xl font-bold text-green-700">${{ package.price }}</span>
+                            <span class="text-2xl font-bold text-emerald-700">${{ package.price }}</span>
                             <span class="text-gray-500"> per person</span>
                         </div>
                         <a href="{% url 'attraction_detail' package.attraction.id %}" 
-                           class="block w-full bg-green-600 text-white text-center py-3 rounded-lg hover:bg-green-700 font-semibold">
+                           class="block w-full bg-gradient-to-r from-emerald-600 to-teal-600 text-white text-center py-3 rounded-xl hover:from-emerald-700 hover:to-teal-700 transition font-semibold">
                             View Details
                         </a>
                     </div>
@@ -138,40 +141,37 @@
         </div>
         {% endif %}
 
-        <!-- Dar es Salaam Attractions -->
         {% if dar_attractions %}
         <div class="mb-16">
-            <h2 class="text-3xl font-bold mb-8 text-green-800 border-b pb-2">
-                <i class="fas fa-city mr-3"></i>Dar es Salaam Attractions
+            <h2 class="text-3xl font-bold mb-8 text-emerald-800 border-b-2 border-emerald-200 pb-2 flex items-center">
+                <i class="fas fa-city mr-3 text-emerald-600"></i>Dar es Salaam Attractions
             </h2>
             <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
                 {% for attraction in dar_attractions %}
-                <div class="bg-white rounded-xl shadow-lg overflow-hidden hover:shadow-2xl transition duration-300">
-                    <!-- FIXED IMAGE SECTION -->
+                <div class="bg-white rounded-2xl shadow-lg overflow-hidden hover:shadow-2xl transition duration-300 group">
                     {% with images=attraction.images.all %}
                         {% if images %}
                             {% with primary_image=images|first %}
-                                <div class="h-48 bg-gray-200 relative overflow-hidden">
+                                <div class="h-56 overflow-hidden relative">
                                     <img src="{{ primary_image.image_url }}" 
                                          alt="{{ attraction.name }}"
-                                         class="w-full h-full object-cover hover:scale-110 transition-transform duration-500">
+                                         class="w-full h-full object-cover group-hover:scale-110 transition duration-500">
                                     {% if primary_image.caption %}
-                                        <div class="absolute bottom-0 left-0 right-0 bg-black bg-opacity-50 text-white p-2 text-sm">
+                                        <div class="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/70 to-transparent text-white p-3 text-sm">
                                             {{ primary_image.caption|truncatechars:50 }}
                                         </div>
                                     {% endif %}
-                                    <div class="absolute top-4 left-4 bg-white text-green-800 px-3 py-1 rounded-full text-sm font-bold">
+                                    <div class="absolute top-4 left-4 bg-white/90 backdrop-blur-sm text-emerald-700 px-3 py-1 rounded-full text-sm font-bold shadow-md">
                                         {{ attraction.get_category_display|slice:"0:2" }}
                                     </div>
                                 </div>
                             {% endwith %}
                         {% else %}
-                            <!-- Fallback with icon -->
-                            <div class="h-48 bg-gradient-to-r from-green-400 to-green-600 relative">
+                            <div class="h-56 bg-gradient-to-r from-emerald-400 to-emerald-600 relative">
                                 <div class="absolute inset-0 flex items-center justify-center">
-                                    <i class="fas {{ attraction.get_icon }} text-white text-5xl"></i>
+                                    <i class="fas {{ attraction.get_icon }} text-white text-6xl opacity-50"></i>
                                 </div>
-                                <div class="absolute top-4 left-4 bg-white text-green-800 px-3 py-1 rounded-full text-sm font-bold">
+                                <div class="absolute top-4 left-4 bg-white/90 backdrop-blur-sm text-emerald-700 px-3 py-1 rounded-full text-sm font-bold">
                                     {{ attraction.get_category_display|slice:"0:2" }}
                                 </div>
                             </div>
@@ -179,21 +179,21 @@
                     {% endwith %}
                     
                     <div class="p-6">
-                        <h3 class="text-xl font-bold mb-2">{{ attraction.name }}</h3>
+                        <h3 class="text-xl font-bold mb-2 text-gray-800">{{ attraction.name }}</h3>
                         <p class="text-gray-600 mb-4">{{ attraction.description|truncatechars:120 }}</p>
                         <div class="flex justify-between items-center mb-4">
                             <div class="text-sm text-gray-500">
-                                <i class="fas fa-map-marker-alt mr-1"></i>
+                                <i class="fas fa-map-marker-alt mr-1 text-emerald-600"></i>
                                 {{ attraction.location|truncatechars:30 }}
                             </div>
                             {% if attraction.entry_fee %}
-                            <div class="font-bold text-green-700">${{ attraction.entry_fee }}</div>
+                            <div class="font-bold text-emerald-700">${{ attraction.entry_fee }}</div>
                             {% else %}
-                            <div class="font-bold text-green-700">Free</div>
+                            <div class="font-bold text-emerald-700">Free</div>
                             {% endif %}
                         </div>
                         <a href="{% url 'attraction_detail' attraction.id %}" 
-                           class="block w-full bg-green-600 text-white text-center py-3 rounded-lg hover:bg-green-700 font-semibold">
+                           class="block w-full bg-gradient-to-r from-emerald-600 to-teal-600 text-white text-center py-3 rounded-xl hover:from-emerald-700 hover:to-teal-700 transition font-semibold">
                             Explore Now <i class="fas fa-arrow-right ml-2"></i>
                         </a>
                     </div>
@@ -203,40 +203,37 @@
         </div>
         {% endif %}
 
-        <!-- Arusha Attractions -->
         {% if aru_attractions %}
         <div class="mb-16">
-            <h2 class="text-3xl font-bold mb-8 text-blue-800 border-b pb-2">
-                <i class="fas fa-mountain mr-3"></i>Arusha Attractions
+            <h2 class="text-3xl font-bold mb-8 text-sky-800 border-b-2 border-sky-200 pb-2 flex items-center">
+                <i class="fas fa-mountain mr-3 text-sky-600"></i>Arusha Attractions
             </h2>
             <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
                 {% for attraction in aru_attractions %}
-                <div class="bg-white rounded-xl shadow-lg overflow-hidden hover:shadow-2xl transition duration-300">
-                    <!-- FIXED IMAGE SECTION -->
+                <div class="bg-white rounded-2xl shadow-lg overflow-hidden hover:shadow-2xl transition duration-300 group">
                     {% with images=attraction.images.all %}
                         {% if images %}
                             {% with primary_image=images|first %}
-                                <div class="h-48 bg-gray-200 relative overflow-hidden">
+                                <div class="h-56 overflow-hidden relative">
                                     <img src="{{ primary_image.image_url }}" 
                                          alt="{{ attraction.name }}"
-                                         class="w-full h-full object-cover hover:scale-110 transition-transform duration-500">
+                                         class="w-full h-full object-cover group-hover:scale-110 transition duration-500">
                                     {% if primary_image.caption %}
-                                        <div class="absolute bottom-0 left-0 right-0 bg-black bg-opacity-50 text-white p-2 text-sm">
+                                        <div class="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/70 to-transparent text-white p-3 text-sm">
                                             {{ primary_image.caption|truncatechars:50 }}
                                         </div>
                                     {% endif %}
-                                    <div class="absolute top-4 left-4 bg-white text-blue-800 px-3 py-1 rounded-full text-sm font-bold">
+                                    <div class="absolute top-4 left-4 bg-white/90 backdrop-blur-sm text-sky-700 px-3 py-1 rounded-full text-sm font-bold shadow-md">
                                         {{ attraction.get_category_display|slice:"0:2" }}
                                     </div>
                                 </div>
                             {% endwith %}
                         {% else %}
-                            <!-- Fallback with icon -->
-                            <div class="h-48 bg-gradient-to-r from-blue-400 to-blue-600 relative">
+                            <div class="h-56 bg-gradient-to-r from-sky-400 to-sky-600 relative">
                                 <div class="absolute inset-0 flex items-center justify-center">
-                                    <i class="fas {{ attraction.get_icon }} text-white text-5xl"></i>
+                                    <i class="fas {{ attraction.get_icon }} text-white text-6xl opacity-50"></i>
                                 </div>
-                                <div class="absolute top-4 left-4 bg-white text-blue-800 px-3 py-1 rounded-full text-sm font-bold">
+                                <div class="absolute top-4 left-4 bg-white/90 backdrop-blur-sm text-sky-700 px-3 py-1 rounded-full text-sm font-bold">
                                     {{ attraction.get_category_display|slice:"0:2" }}
                                 </div>
                             </div>
@@ -244,21 +241,21 @@
                     {% endwith %}
                     
                     <div class="p-6">
-                        <h3 class="text-xl font-bold mb-2">{{ attraction.name }}</h3>
+                        <h3 class="text-xl font-bold mb-2 text-gray-800">{{ attraction.name }}</h3>
                         <p class="text-gray-600 mb-4">{{ attraction.description|truncatechars:120 }}</p>
                         <div class="flex justify-between items-center mb-4">
                             <div class="text-sm text-gray-500">
-                                <i class="fas fa-map-marker-alt mr-1"></i>
+                                <i class="fas fa-map-marker-alt mr-1 text-sky-600"></i>
                                 {{ attraction.location|truncatechars:30 }}
                             </div>
                             {% if attraction.entry_fee %}
-                            <div class="font-bold text-blue-700">${{ attraction.entry_fee }}</div>
+                            <div class="font-bold text-sky-700">${{ attraction.entry_fee }}</div>
                             {% else %}
-                            <div class="font-bold text-blue-700">Free</div>
+                            <div class="font-bold text-sky-700">Free</div>
                             {% endif %}
                         </div>
                         <a href="{% url 'attraction_detail' attraction.id %}" 
-                           class="block w-full bg-blue-600 text-white text-center py-3 rounded-lg hover:bg-blue-700 font-semibold">
+                           class="block w-full bg-gradient-to-r from-sky-600 to-blue-600 text-white text-center py-3 rounded-xl hover:from-sky-700 hover:to-blue-700 transition font-semibold">
                             Explore Now <i class="fas fa-arrow-right ml-2"></i>
                         </a>
                     </div>
@@ -268,40 +265,37 @@
         </div>
         {% endif %}
 
-        <!-- Zanzibar Attractions -->
         {% if zan_attractions %}
         <div class="mb-16">
-            <h2 class="text-3xl font-bold mb-8 text-yellow-800 border-b pb-2">
-                <i class="fas fa-umbrella-beach mr-3"></i>Zanzibar Attractions
+            <h2 class="text-3xl font-bold mb-8 text-amber-800 border-b-2 border-amber-200 pb-2 flex items-center">
+                <i class="fas fa-umbrella-beach mr-3 text-amber-600"></i>Zanzibar Attractions
             </h2>
             <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
                 {% for attraction in zan_attractions %}
-                <div class="bg-white rounded-xl shadow-lg overflow-hidden hover:shadow-2xl transition duration-300">
-                    <!-- FIXED IMAGE SECTION -->
+                <div class="bg-white rounded-2xl shadow-lg overflow-hidden hover:shadow-2xl transition duration-300 group">
                     {% with images=attraction.images.all %}
                         {% if images %}
                             {% with primary_image=images|first %}
-                                <div class="h-48 bg-gray-200 relative overflow-hidden">
+                                <div class="h-56 overflow-hidden relative">
                                     <img src="{{ primary_image.image_url }}" 
                                          alt="{{ attraction.name }}"
-                                         class="w-full h-full object-cover hover:scale-110 transition-transform duration-500">
+                                         class="w-full h-full object-cover group-hover:scale-110 transition duration-500">
                                     {% if primary_image.caption %}
-                                        <div class="absolute bottom-0 left-0 right-0 bg-black bg-opacity-50 text-white p-2 text-sm">
+                                        <div class="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/70 to-transparent text-white p-3 text-sm">
                                             {{ primary_image.caption|truncatechars:50 }}
                                         </div>
                                     {% endif %}
-                                    <div class="absolute top-4 left-4 bg-white text-yellow-800 px-3 py-1 rounded-full text-sm font-bold">
+                                    <div class="absolute top-4 left-4 bg-white/90 backdrop-blur-sm text-amber-700 px-3 py-1 rounded-full text-sm font-bold shadow-md">
                                         {{ attraction.get_category_display|slice:"0:2" }}
                                     </div>
                                 </div>
                             {% endwith %}
                         {% else %}
-                            <!-- Fallback with icon -->
-                            <div class="h-48 bg-gradient-to-r from-yellow-400 to-yellow-600 relative">
+                            <div class="h-56 bg-gradient-to-r from-amber-400 to-amber-600 relative">
                                 <div class="absolute inset-0 flex items-center justify-center">
-                                    <i class="fas {{ attraction.get_icon }} text-white text-5xl"></i>
+                                    <i class="fas {{ attraction.get_icon }} text-white text-6xl opacity-50"></i>
                                 </div>
-                                <div class="absolute top-4 left-4 bg-white text-yellow-800 px-3 py-1 rounded-full text-sm font-bold">
+                                <div class="absolute top-4 left-4 bg-white/90 backdrop-blur-sm text-amber-700 px-3 py-1 rounded-full text-sm font-bold">
                                     {{ attraction.get_category_display|slice:"0:2" }}
                                 </div>
                             </div>
@@ -309,21 +303,21 @@
                     {% endwith %}
                     
                     <div class="p-6">
-                        <h3 class="text-xl font-bold mb-2">{{ attraction.name }}</h3>
+                        <h3 class="text-xl font-bold mb-2 text-gray-800">{{ attraction.name }}</h3>
                         <p class="text-gray-600 mb-4">{{ attraction.description|truncatechars:120 }}</p>
                         <div class="flex justify-between items-center mb-4">
                             <div class="text-sm text-gray-500">
-                                <i class="fas fa-map-marker-alt mr-1"></i>
+                                <i class="fas fa-map-marker-alt mr-1 text-amber-600"></i>
                                 {{ attraction.location|truncatechars:30 }}
                             </div>
                             {% if attraction.entry_fee %}
-                            <div class="font-bold text-yellow-700">${{ attraction.entry_fee }}</div>
+                            <div class="font-bold text-amber-700">${{ attraction.entry_fee }}</div>
                             {% else %}
-                            <div class="font-bold text-yellow-700">Free</div>
+                            <div class="font-bold text-amber-700">Free</div>
                             {% endif %}
                         </div>
                         <a href="{% url 'attraction_detail' attraction.id %}" 
-                           class="block w-full bg-yellow-600 text-white text-center py-3 rounded-lg hover:bg-yellow-700 font-semibold">
+                           class="block w-full bg-gradient-to-r from-amber-600 to-orange-600 text-white text-center py-3 rounded-xl hover:from-amber-700 hover:to-orange-700 transition font-semibold">
                             Explore Now <i class="fas fa-arrow-right ml-2"></i>
                         </a>
                     </div>
@@ -333,40 +327,37 @@
         </div>
         {% endif %}
 
-        <!-- All Tanzania Attractions -->
         {% if all_attractions %}
         <div class="mb-16">
-            <h2 class="text-3xl font-bold mb-8 text-purple-800 border-b pb-2">
-                <i class="fas fa-globe-africa mr-3"></i>All Tanzania Attractions
+            <h2 class="text-3xl font-bold mb-8 text-purple-800 border-b-2 border-purple-200 pb-2 flex items-center">
+                <i class="fas fa-globe-africa mr-3 text-purple-600"></i>All Tanzania Attractions
             </h2>
             <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
                 {% for attraction in all_attractions %}
-                <div class="bg-white rounded-xl shadow-lg overflow-hidden hover:shadow-2xl transition duration-300">
-                    <!-- FIXED IMAGE SECTION -->
+                <div class="bg-white rounded-2xl shadow-lg overflow-hidden hover:shadow-2xl transition duration-300 group">
                     {% with images=attraction.images.all %}
                         {% if images %}
                             {% with primary_image=images|first %}
-                                <div class="h-48 bg-gray-200 relative overflow-hidden">
+                                <div class="h-56 overflow-hidden relative">
                                     <img src="{{ primary_image.image_url }}" 
                                          alt="{{ attraction.name }}"
-                                         class="w-full h-full object-cover hover:scale-110 transition-transform duration-500">
+                                         class="w-full h-full object-cover group-hover:scale-110 transition duration-500">
                                     {% if primary_image.caption %}
-                                        <div class="absolute bottom-0 left-0 right-0 bg-black bg-opacity-50 text-white p-2 text-sm">
+                                        <div class="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/70 to-transparent text-white p-3 text-sm">
                                             {{ primary_image.caption|truncatechars:50 }}
                                         </div>
                                     {% endif %}
-                                    <div class="absolute top-4 left-4 bg-white text-purple-800 px-3 py-1 rounded-full text-sm font-bold">
+                                    <div class="absolute top-4 left-4 bg-white/90 backdrop-blur-sm text-purple-700 px-3 py-1 rounded-full text-sm font-bold shadow-md">
                                         {{ attraction.get_category_display|slice:"0:2" }}
                                     </div>
                                 </div>
                             {% endwith %}
                         {% else %}
-                            <!-- Fallback with icon -->
-                            <div class="h-48 bg-gradient-to-r from-purple-400 to-purple-600 relative">
+                            <div class="h-56 bg-gradient-to-r from-purple-400 to-purple-600 relative">
                                 <div class="absolute inset-0 flex items-center justify-center">
-                                    <i class="fas {{ attraction.get_icon }} text-white text-5xl"></i>
+                                    <i class="fas {{ attraction.get_icon }} text-white text-6xl opacity-50"></i>
                                 </div>
-                                <div class="absolute top-4 left-4 bg-white text-purple-800 px-3 py-1 rounded-full text-sm font-bold">
+                                <div class="absolute top-4 left-4 bg-white/90 backdrop-blur-sm text-purple-700 px-3 py-1 rounded-full text-sm font-bold">
                                     {{ attraction.get_category_display|slice:"0:2" }}
                                 </div>
                             </div>
@@ -374,11 +365,11 @@
                     {% endwith %}
                     
                     <div class="p-6">
-                        <h3 class="text-xl font-bold mb-2">{{ attraction.name }}</h3>
+                        <h3 class="text-xl font-bold mb-2 text-gray-800">{{ attraction.name }}</h3>
                         <p class="text-gray-600 mb-4">{{ attraction.description|truncatechars:120 }}</p>
                         <div class="flex justify-between items-center mb-4">
                             <div class="text-sm text-gray-500">
-                                <i class="fas fa-map-marker-alt mr-1"></i>
+                                <i class="fas fa-map-marker-alt mr-1 text-purple-600"></i>
                                 {{ attraction.location|truncatechars:30 }}
                             </div>
                             {% if attraction.entry_fee %}
@@ -388,7 +379,7 @@
                             {% endif %}
                         </div>
                         <a href="{% url 'attraction_detail' attraction.id %}" 
-                           class="block w-full bg-purple-600 text-white text-center py-3 rounded-lg hover:bg-purple-700 font-semibold">
+                           class="block w-full bg-gradient-to-r from-purple-600 to-pink-600 text-white text-center py-3 rounded-xl hover:from-purple-700 hover:to-pink-700 transition font-semibold">
                             Explore Now <i class="fas fa-arrow-right ml-2"></i>
                         </a>
                     </div>
@@ -398,7 +389,6 @@
         </div>
         {% endif %}
 
-        <!-- No Results -->
         {% if not dar_attractions and not aru_attractions and not zan_attractions and not all_attractions %}
         <div class="text-center py-16">
             <div class="text-6xl mb-6 text-gray-300">
@@ -406,24 +396,23 @@
             </div>
             <h3 class="text-2xl font-bold text-gray-600 mb-4">No attractions found</h3>
             <p class="text-gray-500 mb-6">Try adjusting your search filters or explore our featured packages</p>
-            <a href="{% url 'tourism' %}" class="text-green-600 hover:text-green-800 font-semibold">
-                <i class="fas fa-redo mr-2"></i>Clear all filters
+            <a href="{% url 'tourism' %}" class="inline-flex items-center gap-2 text-emerald-600 hover:text-emerald-800 font-semibold">
+                <i class="fas fa-redo"></i> Clear all filters
             </a>
         </div>
         {% endif %}
 
-        <!-- CTA Section -->
-        <div class="bg-gradient-to-r from-green-600 to-blue-600 text-white rounded-2xl p-12 text-center">
+        <div class="bg-gradient-to-r from-emerald-600 to-teal-600 text-white rounded-2xl p-12 text-center">
             <h2 class="text-3xl font-bold mb-4">Need Help Planning Your Tours?</h2>
             <p class="text-xl mb-8 max-w-2xl mx-auto opacity-90">
                 Our AI Assistant can create personalized tour itineraries based on your interests and schedule.
             </p>
             <div class="flex flex-wrap justify-center gap-6">
-                <a href="{% url 'chatbot' %}" class="bg-white text-green-800 px-8 py-4 rounded-full text-lg font-bold hover:bg-gray-100">
-                    <i class="fas fa-robot mr-2"></i>Ask AI Assistant
+                <a href="{% url 'chatbot' %}" class="inline-flex items-center gap-2 bg-white text-emerald-700 px-8 py-4 rounded-full text-lg font-bold hover:bg-gray-100 transition shadow-lg">
+                    <i class="fas fa-robot"></i> Ask AI Assistant
                 </a>
-                <a href="{% url 'tour_packages' %}" class="bg-yellow-400 text-gray-900 px-8 py-4 rounded-full text-lg font-bold hover:bg-yellow-300">
-                    <i class="fas fa-suitcase mr-2"></i>View All Packages
+                <a href="{% url 'tour_packages' %}" class="inline-flex items-center gap-2 bg-amber-500 text-gray-900 px-8 py-4 rounded-full text-lg font-bold hover:bg-amber-400 transition shadow-lg">
+                    <i class="fas fa-suitcase"></i> View All Packages
                 </a>
             </div>
         </div>

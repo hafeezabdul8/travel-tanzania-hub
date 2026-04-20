@@ -1,0 +1,187 @@
+{% extends 'football/football_base.html' %}
+
+{% block title %}{{ team.name }} - AFCON 2027{% endblock %}
+
+{% block football_content %}
+<div class="container mx-auto px-4 py-8">
+    <!-- Team Header -->
+    <div class="bg-gradient-to-r from-green-600 to-blue-600 rounded-2xl p-8 text-white mb-8">
+        <div class="flex flex-col md:flex-row items-center">
+            <!-- Team Flag -->
+            <div class="w-32 h-32 bg-white rounded-full flex items-center justify-center mb-4 md:mb-0 md:mr-8 overflow-hidden">
+                {% if team.get_flag_url %}
+                    <img src="{{ team.get_flag_url }}" 
+                         alt="{{ team.name }} flag" 
+                         class="w-full h-full object-cover">
+                {% else %}
+                    <span class="text-4xl font-bold text-gray-800">{{ team.short_name }}</span>
+                {% endif %}
+            </div>
+            <div class="text-center md:text-left">
+                <h1 class="text-4xl font-bold mb-2">{{ team.name }}</h1>
+                <div class="flex flex-wrap justify-center md:justify-start gap-4">
+                    <span class="bg-white/20 px-3 py-1 rounded-full">Group {{ team.group }}</span>
+                    <span class="bg-white/20 px-3 py-1 rounded-full">FIFA Rank: #{{ team.fifa_ranking }}</span>
+                    <span class="bg-white/20 px-3 py-1 rounded-full">Coach: {{ team.coach }}</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Team Logo -->
+    {% if team.get_logo_url %}
+    <div class="flex justify-center mb-8">
+        <img src="{{ team.get_logo_url }}" 
+             alt="{{ team.name }} logo" 
+             class="h-24 object-contain">
+    </div>
+    {% endif %}
+
+    <!-- Team Statistics -->
+    <div class="grid grid-cols-2 md:grid-cols-5 gap-4 mb-8">
+        <div class="bg-white rounded-xl shadow-lg p-4 text-center">
+            <div class="text-3xl font-bold text-green-600">{{ team.played }}</div>
+            <div class="text-gray-600 text-sm">Matches</div>
+        </div>
+        <div class="bg-white rounded-xl shadow-lg p-4 text-center">
+            <div class="text-3xl font-bold text-green-600">{{ team.won }}</div>
+            <div class="text-gray-600 text-sm">Won</div>
+        </div>
+        <div class="bg-white rounded-xl shadow-lg p-4 text-center">
+            <div class="text-3xl font-bold text-green-600">{{ team.drawn }}</div>
+            <div class="text-gray-600 text-sm">Drawn</div>
+        </div>
+        <div class="bg-white rounded-xl shadow-lg p-4 text-center">
+            <div class="text-3xl font-bold text-green-600">{{ team.lost }}</div>
+            <div class="text-gray-600 text-sm">Lost</div>
+        </div>
+        <div class="bg-white rounded-xl shadow-lg p-4 text-center">
+            <div class="text-3xl font-bold text-green-600">{{ team.points }}</div>
+            <div class="text-gray-600 text-sm">Points</div>
+        </div>
+    </div>
+
+    <!-- Goals -->
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-8 mb-8">
+        <div class="bg-white rounded-xl shadow-lg p-6">
+            <h3 class="text-xl font-bold mb-4">Goals For: {{ team.goals_for }}</h3>
+            <div class="progress-bar bg-gray-200 rounded-full h-4">
+                {% widthratio team.goals_for 50 100 as width %}
+                <div class="progress-fill bg-green-600 rounded-full h-4" style="width: {% if width > 100 %}100{% else %}{{ width }}{% endif %}%"></div>
+            </div>
+        </div>
+        <div class="bg-white rounded-xl shadow-lg p-6">
+            <h3 class="text-xl font-bold mb-4">Goals Against: {{ team.goals_against }}</h3>
+            <div class="progress-bar bg-gray-200 rounded-full h-4">
+                {% widthratio team.goals_against 50 100 as width %}
+                <div class="progress-fill bg-red-600 rounded-full h-4" style="width: {% if width > 100 %}100{% else %}{{ width }}{% endif %}%"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Achievements -->
+    {% if team.achievements %}
+    <div class="bg-yellow-50 rounded-xl p-4 mb-8 text-center">
+        <i class="fas fa-trophy text-yellow-600 mr-2"></i>
+        <span class="font-semibold">{{ team.achievements }}</span>
+    </div>
+    {% endif %}
+
+    <!-- Squad -->
+    <div class="bg-white rounded-xl shadow-lg overflow-hidden mb-8">
+        <div class="bg-gray-800 text-white px-6 py-4">
+            <h2 class="text-2xl font-bold">Squad</h2>
+        </div>
+        
+        <div class="overflow-x-auto">
+            <table class="w-full">
+                <thead class="bg-gray-50">
+                    <tr>
+                        <th class="p-3 text-left">#</th>
+                        <th class="p-3 text-left">Player</th>
+                        <th class="p-3 text-left">Position</th>
+                        <th class="p-3 text-center">Apps</th>
+                        <th class="p-3 text-center">Goals</th>
+                        <th class="p-3 text-center">Assists</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for player in players %}
+                    <tr class="border-b hover:bg-gray-50">
+                        <td class="p-3 font-semibold">{{ player.jersey_number }}</td>
+                        <td class="p-3">
+                            <div class="flex items-center">
+                                {% if player.get_photo_url %}
+                                <img src="{{ player.get_photo_url }}" 
+                                     alt="{{ player.name }}" 
+                                     class="w-8 h-8 rounded-full object-cover mr-2">
+                                {% endif %}
+                                <a href="{% url 'football:player_detail' player.id %}" class="hover:text-green-600">
+                                    {{ player.name }}
+                                </a>
+                            </div>
+                        </td>
+                        <td class="p-3">
+                            {{ player.get_position_display }}
+                            {% if player.position_detail %}({{ player.position_detail }}){% endif %}
+                        </td>
+                        <td class="p-3 text-center">{{ player.appearances }}</td>
+                        <td class="p-3 text-center font-bold text-green-600">{{ player.goals }}</td>
+                        <td class="p-3 text-center">{{ player.assists }}</td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="6" class="p-8 text-center text-gray-500">
+                            No players added yet
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- Recent Matches -->
+    {% if matches %}
+    <div class="bg-white rounded-xl shadow-lg overflow-hidden">
+        <div class="bg-gray-800 text-white px-6 py-4">
+            <h2 class="text-2xl font-bold">Recent Matches</h2>
+        </div>
+        <div class="divide-y">
+            {% for match in matches %}
+            <div class="p-4 hover:bg-gray-50">
+                <div class="flex items-center justify-between">
+                    <div class="flex-1 text-right">
+                        <span class="font-semibold">{{ match.home_team.name }}</span>
+                    </div>
+                    <div class="mx-4 text-center">
+                        {% if match.status == 'finished' %}
+                            <span class="text-xl font-bold">{{ match.home_score }} - {{ match.away_score }}</span>
+                        {% else %}
+                            <span class="text-gray-400">VS</span>
+                        {% endif %}
+                    </div>
+                    <div class="flex-1">
+                        <span class="font-semibold">{{ match.away_team.name }}</span>
+                    </div>
+                    <div class="ml-4 text-sm text-gray-500">
+                        {{ match.stadium.city }}
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+    {% endif %}
+</div>
+
+<script>
+    // Initialize progress bars
+    document.querySelectorAll('.progress-bar').forEach(bar => {
+        const fill = bar.querySelector('.progress-fill');
+        if (fill && fill.style.width === '0%') {
+            fill.style.width = '0%';
+        }
+    });
+</script>
+{% endblock %}

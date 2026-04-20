@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{% block title %}AFCON 2027 Hotel System{% endblock %}</title>
+    <title>{% block title %}Travel To Tanzania Hub - Official Travel Management System{% endblock %}</title>
     
     <!-- Tailwind CSS CDN -->
     <script src="https://cdn.tailwindcss.com"></script>
@@ -20,9 +20,9 @@
                         'tanzania-blue': '#1EB2E6',
                         'tanzania-black': '#000000',
                         'tanzania-yellow': '#FFC72C',
-                        'afcon-green': '#00A859',
-                        'afcon-blue': '#1EB2E6',
-                        'afcon-yellow': '#FFC72C',
+                        'travel-green': '#00A859',
+                        'travel-blue': '#1EB2E6',
+                        'travel-yellow': '#FFC72C',
                     }
                 }
             }
@@ -102,8 +102,8 @@
             <div class="flex justify-between items-center py-4">
                 <!-- Logo -->
                 <a href="{% url 'home' %}" class="flex items-center text-2xl font-bold text-tanzania-green">
-                    <i class="fas fa-futbol mr-3"></i>
-                    <span>AFCON 2027</span>
+                    <i class="fas fa-map-marked-alt mr-3"></i>
+                    <span>Travel To Tanzania Hub</span>
                 </a>
                 
                 <!-- Desktop Menu -->
@@ -117,6 +117,18 @@
                     </a>
                     <a href="{% url 'tourism' %}" class="hover:text-tanzania-green transition duration-300 font-medium">
                         <i class="fas fa-map-marked-alt mr-2"></i>Attractions
+                    </a>
+                    
+                    <!-- Football Button -->
+                    <a href="{% url 'football:match_schedule' %}" 
+                       class="hover:text-tanzania-green transition duration-300 font-medium">
+                        <i class="fas fa-futbol mr-2"></i>
+                        <span>Football</span>
+                    </a>
+
+                    <!-- Partners Button -->
+                    <a href="{% url 'partners:partner_list' %}" class="hover:text-tanzania-green transition duration-300 font-medium">
+                        <i class="fas fa-handshake mr-2"></i>Partners
                     </a>
                     
                     {% if user.is_authenticated %}
@@ -138,13 +150,13 @@
                                 <!-- Partner Links -->
                                 {% if user.partner_profile %}
                                     <div class="border-t border-gray-200 mt-2 pt-2">
-                                        <a href="{% url 'partner_dashboard' %}" class="block px-4 py-2 text-blue-600 hover:bg-blue-50">
+                                        <a href="{% url 'partners:partner_dashboard' %}" class="block px-4 py-2 text-blue-600 hover:bg-blue-50">
                                             <i class="fas fa-briefcase mr-2"></i>Partner Dashboard
                                         </a>
                                     </div>
                                 {% else %}
                                     <div class="border-t border-gray-200 mt-2 pt-2">
-                                        <a href="{% url 'become_partner' %}" class="block px-4 py-2 text-blue-600 hover:bg-blue-50">
+                                        <a href="{% url 'partners:become_partner' %}" class="block px-4 py-2 text-blue-600 hover:bg-blue-50">
                                             <i class="fas fa-handshake mr-2"></i>Become a Partner
                                         </a>
                                     </div>
@@ -204,6 +216,18 @@
                         <i class="fas fa-map-marked-alt mr-3 w-5 text-center"></i>Attractions
                     </a>
                     
+                    <!-- Football Button For Mobile -->
+                    <a href="{% url 'football:match_schedule' %}" 
+                       class="flex items-center bg-gradient-to-r from-green-600 to-blue-600 px-4 py-2 rounded-lg hover:opacity-90 transition duration-300">
+                        <i class="fas fa-futbol mr-3 w-5 text-center"></i>Football
+                    </a>
+                    
+                    <!-- Partners Button For Mobile -->
+                    <a href="{% url 'partners:partner_list' %}" 
+                       class="flex items-center bg-gradient-to-r from-green-600 to-blue-600 px-4 py-2 rounded-lg hover:opacity-90 transition duration-300">
+                        <i class="fas fa-handshake mr-3 w-5 text-center"></i>Partners
+                    </a>
+                    
                     {% if user.is_authenticated %}
                         <!-- Mobile User Section -->
                         <div class="border-t border-gray-700 pt-3 mt-3">
@@ -223,11 +247,11 @@
                             
                             <!-- Partner Links (Mobile) -->
                             {% if user.partner_profile %}
-                                <a href="{% url 'partner_dashboard' %}" class="flex items-center py-2 text-blue-400 hover:text-blue-300 transition duration-300 pl-8">
+                                <a href="{% url 'partners:partner_dashboard' %}" class="flex items-center py-2 text-blue-400 hover:text-blue-300 transition duration-300 pl-8">
                                     <i class="fas fa-briefcase mr-3 w-5 text-center"></i>Partner Dashboard
                                 </a>
                             {% else %}
-                                <a href="{% url 'become_partner' %}" class="flex items-center py-2 text-blue-400 hover:text-blue-300 transition duration-300 pl-8">
+                                <a href="{% url 'partners:become_partner' %}" class="flex items-center py-2 text-blue-400 hover:text-blue-300 transition duration-300 pl-8">
                                     <i class="fas fa-handshake mr-3 w-5 text-center"></i>Become a Partner
                                 </a>
                             {% endif %}
@@ -256,7 +280,7 @@
                             <a href="{% url 'login' %}" class="flex items-center py-2 hover:text-tanzania-green transition duration-300">
                                 <i class="fas fa-sign-in-alt mr-3 w-5 text-center"></i>Login
                             </a>
-                            <a href="{% url 'register' %}" class="flex items-center py-2 bg-tanzania-green rounded-lg hover:bg-green-700 transition duration-300 justify-center mt-2">
+                            <a href="{% url 'register' %}" class="flex items-center bg-tanzania-green rounded-lg hover:bg-green-700 transition duration-300 justify-center mt-2 py-2">
                                 <i class="fas fa-user-plus mr-2"></i>Register
                             </a>
                         </div>
@@ -294,9 +318,9 @@
             <div class="grid grid-cols-1 md:grid-cols-4 gap-8">
                 <!-- About -->
                 <div class="md:col-span-2">
-                    <h3 class="text-2xl font-bold text-tanzania-green mb-4">AFCON 2027 Tanzania</h3>
+                    <h3 class="text-2xl font-bold text-tanzania-green mb-4">Travel To Tanzania Hub</h3>
                     <p class="text-gray-400 mb-4">
-                        Official Hotel Management System for Africa Cup of Nations 2027. 
+                        Your trusted travel partner for exploring the beauty of Tanzania. 
                         Book your perfect stay across Dar es Salaam, Arusha, and Zanzibar.
                     </p>
                     <div class="flex space-x-4">
@@ -322,11 +346,15 @@
                         <li><a href="{% url 'home' %}" class="hover:text-tanzania-green">Home</a></li>
                         <li><a href="{% url 'hotel_list' %}" class="hover:text-tanzania-green">Hotels</a></li>
                         <li><a href="{% url 'tourism' %}" class="hover:text-tanzania-green">Tourist Attractions</a></li>
+                        <li><a href="{% url 'football:match_schedule' %}" class="hover:text-tanzania-green">Football</a></li>
+                        <li><a href="{% url 'partners:partner_list' %}" class="hover:text-tanzania-green">Partners</a></li>
                         <li><a href="{% url 'chatbot' %}" class="hover:text-tanzania-green">AI Assistant</a></li>
                         {% if user.is_authenticated %}
                             <li><a href="{% url 'profile' %}" class="hover:text-tanzania-green">My Profile</a></li>
                             {% if user.partner_profile %}
-                                <li><a href="{% url 'partner_dashboard' %}" class="hover:text-blue-400">Partner Dashboard</a></li>
+                                <li><a href="{% url 'partners:partner_dashboard' %}" class="hover:text-blue-400">Partner Dashboard</a></li>
+                            {% else %}
+                                <li><a href="{% url 'partners:become_partner' %}" class="hover:text-tanzania-green">Become a Partner</a></li>
                             {% endif %}
                             {% if user.is_staff or user.is_superuser %}
                                 <li><a href="{% url 'admin_dashboard' %}" class="hover:text-purple-400">Admin Dashboard</a></li>
@@ -352,7 +380,7 @@
                         </p>
                         <p class="flex items-center">
                             <i class="fas fa-envelope text-tanzania-green mr-2"></i>
-                            <span>info@afcon2027.tz</span>
+                            <span>info@traveltotanzaniahub.tz</span>
                         </p>
                         <p class="flex items-center">
                             <i class="fas fa-clock text-tanzania-green mr-2"></i>
@@ -366,12 +394,12 @@
             <div class="border-t border-gray-800 mt-8 pt-8">
                 <div class="flex flex-col md:flex-row justify-between items-center">
                     <p class="text-gray-500 text-center md:text-left">
-                        &copy; 2027 AFCON Hotel Management System. All rights reserved.
+                        &copy; 2027 Travel To Tanzania Hub. All rights reserved.
                     </p>
                     <div class="mt-4 md:mt-0">
                         <span class="text-gray-500 text-sm">
                             Official Partner: 
-                            <span class="text-tanzania-green font-semibold">Tanzania Football Federation</span>
+                            <span class="text-tanzania-green font-semibold">Tanzania Tourism Board</span>
                         </span>
                     </div>
                 </div>

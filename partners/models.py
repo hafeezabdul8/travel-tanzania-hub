@@ -1,3 +1,5 @@
+import math
+
 from django.db import models
 from django.contrib.auth.models import User
 from django.core.validators import MinValueValidator, MaxValueValidator
@@ -94,6 +96,80 @@ class Partner(models.Model):
     # Timestamps
     registration_date = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
+    
+    latitude = models.DecimalField(
+        max_digits=10, 
+        decimal_places=7, 
+        null=True, 
+        blank=True,
+        help_text="Latitude coordinate (e.g., -6.7924 for Dar es Salaam)"
+    )
+    longitude = models.DecimalField(
+        max_digits=10, 
+        decimal_places=7, 
+        null=True, 
+        blank=True,
+        help_text="Longitude coordinate (e.g., 39.2083 for Dar es Salaam)"
+    )
+    
+    # Google Maps Place ID (optional, for better accuracy)
+    google_place_id = models.CharField(max_length=200, blank=True, null=True)
+    
+    # Distance settings
+    delivery_radius_km = models.IntegerField(default=5, help_text="Maximum delivery radius in kilometers")
+    is_delivery_available = models.BooleanField(default=False)
+    
+    def get_coordinates(self):
+        """Get coordinates as tuple"""
+        if self.latitude and self.longitude:
+            return (float(self.latitude), float(self.longitude))
+        return None
+    
+    def calculate_distance_to(self, lat, lng):
+        """Calculate distance to another location in kilometers using Haversine formula"""
+        if not self.latitude or not self.longitude:
+            return None
+        
+        R = 6371  # Earth's radius in kilometers
+        
+        lat1 = math.radians(float(self.latitude))
+        lon1 = math.radians(float(self.longitude))
+        lat2 = math.radians(float(lat))
+        lon2 = math.radians(float(lng))
+        
+        dlon = lon2 - lon1
+        dlat = lat2 - lat1
+        
+        a = math.sin(dlat/2)**2 + math.cos(lat1) * math.cos(lat2) * math.sin(dlon/2)**2
+        c = 2 * math.asin(math.sqrt(a))
+        
+        return round(R * c, 2)
+    
+    def get_distance_from_hotel(self, hotel):
+        """Get distance from a specific hotel"""
+        if hotel.latitude and hotel.longitude and self.latitude and self.longitude:
+            return self.calculate_distance_to(hotel.latitude, hotel.longitude)
+        return None
+    
+    def get_distance_from_stadium(self, stadium):
+        """Get distance from a specific stadium"""
+        if stadium.latitude and stadium.longitude and self.latitude and self.longitude:
+            return self.calculate_distance_to(stadium.latitude, stadium.longitude)
+        return None
+    
+    def get_google_maps_url(self):
+        """Get Google Maps URL for directions"""
+        if self.latitude and self.longitude:
+            return f"https://www.google.com/maps/search/?api=1&query={self.latitude},{self.longitude}"
+        elif self.address:
+            return f"https://www.google.com/maps/search/?api=1&query={self.address.replace(' ', '+')}"
+        return "#"
+    
+    def get_directions_from_location(self, from_lat, from_lng):
+        """Get Google Maps directions URL from a location"""
+        if self.latitude and self.longitude:
+            return f"https://www.google.com/maps/dir/?api=1&origin={from_lat},{from_lng}&destination={self.latitude},{self.longitude}"
+        return "#"
     
     class Meta:
         ordering = ['-registration_date']
@@ -253,3 +329,40 @@ class PartnerNotification(models.Model):
     
     def __str__(self):
         return f"{self.partner}: {self.title}"
+    
+class PartnerImage(models.Model):
+    """Images uploaded by partners for their business"""
+    
+    IMAGE_TYPES = [
+        ('logo', 'Business Logo'),
+        ('cover', 'Cover Photo'),
+        ('interior', 'Interior / Facility'),
+        ('product', 'Product / Service'),
+        ('team', 'Team Photo'),
+        ('event', 'Event / Activity'),
+        ('other', 'Other'),
+    ]
+    
+    partner = models.ForeignKey(Partner, on_delete=models.CASCADE, related_name='images')
+    image = models.ImageField(upload_to='partner_images/%Y/%m/', blank=True, null=True)
+    image_url = models.URLField(blank=True, null=True, help_text="Or provide external image URL")
+    image_type = models.CharField(max_length=20, choices=IMAGE_TYPES, default='other')
+    title = models.CharField(max_length=200, blank=True)
+    description = models.TextField(blank=True)
+    is_primary = models.BooleanField(default=False)
+    display_order = models.IntegerField(default=0)
+    is_approved = models.BooleanField(default=False)  # Admin approval needed
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+    
+    class Meta:
+        ordering = ['display_order', '-created_at']
+    
+    def __str__(self):
+        return f"{self.partner.business_name} - {self.get_image_type_display()}"
+    
+    def get_image_display_url(self):
+        """Get the image URL from either uploaded file or external URL"""
+        if self.image and hasattr(self.image, 'url'):
+            return self.image.url
+        return self.image_url

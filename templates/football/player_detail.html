@@ -1,0 +1,220 @@
+{% extends 'football/football_base.html' %}
+
+{% block title %}{{ player.name }} - Player Profile{% endblock %}
+
+{% block football_content %}
+<div class="container mx-auto px-4 py-8">
+    <!-- Back Button -->
+    <div class="mb-6">
+        <a href="{% url 'football:players_list' %}" class="text-green-600 hover:text-green-800">
+            <i class="fas fa-arrow-left mr-2"></i>Back to Players
+        </a>
+    </div>
+
+    <!-- Player Header -->
+    <div class="bg-gradient-to-r from-green-600 to-blue-600 rounded-2xl p-8 text-white mb-8">
+        <div class="flex flex-col md:flex-row items-center">
+            <!-- Player Photo -->
+            <div class="w-32 h-32 bg-white rounded-full flex items-center justify-center mb-4 md:mb-0 md:mr-8 overflow-hidden shadow-lg">
+                {% if player.get_photo_url %}
+                    <img src="{{ player.get_photo_url }}" alt="{{ player.name }}" class="w-full h-full object-cover">
+                {% else %}
+                    <div class="text-center">
+                        <div class="text-4xl font-bold text-gray-800">{{ player.jersey_number }}</div>
+                        <div class="text-xs text-gray-500">{{ player.get_position_display }}</div>
+                    </div>
+                {% endif %}
+            </div>
+            <div class="text-center md:text-left">
+                <h1 class="text-4xl font-bold mb-2">{{ player.name }}</h1>
+                <div class="flex flex-wrap justify-center md:justify-start gap-3">
+                    <span class="bg-white/20 px-3 py-1 rounded-full">
+                        <i class="fas fa-users mr-1"></i>{{ player.team.name }}
+                    </span>
+                    <span class="bg-white/20 px-3 py-1 rounded-full">
+                        <i class="fas fa-hashtag mr-1"></i>#{{ player.jersey_number }}
+                    </span>
+                    <span class="bg-white/20 px-3 py-1 rounded-full">
+                        <i class="fas fa-futbol mr-1"></i>{{ player.get_position_display }}
+                    </span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Player Statistics Cards -->
+    <div class="grid grid-cols-2 md:grid-cols-5 gap-4 mb-8">
+        <div class="bg-white rounded-xl shadow-lg p-4 text-center">
+            <div class="text-3xl font-bold text-green-600">{{ player.appearances }}</div>
+            <div class="text-gray-600 text-sm">Appearances</div>
+        </div>
+        <div class="bg-white rounded-xl shadow-lg p-4 text-center">
+            <div class="text-3xl font-bold text-green-600">{{ player.goals }}</div>
+            <div class="text-gray-600 text-sm">Goals</div>
+        </div>
+        <div class="bg-white rounded-xl shadow-lg p-4 text-center">
+            <div class="text-3xl font-bold text-green-600">{{ player.assists }}</div>
+            <div class="text-gray-600 text-sm">Assists</div>
+        </div>
+        <div class="bg-white rounded-xl shadow-lg p-4 text-center">
+            <div class="text-3xl font-bold text-yellow-600">{{ player.yellow_cards }}</div>
+            <div class="text-gray-600 text-sm">Yellow Cards</div>
+        </div>
+        <div class="bg-white rounded-xl shadow-lg p-4 text-center">
+            <div class="text-3xl font-bold text-red-600">{{ player.red_cards }}</div>
+            <div class="text-gray-600 text-sm">Red Cards</div>
+        </div>
+    </div>
+
+    <!-- Player Details Grid -->
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-8 mb-8">
+        <!-- Personal Information -->
+        <div class="bg-white rounded-xl shadow-lg p-6">
+            <h3 class="text-xl font-bold mb-4 flex items-center">
+                <i class="fas fa-user-circle text-green-600 mr-2"></i>
+                Personal Information
+            </h3>
+            <div class="space-y-3">
+                <div class="flex justify-between">
+                    <span class="text-gray-600">Full Name</span>
+                    <span class="font-semibold">{{ player.name }}</span>
+                </div>
+                <div class="flex justify-between">
+                    <span class="text-gray-600">Date of Birth</span>
+                    <span class="font-semibold">{{ player.date_of_birth|date:"F d, Y" }}</span>
+                </div>
+                <div class="flex justify-between">
+                    <span class="text-gray-600">Age</span>
+                    <span class="font-semibold">{{ player.age }} years</span>
+                </div>
+                <div class="flex justify-between">
+                    <span class="text-gray-600">Height</span>
+                    <span class="font-semibold">{{ player.height|default:"—" }} m</span>
+                </div>
+                <div class="flex justify-between">
+                    <span class="text-gray-600">Weight</span>
+                    <span class="font-semibold">{{ player.weight|default:"—" }} kg</span>
+                </div>
+                <div class="flex justify-between">
+                    <span class="text-gray-600">Preferred Foot</span>
+                    <span class="font-semibold capitalize">{{ player.preferred_foot }}</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Career Information -->
+        <div class="bg-white rounded-xl shadow-lg p-6">
+            <h3 class="text-xl font-bold mb-4 flex items-center">
+                <i class="fas fa-briefcase text-green-600 mr-2"></i>
+                Career Information
+            </h3>
+            <div class="space-y-3">
+                <div class="flex justify-between">
+                    <span class="text-gray-600">Current Club</span>
+                    <span class="font-semibold">{{ player.club|default:"—" }}</span>
+                </div>
+                <div class="flex justify-between">
+                    <span class="text-gray-600">Club Country</span>
+                    <span class="font-semibold">{{ player.club_country|default:"—" }}</span>
+                </div>
+                <div class="flex justify-between">
+                    <span class="text-gray-600">Market Value</span>
+                    <span class="font-semibold text-green-600">
+                        {% if player.market_value %}
+                            ${{ player.market_value|floatformat:0 }}M
+                        {% else %}
+                            —
+                        {% endif %}
+                    </span>
+                </div>
+                <div class="flex justify-between">
+                    <span class="text-gray-600">National Team</span>
+                    <span class="font-semibold">{{ player.team.name }}</span>
+                </div>
+                <div class="flex justify-between">
+                    <span class="text-gray-600">Position</span>
+                    <span class="font-semibold">{{ player.get_position_display }}</span>
+                </div>
+                <div class="flex justify-between">
+                    <span class="text-gray-600">Jersey Number</span>
+                    <span class="font-semibold">#{{ player.jersey_number }}</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Tournament Performance -->
+        <div class="bg-white rounded-xl shadow-lg p-6">
+            <h3 class="text-xl font-bold mb-4 flex items-center">
+                <i class="fas fa-chart-line text-green-600 mr-2"></i>
+                Tournament Performance
+            </h3>
+            <div class="space-y-3">
+                <div class="flex justify-between">
+                    <span class="text-gray-600">Minutes Played</span>
+                    <span class="font-semibold">{{ player.minutes_played }}</span>
+                </div>
+                <div class="flex justify-between">
+                    <span class="text-gray-600">Man of the Match</span>
+                    <span class="font-semibold">{{ player.man_of_match }}</span>
+                </div>
+                <div class="mt-4">
+                    <div class="text-sm text-gray-600 mb-1">Goal contribution</div>
+                    <div class="progress-bar bg-gray-200 rounded-full h-2">
+                        {% widthratio player.goals|add:player.assists 20 100 as width %}
+                        <div class="progress-fill bg-green-600 rounded-full h-2" style="width: {% if width > 100 %}100{% else %}{{ width }}{% endif %}%"></div>
+                    </div>
+                    <div class="text-xs text-gray-500 text-center mt-1">
+                        {{ player.goals|add:player.assists }} contributions
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Goals Scored -->
+    {% if goals %}
+    <div class="bg-white rounded-xl shadow-lg overflow-hidden">
+        <div class="bg-gray-800 text-white px-6 py-4">
+            <h2 class="text-2xl font-bold">
+                <i class="fas fa-futbol mr-2"></i>Goals Scored
+            </h2>
+        </div>
+        <div class="divide-y">
+            {% for goal in goals %}
+            <div class="p-4 hover:bg-gray-50 transition">
+                <div class="flex items-center justify-between flex-wrap gap-4">
+                    <div class="flex items-center">
+                        <div class="w-10 h-10 bg-green-100 rounded-full flex items-center justify-center mr-3">
+                            <i class="fas fa-futbol text-green-600"></i>
+                        </div>
+                        <div>
+                            <div class="font-semibold">{{ goal.match.home_team.short_name }} vs {{ goal.match.away_team.short_name }}</div>
+                            <div class="text-sm text-gray-500">{{ goal.match.stadium.name }} - {{ goal.match.date|date:"M d, Y" }}</div>
+                        </div>
+                    </div>
+                    <div class="text-right">
+                        <div class="text-2xl font-bold text-green-600">{{ goal.minute }}'</div>
+                        <div class="text-xs text-gray-500">
+                            {% if goal.is_penalty %}⚽ Penalty{% endif %}
+                            {% if goal.is_own_goal %}⚠️ Own Goal{% endif %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- Bio -->
+    {% if player.bio %}
+    <div class="mt-8 bg-blue-50 rounded-xl p-6">
+        <h3 class="text-xl font-bold mb-3 flex items-center">
+            <i class="fas fa-info-circle text-blue-600 mr-2"></i>
+            About {{ player.name }}
+        </h3>
+        <p class="text-gray-700 leading-relaxed">{{ player.bio }}</p>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

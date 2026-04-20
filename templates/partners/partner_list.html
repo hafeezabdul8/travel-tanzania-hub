@@ -1,0 +1,131 @@
+{% extends 'base.html' %}
+
+{% block title %}Business Partners - AFCON 2027{% endblock %}
+
+{% block content %}
+<div class="container mx-auto px-4 py-8">
+    <!-- Header -->
+    <div class="bg-gradient-to-r from-green-600 to-blue-600 rounded-2xl p-8 text-white mb-8">
+        <h1 class="text-3xl md:text-4xl font-bold mb-4">Our Business Partners</h1>
+        <p class="text-lg opacity-90">
+            Trusted local businesses ready to serve you during AFCON 2027
+        </p>
+    </div>
+
+    <!-- Filters -->
+    <div class="bg-white rounded-xl shadow-lg p-6 mb-8">
+        <form method="get" class="flex flex-wrap gap-4">
+            <div class="flex-1 min-w-[200px]">
+                <label class="block text-gray-700 mb-2 font-semibold">Search</label>
+                <input type="text" name="search" value="{{ search_query }}" 
+                       placeholder="Search by name..." 
+                       class="w-full p-3 border rounded-lg">
+            </div>
+            <div class="w-48">
+                <label class="block text-gray-700 mb-2 font-semibold">Category</label>
+                <select name="category" class="w-full p-3 border rounded-lg">
+                    <option value="">All Categories</option>
+                    {% for cat_code, cat_label in categories %}
+                    <option value="{{ cat_code }}" {% if selected_category == cat_code %}selected{% endif %}>
+                        {{ cat_label }}
+                    </option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="w-48">
+                <label class="block text-gray-700 mb-2 font-semibold">City</label>
+                <select name="city" class="w-full p-3 border rounded-lg">
+                    <option value="">All Cities</option>
+                    <option value="DAR" {% if selected_city == 'DAR' %}selected{% endif %}>Dar es Salaam</option>
+                    <option value="ARU" {% if selected_city == 'ARU' %}selected{% endif %}>Arusha</option>
+                    <option value="ZAN" {% if selected_city == 'ZAN' %}selected{% endif %}>Zanzibar</option>
+                </select>
+            </div>
+            <div class="flex items-end">
+                <button type="submit" class="bg-green-600 text-white px-6 py-3 rounded-lg hover:bg-green-700">
+                    <i class="fas fa-search mr-2"></i>Filter
+                </button>
+                {% if selected_category or selected_city or search_query %}
+                <a href="{% url 'partners:partner_list' %}" class="ml-2 bg-gray-300 text-gray-700 px-6 py-3 rounded-lg hover:bg-gray-400">
+                    <i class="fas fa-times mr-2"></i>Clear
+                </a>
+                {% endif %}
+            </div>
+        </form>
+    </div>
+
+    <!-- Partners Grid -->
+    {% if partners %}
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        {% for partner in partners %}
+        <div class="bg-white rounded-xl shadow-lg overflow-hidden hover:shadow-2xl transition group">
+            <!-- Image Section -->
+            <div class="h-48 bg-gradient-to-r from-green-400 to-blue-500 relative overflow-hidden">
+                {% if partner.primary_logo and partner.primary_logo.get_image_display_url %}
+                    <img src="{{ partner.primary_logo.get_image_display_url }}" 
+                         alt="{{ partner.business_name }}" 
+                         class="w-full h-full object-cover group-hover:scale-110 transition duration-500">
+                {% else %}
+                    <div class="absolute inset-0 flex items-center justify-center">
+                        <i class="fas fa-store text-white text-6xl opacity-50"></i>
+                    </div>
+                {% endif %}
+                <div class="absolute bottom-2 left-2 bg-black/50 text-white px-2 py-1 rounded text-xs">
+                    {{ partner.get_business_type_display }}
+                </div>
+                {% if partner.primary_logo and not partner.primary_logo.is_approved %}
+                <div class="absolute top-2 right-2 bg-yellow-500 text-white px-2 py-1 rounded text-xs">
+                    <i class="fas fa-clock mr-1"></i>Pending
+                </div>
+                {% endif %}
+            </div>
+            
+            <div class="p-6">
+                <div class="flex items-center justify-between mb-2">
+                    <h3 class="text-xl font-bold text-gray-800">{{ partner.business_name }}</h3>
+                    <span class="text-xs bg-green-100 text-green-700 px-2 py-1 rounded">{{ partner.get_city_display }}</span>
+                </div>
+                <p class="text-gray-600 text-sm mb-4 line-clamp-2">{{ partner.description|default:"No description available" }}</p>
+                <div class="flex items-center text-sm text-gray-500 mb-4">
+                    <i class="fas fa-phone mr-2"></i>
+                    <span>{{ partner.phone }}</span>
+                </div>
+                <a href="{% url 'partners:partner_detail' partner.id %}" 
+                   class="block w-full bg-green-600 text-white text-center py-3 rounded-lg hover:bg-green-700 transition">
+                    View Details <i class="fas fa-arrow-right ml-2"></i>
+                </a>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+
+    <!-- Pagination -->
+    {% if partners.has_other_pages %}
+    <div class="flex justify-center mt-8">
+        <div class="flex gap-2">
+            {% if partners.has_previous %}
+            <a href="?page={{ partners.previous_page_number }}{% for key, value in request.GET.items %}{% if key != 'page' %}&{{ key }}={{ value }}{% endif %}{% endfor %}" 
+               class="px-4 py-2 bg-gray-200 rounded-lg hover:bg-gray-300">Previous</a>
+            {% endif %}
+            
+            <span class="px-4 py-2 bg-green-600 text-white rounded-lg">
+                Page {{ partners.number }} of {{ partners.paginator.num_pages }}
+            </span>
+            
+            {% if partners.has_next %}
+            <a href="?page={{ partners.next_page_number }}{% for key, value in request.GET.items %}{% if key != 'page' %}&{{ key }}={{ value }}{% endif %}{% endfor %}" 
+               class="px-4 py-2 bg-gray-200 rounded-lg hover:bg-gray-300">Next</a>
+            {% endif %}
+        </div>
+    </div>
+    {% endif %}
+    
+    {% else %}
+    <div class="text-center py-12">
+        <i class="fas fa-store text-6xl text-gray-300 mb-4"></i>
+        <h3 class="text-2xl font-semibold text-gray-600">No partners found</h3>
+        <p class="text-gray-500 mt-2">Try adjusting your filters</p>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

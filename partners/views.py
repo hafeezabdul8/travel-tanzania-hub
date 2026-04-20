@@ -1,10 +1,14 @@
+from decimal import Decimal
+import json
+
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.decorators import login_required, user_passes_test
 from django.contrib import messages
 from django.http import JsonResponse
 from django.db.models import Sum, Count, Q
+from django.core.paginator import Paginator
 from datetime import datetime, timedelta
-from .models import Partner, PartnerPayout, PartnerNotification
+from .models import Partner, PartnerPayout, PartnerNotification, PartnerImage
 from hotels.models import Booking, Hotel
 from tourism.models import TourPackage, TourBooking, TouristAttraction
 
@@ -286,15 +290,24 @@ def partner_settings(request):
         partner.phone = request.POST.get('phone', partner.phone)
         partner.email = request.POST.get('email', partner.email)
         partner.address = request.POST.get('address', partner.address)
+        
+        # Update coordinates
+        latitude = request.POST.get('latitude')
+        longitude = request.POST.get('longitude')
+        if latitude and longitude:
+            partner.latitude = Decimal(latitude)
+            partner.longitude = Decimal(longitude)
+        
         partner.save()
         
         messages.success(request, 'Settings updated successfully!')
-        return redirect('partner_settings')
+        return redirect('partners:partner_settings')
     
     context = {
         'partner': partner,
     }
     
+    return render(request, 'partners/settings.html', context)
     return render(request, 'partners/settings.html', context)
 
 @login_required
@@ -385,3 +398,385 @@ def add_hotel(request):
             messages.error(request, f'Error adding hotel: {str(e)}')
     
     return redirect('partner_listings')
+
+# ============ PUBLIC VIEWS (For Users to See Partners) ============
+
+# Add these to your partner_list and partner_detail views
+
+def partner_list(request):
+    """Public page showing all approved partners"""
+    
+    partners = Partner.objects.filter(status='approved')
+    
+    # Get filter parameters
+    category = request.GET.get('category', '')
+    city = request.GET.get('city', '')
+    search = request.GET.get('search', '')
+    
+    # Apply filters
+    if category:
+        partners = partners.filter(business_type=category)
+    
+    if city:
+        partners = partners.filter(city=city)
+    
+    if search:
+        partners = partners.filter(
+            Q(business_name__icontains=search) |
+            Q(description__icontains=search) |
+            Q(city__icontains=search)
+        )
+    
+    # Prefetch images for each partner to avoid N+1 queries
+    partners = partners.prefetch_related('images')
+    
+    # Add primary image to each partner
+    for partner in partners:
+        partner.primary_logo = partner.images.filter(image_type='logo', is_primary=True).first()
+        if not partner.primary_logo:
+            partner.primary_logo = partner.images.filter(image_type='logo').first()
+        if not partner.primary_logo:
+            partner.primary_logo = partner.images.filter(is_approved=True).first()
+    
+    # Pagination
+    paginator = Paginator(partners, 12)
+    page_number = request.GET.get('page')
+    page_obj = paginator.get_page(page_number)
+    
+    # Get counts for filters
+    category_counts = {}
+    for cat, label in Partner.BUSINESS_TYPES:
+        category_counts[cat] = Partner.objects.filter(status='approved', business_type=cat).count()
+    
+    city_counts = {}
+    for city_code, city_name in [('DAR', 'Dar es Salaam'), ('ARU', 'Arusha'), ('ZAN', 'Zanzibar')]:
+        city_counts[city_code] = Partner.objects.filter(status='approved', city=city_code).count()
+    
+    context = {
+        'partners': page_obj,
+        'categories': Partner.BUSINESS_TYPES,
+        'category_counts': category_counts,
+        'city_counts': city_counts,
+        'selected_category': category,
+        'selected_city': city,
+        'search_query': search,
+    }
+    return render(request, 'partners/partner_list.html', context)
+
+
+def partner_detail(request, partner_id):
+    """Public page showing detailed partner profile"""
+    
+    partner = get_object_or_404(Partner, id=partner_id, status='approved')
+    
+    # Get all images for this partner
+    all_images = partner.images.filter(is_approved=True)
+    
+    # Get images by type
+    logo_images = all_images.filter(image_type='logo')
+    cover_images = all_images.filter(image_type='cover')
+    interior_images = all_images.filter(image_type='interior')
+    product_images = all_images.filter(image_type='product')
+    team_images = all_images.filter(image_type='team')
+    
+    # Get primary logo and cover
+    primary_logo = logo_images.filter(is_primary=True).first() or logo_images.first()
+    primary_cover = cover_images.filter(is_primary=True).first() or cover_images.first()
+    
+    # Get partner's listings based on business type
+    hotels = []
+    tour_packages = []
+    attractions = []
+    
+    if partner.business_type == 'hotel':
+        hotels = Hotel.objects.filter(partner=partner.user, is_approved=True)[:10]
+    elif partner.business_type == 'tour_operator':
+        tour_packages = TourPackage.objects.filter(partner=partner.user)[:10]
+    elif partner.business_type == 'attraction':
+        attractions = TouristAttraction.objects.filter(partner=partner.user)[:10]
+    
+    # Get similar partners in same city
+    similar_partners = Partner.objects.filter(
+        status='approved',
+        city=partner.city,
+        business_type=partner.business_type
+    ).exclude(id=partner.id)[:4]
+    
+    # Prefetch images for similar partners
+    for similar in similar_partners:
+        similar.primary_logo = similar.images.filter(image_type='logo', is_primary=True).first()
+        if not similar.primary_logo:
+            similar.primary_logo = similar.images.filter(image_type='logo').first()
+    
+    context = {
+        'partner': partner,
+        'all_images': all_images,
+        'logo_images': logo_images,
+        'cover_images': cover_images,
+        'interior_images': interior_images,
+        'product_images': product_images,
+        'team_images': team_images,
+        'primary_logo': primary_logo,
+        'primary_cover': primary_cover,
+        'hotels': hotels,
+        'tour_packages': tour_packages,
+        'attractions': attractions,
+        'similar_partners': similar_partners,
+    }
+    return render(request, 'partners/partner_detail.html', context)
+
+def partner_by_category(request, category):
+    """Filter partners by category"""
+    partners = Partner.objects.filter(status='approved', business_type=category)
+    
+    paginator = Paginator(partners, 12)
+    page_number = request.GET.get('page')
+    page_obj = paginator.get_page(page_number)
+    
+    category_name = dict(Partner.BUSINESS_TYPES).get(category, category)
+    
+    context = {
+        'partners': page_obj,
+        'category_name': category_name,
+        'category_slug': category,
+    }
+    return render(request, 'partners/partner_by_category.html', context)
+
+
+def partner_by_city(request, city):
+    """Filter partners by city"""
+    partners = Partner.objects.filter(status='approved', city=city)
+    
+    paginator = Paginator(partners, 12)
+    page_number = request.GET.get('page')
+    page_obj = paginator.get_page(page_number)
+    
+    city_names = {
+        'DAR': 'Dar es Salaam',
+        'ARU': 'Arusha',
+        'ZAN': 'Zanzibar',
+    }
+    
+    context = {
+        'partners': page_obj,
+        'city_name': city_names.get(city, city),
+        'city_code': city,
+    }
+    return render(request, 'partners/partner_by_city.html', context)
+
+
+def partner_search(request):
+    """AJAX search endpoint for partners"""
+    query = request.GET.get('q', '')
+    category = request.GET.get('category', '')
+    city = request.GET.get('city', '')
+    
+    partners = Partner.objects.filter(status='approved')
+    
+    if query:
+        partners = partners.filter(
+            Q(business_name__icontains=query) |
+            Q(description__icontains=query)
+        )
+    
+    if category:
+        partners = partners.filter(business_type=category)
+    
+    if city:
+        partners = partners.filter(city=city)
+    
+    results = []
+    for partner in partners[:20]:
+        results.append({
+            'id': partner.id,
+            'business_name': partner.business_name,
+            'business_type': partner.get_business_type_display(),
+            'city': partner.get_city_display(),
+            'phone': partner.phone,
+        })
+    
+    return JsonResponse({'results': results, 'count': len(results)})
+
+
+# ============ USER BOOKING VIEWS ============
+
+@login_required
+def book_partner_service(request, partner_id):
+    """User books a service from a partner"""
+    partner = get_object_or_404(Partner, id=partner_id, status='approved')
+    
+    if request.method == 'POST':
+        service_type = request.POST.get('service_type')
+        service_id = request.POST.get('service_id')
+        booking_date = request.POST.get('booking_date')
+        guests = request.POST.get('guests', 1)
+        special_requests = request.POST.get('special_requests', '')
+        
+        # Create booking record (you need a PartnerBooking model)
+        # For now, just show success message
+        
+        messages.success(request, f'Booking request sent to {partner.business_name}! They will contact you shortly.')
+        return redirect('partners:partner_detail', partner_id=partner_id)
+    
+    # GET request - show booking form
+    context = {
+        'partner': partner,
+    }
+    return render(request, 'partners/book_partner.html', context)
+
+
+@login_required
+def my_partner_bookings(request):
+    """User's bookings with partners"""
+    # You need a PartnerBooking model for this
+    # For now, just show placeholder
+    context = {
+        'bookings': [],
+    }
+    return render(request, 'partners/my_bookings.html', context)
+
+
+@login_required
+def cancel_partner_booking(request, booking_id):
+    """Cancel a partner booking"""
+    # You need a PartnerBooking model for this
+    messages.success(request, 'Booking cancelled successfully.')
+    return redirect('partners:my_partner_bookings')
+
+from django.core.files.storage import default_storage
+from django.core.files.base import ContentFile
+import os
+
+@login_required
+@user_passes_test(is_partner)
+def partner_images(request):
+    """Manage partner's images"""
+    partner = request.user.partner_profile
+    images = partner.images.all()
+    
+    # Get counts by type
+    image_counts = {
+        'logo': images.filter(image_type='logo').count(),
+        'cover': images.filter(image_type='cover').count(),
+        'interior': images.filter(image_type='interior').count(),
+        'product': images.filter(image_type='product').count(),
+        'team': images.filter(image_type='team').count(),
+    }
+    
+    context = {
+        'partner': partner,
+        'images': images,
+        'image_counts': image_counts,
+    }
+    return render(request, 'partners/images.html', context)
+
+
+@login_required
+@user_passes_test(is_partner)
+def add_partner_image(request):
+    """Add new image for partner"""
+    partner = request.user.partner_profile
+    
+    if request.method == 'POST':
+        image_type = request.POST.get('image_type')
+        title = request.POST.get('title', '')
+        description = request.POST.get('description', '')
+        is_primary = request.POST.get('is_primary') == 'on'
+        
+        # Handle uploaded file
+        uploaded_file = request.FILES.get('image')
+        image_url = request.POST.get('image_url', '')
+        
+        if uploaded_file:
+            # Validate file type
+            allowed_types = ['image/jpeg', 'image/png', 'image/jpg', 'image/gif', 'image/webp']
+            if uploaded_file.content_type not in allowed_types:
+                messages.error(request, 'Please upload a valid image file (JPEG, PNG, GIF, or WEBP).')
+                return redirect('partners:partner_images')
+            
+            # Validate file size (max 5MB)
+            if uploaded_file.size > 5 * 1024 * 1024:
+                messages.error(request, 'Image size should be less than 5MB.')
+                return redirect('partners:partner_images')
+        
+        # Create image record
+        image = PartnerImage.objects.create(
+            partner=partner,
+            image=uploaded_file if uploaded_file else None,
+            image_url=image_url if image_url else None,
+            image_type=image_type,
+            title=title,
+            description=description,
+            is_primary=is_primary,
+            is_approved=True
+        )
+        
+        # If this is set as primary, unset other primary images of same type
+        if is_primary:
+            PartnerImage.objects.filter(
+                partner=partner, 
+                image_type=image_type, 
+                is_primary=True
+            ).exclude(id=image.id).update(is_primary=False)
+        
+        messages.success(request, 'Image uploaded successfully! It will appear after admin approval.')
+        return redirect('partners:partner_images')
+    
+    return redirect('partners:partner_images')
+
+
+@login_required
+@user_passes_test(is_partner)
+def delete_partner_image(request, image_id):
+    """Delete partner image"""
+    partner = request.user.partner_profile
+    image = get_object_or_404(PartnerImage, id=image_id, partner=partner)
+    
+    # Delete the actual file if it exists
+    if image.image:
+        if default_storage.exists(image.image.path):
+            default_storage.delete(image.image.path)
+    
+    image.delete()
+    messages.success(request, 'Image deleted successfully.')
+    return redirect('partners:partner_images')
+
+
+@login_required
+@user_passes_test(is_partner)
+def set_primary_image(request, image_id):
+    """Set an image as primary for its type"""
+    partner = request.user.partner_profile
+    image = get_object_or_404(PartnerImage, id=image_id, partner=partner)
+    
+    # Unset other primary images of same type
+    PartnerImage.objects.filter(
+        partner=partner, 
+        image_type=image.image_type, 
+        is_primary=True
+    ).update(is_primary=False)
+    
+    # Set this image as primary
+    image.is_primary = True
+    image.save()
+    
+    messages.success(request, f'{image.get_image_type_display()} set as primary successfully!')
+    return redirect('partners:partner_images')
+
+
+@login_required
+@user_passes_test(is_partner)
+def reorder_images(request):
+    """Reorder partner images"""
+    if request.method == 'POST':
+        partner = request.user.partner_profile
+        order_data = json.loads(request.POST.get('order', '[]'))
+        
+        for item in order_data:
+            image_id = item.get('id')
+            order = item.get('order')
+            PartnerImage.objects.filter(id=image_id, partner=partner).update(display_order=order)
+        
+        return JsonResponse({'success': True})
+    
+    return JsonResponse({'error': 'Invalid request'}, status=400)

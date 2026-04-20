@@ -61,3 +61,13 @@ dj-database-url==2.0.0
 # CSV Processing
 django-import-export==3.3.0
 csvkit==1.1.1
+
+# Speech features - updated for compatibility
+pyttsx3==2.90
+SpeechRecognition==3.10.0
+pyaudio==0.2.14
+gTTS==2.5.4
+# Remove playsound - use alternative
+simpleaudio==1.0.4  # Alternative for playsound
+pydub==0.25.1      # For audio processing
+pygame==2.5.2      # Alternative audio playback

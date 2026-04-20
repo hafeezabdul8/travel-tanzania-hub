@@ -1,0 +1,40 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ category_name }} Partners - AFCON 2027{% endblock %}
+
+{% block content %}
+<div class="container mx-auto px-4 py-8">
+    <div class="mb-8">
+        <a href="{% url 'partners:partner_list' %}" class="text-green-600 hover:text-green-800">
+            <i class="fas fa-arrow-left mr-2"></i>Back to all partners
+        </a>
+    </div>
+    
+    <div class="bg-gradient-to-r from-green-600 to-blue-600 rounded-2xl p-8 text-white mb-8">
+        <h1 class="text-3xl md:text-4xl font-bold mb-2">{{ category_name }}</h1>
+        <p class="text-lg opacity-90">
+            Browse all {{ category_name|lower }} partners for AFCON 2027
+        </p>
+    </div>
+
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        {% for partner in partners %}
+        <div class="bg-white rounded-xl shadow-lg overflow-hidden hover:shadow-2xl transition">
+            <div class="p-6">
+                <h3 class="text-xl font-bold text-gray-800 mb-2">{{ partner.business_name }}</h3>
+                <p class="text-gray-600 text-sm mb-2">{{ partner.get_city_display }}</p>
+                <p class="text-gray-600 text-sm mb-4">{{ partner.description|truncatewords:20 }}</p>
+                <a href="{% url 'partners:partner_detail' partner.id %}" 
+                   class="inline-block bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700">
+                    View Details
+                </a>
+            </div>
+        </div>
+        {% empty %}
+        <div class="col-span-3 text-center py-12">
+            <p class="text-gray-500">No partners found in this category.</p>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+{% endblock %}

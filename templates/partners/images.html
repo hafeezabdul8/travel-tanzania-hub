@@ -1,0 +1,396 @@
+{% extends 'base.html' %}
+
+{% block title %}Manage Images - Partner Dashboard{% endblock %}
+
+{% block extra_css %}
+<style>
+    .image-card {
+        transition: transform 0.3s, box-shadow 0.3s;
+    }
+    .image-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+    }
+    .image-preview {
+        height: 200px;
+        overflow: hidden;
+        position: relative;
+        background: #f3f4f6;
+    }
+    .image-preview img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+    }
+    .primary-badge {
+        position: absolute;
+        top: 10px;
+        right: 10px;
+        background: #00A859;
+        color: white;
+        padding: 4px 8px;
+        border-radius: 4px;
+        font-size: 12px;
+        font-weight: bold;
+        z-index: 10;
+    }
+    .image-overlay {
+        position: absolute;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        background: rgba(0, 0, 0, 0.7);
+        color: white;
+        padding: 8px;
+        transform: translateY(100%);
+        transition: transform 0.3s;
+        z-index: 10;
+    }
+    .image-preview:hover .image-overlay {
+        transform: translateY(0);
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container mx-auto px-4 py-8">
+    <!-- Header -->
+    <div class="flex justify-between items-center mb-8">
+        <div>
+            <h1 class="text-3xl font-bold text-gray-800">Manage Business Images</h1>
+            <p class="text-gray-600 mt-1">Upload and manage photos of your business, products, and services</p>
+        </div>
+        <button onclick="openUploadModal()" 
+                class="bg-green-600 text-white px-6 py-3 rounded-lg hover:bg-green-700 transition">
+            <i class="fas fa-upload mr-2"></i>Upload New Image
+        </button>
+    </div>
+
+    <!-- Stats Cards -->
+    <div class="grid grid-cols-2 md:grid-cols-5 gap-4 mb-8">
+        <div class="bg-white rounded-xl shadow-lg p-4 text-center">
+            <div class="text-2xl font-bold text-green-600">{{ images.count }}</div>
+            <div class="text-sm text-gray-600">Total Images</div>
+        </div>
+        <div class="bg-white rounded-xl shadow-lg p-4 text-center">
+            <div class="text-2xl font-bold text-blue-600">{{ image_counts.logo|default:0 }}</div>
+            <div class="text-sm text-gray-600">Logos</div>
+        </div>
+        <div class="bg-white rounded-xl shadow-lg p-4 text-center">
+            <div class="text-2xl font-bold text-purple-600">{{ image_counts.cover|default:0 }}</div>
+            <div class="text-sm text-gray-600">Cover Photos</div>
+        </div>
+        <div class="bg-white rounded-xl shadow-lg p-4 text-center">
+            <div class="text-2xl font-bold text-yellow-600">{{ image_counts.interior|default:0 }}</div>
+            <div class="text-sm text-gray-600">Interior/Facility</div>
+        </div>
+        <div class="bg-white rounded-xl shadow-lg p-4 text-center">
+            <div class="text-2xl font-bold text-red-600">{{ image_counts.product|default:0 }}</div>
+            <div class="text-sm text-gray-600">Products/Services</div>
+        </div>
+    </div>
+
+    <!-- Display Images by Type -->
+    <div class="space-y-8">
+        <!-- Logo Section -->
+        {% with logo_images=images %}
+        {% if logo_images %}
+        <div>
+            <h2 class="text-2xl font-bold mb-4 flex items-center">
+                <i class="fas fa-building text-blue-500 mr-2"></i>
+                Business Logos
+            </h2>
+            <div class="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-6">
+                {% for img in logo_images %}
+                {% if img.image_type == 'logo' %}
+                <div class="image-card bg-white rounded-xl shadow-lg overflow-hidden">
+                    <div class="image-preview">
+                        {% if img.get_image_display_url %}
+                        <img src="{{ img.get_image_display_url }}" alt="{{ img.title|default:img.get_image_type_display }}">
+                        {% else %}
+                        <div class="flex items-center justify-center h-full">
+                            <i class="fas fa-image text-gray-400 text-4xl"></i>
+                        </div>
+                        {% endif %}
+                        {% if img.is_primary %}
+                        <div class="primary-badge">
+                            <i class="fas fa-star mr-1"></i>Primary
+                        </div>
+                        {% endif %}
+                        <div class="image-overlay">
+                            <div class="flex justify-center gap-2">
+                                {% if not img.is_primary %}
+                                <a href="{% url 'partners:set_primary_image' img.id %}" 
+                                   class="text-white hover:text-yellow-400 text-sm">
+                                    <i class="fas fa-star"></i> Set Primary
+                                </a>
+                                {% endif %}
+                                <a href="{% url 'partners:delete_partner_image' img.id %}" 
+                                   class="text-white hover:text-red-400 text-sm"
+                                   onclick="return confirm('Delete this image?')">
+                                    <i class="fas fa-trash"></i> Delete
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="p-4">
+                        <div class="font-semibold text-gray-800">{{ img.title|default:"No title" }}</div>
+                        <div class="text-sm text-gray-500 mt-1">{{ img.created_at|date:"M d, Y" }}</div>
+                        {% if not img.is_approved %}
+                        <div class="text-xs text-yellow-600 mt-2">
+                            <i class="fas fa-clock mr-1"></i>Pending approval
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+                {% endif %}
+                {% endfor %}
+            </div>
+        </div>
+        {% endif %}
+        {% endwith %}
+
+        <!-- Cover Photos Section -->
+        {% with cover_images=images %}
+        {% if cover_images %}
+        <div>
+            <h2 class="text-2xl font-bold mb-4 flex items-center">
+                <i class="fas fa-camera text-purple-500 mr-2"></i>
+                Cover Photos
+            </h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                {% for img in cover_images %}
+                {% if img.image_type == 'cover' %}
+                <div class="image-card bg-white rounded-xl shadow-lg overflow-hidden">
+                    <div class="image-preview h-48">
+                        {% if img.get_image_display_url %}
+                        <img src="{{ img.get_image_display_url }}" alt="{{ img.title|default:img.get_image_type_display }}" class="w-full h-full object-cover">
+                        {% else %}
+                        <div class="flex items-center justify-center h-full">
+                            <i class="fas fa-image text-gray-400 text-4xl"></i>
+                        </div>
+                        {% endif %}
+                        {% if img.is_primary %}
+                        <div class="primary-badge">Primary</div>
+                        {% endif %}
+                        <div class="image-overlay">
+                            <div class="flex justify-center gap-2">
+                                {% if not img.is_primary %}
+                                <a href="{% url 'partners:set_primary_image' img.id %}" class="text-white hover:text-yellow-400 text-sm">Set Primary</a>
+                                {% endif %}
+                                <a href="{% url 'partners:delete_partner_image' img.id %}" class="text-white hover:text-red-400 text-sm" onclick="return confirm('Delete this image?')">Delete</a>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="p-4">
+                        <div class="font-semibold">{{ img.title|default:"Cover Photo" }}</div>
+                        <div class="text-sm text-gray-500">{{ img.created_at|date:"M d, Y" }}</div>
+                    </div>
+                </div>
+                {% endif %}
+                {% endfor %}
+            </div>
+        </div>
+        {% endif %}
+        {% endwith %}
+
+        <!-- Interior/Facility Section -->
+        {% with interior_images=images %}
+        {% if interior_images %}
+        <div>
+            <h2 class="text-2xl font-bold mb-4 flex items-center">
+                <i class="fas fa-building text-green-500 mr-2"></i>
+                Interior & Facilities
+            </h2>
+            <div class="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-6">
+                {% for img in interior_images %}
+                {% if img.image_type == 'interior' %}
+                <div class="image-card bg-white rounded-xl shadow-lg overflow-hidden">
+                    <div class="image-preview">
+                        {% if img.get_image_display_url %}
+                        <img src="{{ img.get_image_display_url }}" alt="{{ img.title|default:img.get_image_type_display }}">
+                        {% else %}
+                        <div class="flex items-center justify-center h-full">
+                            <i class="fas fa-image text-gray-400 text-4xl"></i>
+                        </div>
+                        {% endif %}
+                        <div class="image-overlay">
+                            <div class="flex justify-center">
+                                <a href="{% url 'partners:delete_partner_image' img.id %}" class="text-white hover:text-red-400 text-sm" onclick="return confirm('Delete this image?')">Delete</a>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="p-4">
+                        <div class="font-semibold">{{ img.title|default:"No title" }}</div>
+                        <div class="text-sm text-gray-500">{{ img.created_at|date:"M d, Y" }}</div>
+                    </div>
+                </div>
+                {% endif %}
+                {% endfor %}
+            </div>
+        </div>
+        {% endif %}
+        {% endwith %}
+
+        <!-- Products/Services Section -->
+        {% with product_images=images %}
+        {% if product_images %}
+        <div>
+            <h2 class="text-2xl font-bold mb-4 flex items-center">
+                <i class="fas fa-box text-orange-500 mr-2"></i>
+                Products & Services
+            </h2>
+            <div class="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-6">
+                {% for img in product_images %}
+                {% if img.image_type == 'product' %}
+                <div class="image-card bg-white rounded-xl shadow-lg overflow-hidden">
+                    <div class="image-preview">
+                        {% if img.get_image_display_url %}
+                        <img src="{{ img.get_image_display_url }}" alt="{{ img.title|default:img.get_image_type_display }}">
+                        {% else %}
+                        <div class="flex items-center justify-center h-full">
+                            <i class="fas fa-image text-gray-400 text-4xl"></i>
+                        </div>
+                        {% endif %}
+                        <div class="image-overlay">
+                            <div class="flex justify-center">
+                                <a href="{% url 'partners:delete_partner_image' img.id %}" class="text-white hover:text-red-400 text-sm" onclick="return confirm('Delete this image?')">Delete</a>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="p-4">
+                        <div class="font-semibold">{{ img.title|default:"No title" }}</div>
+                        <div class="text-sm text-gray-500">{{ img.created_at|date:"M d, Y" }}</div>
+                    </div>
+                </div>
+                {% endif %}
+                {% endfor %}
+            </div>
+        </div>
+        {% endif %}
+        {% endwith %}
+
+        <!-- Team Photos Section -->
+        {% with team_images=images %}
+        {% if team_images %}
+        <div>
+            <h2 class="text-2xl font-bold mb-4 flex items-center">
+                <i class="fas fa-users text-indigo-500 mr-2"></i>
+                Team Photos
+            </h2>
+            <div class="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-6">
+                {% for img in team_images %}
+                {% if img.image_type == 'team' %}
+                <div class="image-card bg-white rounded-xl shadow-lg overflow-hidden">
+                    <div class="image-preview">
+                        {% if img.get_image_display_url %}
+                        <img src="{{ img.get_image_display_url }}" alt="{{ img.title|default:img.get_image_type_display }}">
+                        {% else %}
+                        <div class="flex items-center justify-center h-full">
+                            <i class="fas fa-image text-gray-400 text-4xl"></i>
+                        </div>
+                        {% endif %}
+                        <div class="image-overlay">
+                            <div class="flex justify-center">
+                                <a href="{% url 'partners:delete_partner_image' img.id %}" class="text-white hover:text-red-400 text-sm" onclick="return confirm('Delete this image?')">Delete</a>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="p-4">
+                        <div class="font-semibold">{{ img.title|default:"Team Photo" }}</div>
+                        <div class="text-sm text-gray-500">{{ img.created_at|date:"M d, Y" }}</div>
+                    </div>
+                </div>
+                {% endif %}
+                {% endfor %}
+            </div>
+        </div>
+        {% endif %}
+        {% endwith %}
+    </div>
+
+    <!-- Upload Modal -->
+    <div id="uploadModal" class="fixed inset-0 bg-black bg-opacity-50 z-50 hidden flex items-center justify-center">
+        <div class="bg-white rounded-xl shadow-2xl w-full max-w-md mx-4 max-h-[90vh] overflow-y-auto">
+            <div class="p-6 border-b sticky top-0 bg-white">
+                <h2 class="text-2xl font-bold">Upload New Image</h2>
+            </div>
+            <form method="POST" action="{% url 'partners:add_partner_image' %}" enctype="multipart/form-data" class="p-6">
+                {% csrf_token %}
+                
+                <div class="mb-4">
+                    <label class="block text-gray-700 font-semibold mb-2">Image Type *</label>
+                    <select name="image_type" required class="w-full p-3 border rounded-lg focus:ring-2 focus:ring-green-500">
+                        <option value="">Select type</option>
+                        <option value="logo">Business Logo</option>
+                        <option value="cover">Cover Photo</option>
+                        <option value="interior">Interior / Facility</option>
+                        <option value="product">Product / Service</option>
+                        <option value="team">Team Photo</option>
+                        <option value="other">Other</option>
+                    </select>
+                </div>
+                
+                <div class="mb-4">
+                    <label class="block text-gray-700 font-semibold mb-2">Upload Image</label>
+                    <input type="file" name="image" accept="image/jpeg,image/png,image/jpg,image/gif,image/webp" class="w-full p-3 border rounded-lg">
+                    <p class="text-sm text-gray-500 mt-1">Max file size: 5MB. Supported: JPEG, PNG, GIF, WEBP</p>
+                </div>
+                
+                <div class="mb-4">
+                    <label class="block text-gray-700 font-semibold mb-2">Or Image URL</label>
+                    <input type="url" name="image_url" placeholder="https://example.com/image.jpg" class="w-full p-3 border rounded-lg">
+                </div>
+                
+                <div class="mb-4">
+                    <label class="block text-gray-700 font-semibold mb-2">Title (Optional)</label>
+                    <input type="text" name="title" placeholder="e.g., Main Office, Product Name" class="w-full p-3 border rounded-lg">
+                </div>
+                
+                <div class="mb-4">
+                    <label class="block text-gray-700 font-semibold mb-2">Description</label>
+                    <textarea name="description" rows="3" placeholder="Describe this image..." class="w-full p-3 border rounded-lg"></textarea>
+                </div>
+                
+                <div class="mb-4">
+                    <label class="flex items-center cursor-pointer">
+                        <input type="checkbox" name="is_primary" class="mr-2 w-4 h-4">
+                        <span class="text-gray-700">Set as primary image for this type</span>
+                    </label>
+                </div>
+                
+                <div class="flex gap-3 mt-6">
+                    <button type="button" onclick="closeUploadModal()" class="flex-1 bg-gray-300 text-gray-700 py-3 rounded-lg hover:bg-gray-400 transition">Cancel</button>
+                    <button type="submit" class="flex-1 bg-green-600 text-white py-3 rounded-lg hover:bg-green-700 transition">Upload</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<script>
+    function openUploadModal() {
+        document.getElementById('uploadModal').classList.remove('hidden');
+        document.body.style.overflow = 'hidden';
+    }
+    
+    function closeUploadModal() {
+        document.getElementById('uploadModal').classList.add('hidden');
+        document.body.style.overflow = 'auto';
+    }
+    
+    // Close modal when clicking outside
+    document.getElementById('uploadModal').addEventListener('click', function(e) {
+        if (e.target === this) {
+            closeUploadModal();
+        }
+    });
+    
+    // Close on ESC key
+    document.addEventListener('keydown', function(e) {
+        if (e.key === 'Escape') {
+            closeUploadModal();
+        }
+    });
+</script>
+{% endblock %}

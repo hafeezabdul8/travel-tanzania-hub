@@ -1,0 +1,370 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ city.name }} - AFCON 2027 City Guide{% endblock %}
+
+{% block extra_css %}
+<style>
+    .hero-section {
+        height: 70vh;
+        min-height: 500px;
+        background-size: cover;
+        background-position: center;
+        position: relative;
+    }
+    .stat-card {
+        transition: all 0.3s;
+    }
+    .stat-card:hover {
+        transform: translateY(-5px);
+    }
+    .section-title {
+        position: relative;
+        display: inline-block;
+    }
+    .section-title:after {
+        content: '';
+        position: absolute;
+        bottom: -10px;
+        left: 0;
+        width: 60px;
+        height: 3px;
+        background: #00A859;
+    }
+    .activity-badge {
+        transition: all 0.3s;
+    }
+    .activity-badge:hover {
+        background: #00A859;
+        color: white;
+        transform: translateY(-2px);
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<!-- Hero Section -->
+<section class="hero-section relative" style="background-image: linear-gradient(rgba(0,0,0,0.5), rgba(0,0,0,0.7)), url('{{ city.hero_image }}');">
+    <div class="absolute inset-0 bg-black/40"></div>
+    <div class="relative z-10 container mx-auto px-4 h-full flex flex-col justify-center text-white">
+        <div class="max-w-3xl">
+            <h1 class="text-5xl md:text-6xl font-bold mb-4">{{ city.name }}</h1>
+            <p class="text-xl md:text-2xl mb-6">{{ city.tagline }}</p>
+            <div class="flex flex-wrap gap-4">
+                <a href="#hotels" class="bg-green-600 text-white px-6 py-3 rounded-full font-semibold hover:bg-green-700 transition">
+                    <i class="fas fa-hotel mr-2"></i>View Hotels
+                </a>
+                <a href="#attractions" class="bg-blue-600 text-white px-6 py-3 rounded-full font-semibold hover:bg-blue-700 transition">
+                    <i class="fas fa-map-marked-alt mr-2"></i>View Attractions
+                </a>
+                <a href="#stadium" class="bg-yellow-500 text-gray-900 px-6 py-3 rounded-full font-semibold hover:bg-yellow-400 transition">
+                    <i class="fas fa-futbol mr-2"></i>View Stadium
+                </a>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Quick Stats Bar -->
+<div class="bg-white shadow-lg -mt-10 relative z-20 rounded-2xl mx-4 md:mx-auto max-w-6xl">
+    <div class="grid grid-cols-2 md:grid-cols-4 gap-4 p-6">
+        <div class="text-center stat-card">
+            <div class="text-2xl font-bold text-green-600">{{ hotels_count }}+</div>
+            <div class="text-gray-600 text-sm">Hotels Available</div>
+        </div>
+        <div class="text-center stat-card">
+            <div class="text-2xl font-bold text-blue-600">{{ attractions_count }}+</div>
+            <div class="text-gray-600 text-sm">Attractions</div>
+        </div>
+        <div class="text-center stat-card">
+            <div class="text-2xl font-bold text-yellow-600">{{ city.matches_count }}</div>
+            <div class="text-gray-600 text-sm">AFCON Matches</div>
+        </div>
+        <div class="text-center stat-card">
+            <div class="text-2xl font-bold text-red-600">{{ city.stadium_capacity|floatformat:0 }}+</div>
+            <div class="text-gray-600 text-sm">Stadium Capacity</div>
+        </div>
+    </div>
+</div>
+
+<!-- Main Content -->
+<div class="container mx-auto px-4 py-12">
+    <!-- About Section -->
+    <div class="mb-16">
+        <h2 class="section-title text-3xl font-bold mb-8">About {{ city.name }}</h2>
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+            <div class="lg:col-span-2">
+                <p class="text-gray-700 text-lg leading-relaxed mb-6">{{ city.description }}</p>
+                
+                <!-- Quick Facts -->
+                <div class="bg-gray-50 rounded-xl p-6 mt-6">
+                    <h3 class="text-xl font-bold mb-4">Quick Facts</h3>
+                    <div class="grid grid-cols-2 gap-4">
+                        <div>
+                            <span class="text-gray-500">Population</span>
+                            <p class="font-semibold">{{ city.population }}</p>
+                        </div>
+                        <div>
+                            <span class="text-gray-500">Area</span>
+                            <p class="font-semibold">{{ city.area }}</p>
+                        </div>
+                        <div>
+                            <span class="text-gray-500">Language</span>
+                            <p class="font-semibold">{{ city.language }}</p>
+                        </div>
+                        <div>
+                            <span class="text-gray-500">Currency</span>
+                            <p class="font-semibold">{{ city.currency }}</p>
+                        </div>
+                        <div>
+                            <span class="text-gray-500">Time Zone</span>
+                            <p class="font-semibold">{{ city.timezone }}</p>
+                        </div>
+                        <div>
+                            <span class="text-gray-500">Best Time to Visit</span>
+                            <p class="font-semibold">{{ city.best_time_to_visit }}</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Weather Card -->
+            <div class="bg-gradient-to-r from-blue-500 to-blue-600 rounded-xl p-6 text-white">
+                <h3 class="text-xl font-bold mb-4">Weather During AFCON</h3>
+                <div class="text-center mb-4">
+                    <i class="fas fa-sun text-5xl mb-2"></i>
+                    <div class="text-3xl font-bold">{{ city.average_temperature }}</div>
+                </div>
+                <p class="text-sm opacity-90">{{ city.weather_info }}</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Hotels Section -->
+    <div id="hotels" class="mb-16">
+        <div class="flex justify-between items-center mb-8">
+            <h2 class="section-title text-3xl font-bold">🏨 Featured Hotels</h2>
+            <a href="{% url 'hotel_list' %}?city={{ city.code }}" class="text-green-600 hover:text-green-800 font-semibold">
+                View All Hotels <i class="fas fa-arrow-right ml-2"></i>
+            </a>
+        </div>
+        
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {% for hotel in hotels %}
+            <div class="bg-white rounded-xl shadow-lg overflow-hidden hover:shadow-xl transition">
+                <div class="h-48 overflow-hidden">
+                    <img src="{{ hotel.get_image_url }}" alt="{{ hotel.name }}" class="w-full h-full object-cover hover:scale-110 transition duration-500">
+                </div>
+                <div class="p-5">
+                    <div class="flex justify-between items-start mb-2">
+                        <h3 class="text-xl font-bold">{{ hotel.name }}</h3>
+                        <div class="text-yellow-500">
+                            {% for i in "12345"|make_list %}
+                                {% if forloop.counter <= hotel.stars %}
+                                    <i class="fas fa-star text-sm"></i>
+                                {% endif %}
+                            {% endfor %}
+                        </div>
+                    </div>
+                    <p class="text-gray-600 text-sm mb-3">{{ hotel.address|truncatewords:10 }}</p>
+                    <div class="flex justify-between items-center">
+                        <div>
+                            <span class="text-2xl font-bold text-green-600">${{ hotel.price_per_night }}</span>
+                            <span class="text-gray-500">/night</span>
+                        </div>
+                        <a href="{% url 'hotel_detail' hotel.id %}" class="bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 transition text-sm">
+                            View Details
+                        </a>
+                    </div>
+                </div>
+            </div>
+            {% empty %}
+            <div class="col-span-3 text-center py-8 text-gray-500">
+                <i class="fas fa-hotel text-4xl mb-2"></i>
+                <p>No hotels available yet</p>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+
+    <!-- Top Hotels Section -->
+    {% if top_hotels %}
+    <div class="mb-16 bg-yellow-50 rounded-2xl p-8">
+        <h2 class="text-2xl font-bold mb-6 text-center">⭐ Top Rated Hotels in {{ city.name }}</h2>
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+            {% for hotel in top_hotels %}
+            <div class="bg-white rounded-xl shadow-lg p-5 text-center">
+                <div class="text-yellow-500 mb-2">
+                    {% for i in "12345"|make_list %}
+                        {% if forloop.counter <= hotel.stars %}
+                            <i class="fas fa-star"></i>
+                        {% endif %}
+                    {% endfor %}
+                </div>
+                <h3 class="font-bold text-lg">{{ hotel.name }}</h3>
+                <p class="text-green-600 font-bold mt-2">${{ hotel.price_per_night }}/night</p>
+                <a href="{% url 'hotel_detail' hotel.id %}" class="inline-block mt-3 text-green-600 hover:text-green-800 text-sm">View Details →</a>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- Attractions Section -->
+    <div id="attractions" class="mb-16">
+        <div class="flex justify-between items-center mb-8">
+            <h2 class="section-title text-3xl font-bold">🏛️ Top Attractions</h2>
+            <a href="{% url 'tourism' %}?city={{ city.code }}" class="text-green-600 hover:text-green-800 font-semibold">
+                View All Attractions <i class="fas fa-arrow-right ml-2"></i>
+            </a>
+        </div>
+        
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {% for attraction in attractions %}
+            <div class="bg-white rounded-xl shadow-lg overflow-hidden hover:shadow-xl transition">
+                <div class="h-48 overflow-hidden">
+                    {% with images=attraction.images.all %}
+                        {% if images %}
+                            <img src="{{ images.first.image_url }}" alt="{{ attraction.name }}" class="w-full h-full object-cover hover:scale-110 transition duration-500">
+                        {% else %}
+                            <div class="w-full h-full bg-gradient-to-r from-green-400 to-blue-500 flex items-center justify-center">
+                                <i class="fas fa-{{ attraction.get_icon }} text-white text-4xl"></i>
+                            </div>
+                        {% endif %}
+                    {% endwith %}
+                </div>
+                <div class="p-5">
+                    <div class="flex items-center mb-2">
+                        <i class="fas fa-{{ attraction.get_icon }} text-green-600 mr-2"></i>
+                        <span class="text-sm text-gray-500">{{ attraction.get_category_display }}</span>
+                    </div>
+                    <h3 class="text-xl font-bold mb-2">{{ attraction.name }}</h3>
+                    <p class="text-gray-600 text-sm mb-3">{{ attraction.description|truncatewords:20 }}</p>
+                    <div class="flex justify-between items-center">
+                        <div class="text-sm text-gray-500">
+                            <i class="fas fa-clock mr-1"></i>{{ attraction.estimated_visit_time }}
+                        </div>
+                        <a href="{% url 'attraction_detail' attraction.id %}" class="text-green-600 hover:text-green-800 font-semibold text-sm">
+                            Learn More <i class="fas fa-arrow-right ml-1"></i>
+                        </a>
+                    </div>
+                </div>
+            </div>
+            {% empty %}
+            <div class="col-span-3 text-center py-8 text-gray-500">
+                <i class="fas fa-map-marked-alt text-4xl mb-2"></i>
+                <p>No attractions available yet</p>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+
+    <!-- Stadium Section -->
+    <div id="stadium" class="mb-16 bg-gray-900 text-white rounded-2xl overflow-hidden">
+        <div class="grid grid-cols-1 md:grid-cols-2">
+            <div class="p-8 md:p-12">
+                <h2 class="text-3xl font-bold mb-4">{{ city.stadium_name }}</h2>
+                <div class="flex items-center mb-4">
+                    <i class="fas fa-users text-yellow-500 mr-2"></i>
+                    <span>Capacity: {{ city.stadium_capacity|floatformat:0 }} spectators</span>
+                </div>
+                <div class="flex items-center mb-6">
+                    <i class="fas fa-futbol text-yellow-500 mr-2"></i>
+                    <span>Hosting {{ city.matches_count }} AFCON 2027 matches</span>
+                </div>
+                <p class="text-gray-300 mb-6">The stadium will host exciting AFCON 2027 matches. Located conveniently with excellent transport links.</p>
+                
+                {% if matches %}
+                <h3 class="text-xl font-bold mb-3">Upcoming Matches</h3>
+                <div class="space-y-2 mb-6">
+                    {% for match in matches %}
+                    <div class="bg-gray-800 rounded-lg p-3">
+                        <div class="flex justify-between items-center">
+                            <span class="font-semibold">{{ match.home_team.short_name }}</span>
+                            <span class="text-gray-400">vs</span>
+                            <span class="font-semibold">{{ match.away_team.short_name }}</span>
+                            <span class="text-sm text-gray-400">{{ match.date|date:"M d" }}</span>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+                {% endif %}
+                
+                <a href="{% url 'hotel_list' %}?city={{ city.code }}" class="inline-block bg-green-600 text-white px-6 py-3 rounded-lg hover:bg-green-700 transition">
+                    <i class="fas fa-ticket-alt mr-2"></i>Book Hotels Near Stadium
+                </a>
+            </div>
+            <div class="h-64 md:h-auto">
+                {% if city.stadium_image %}
+                <img src="{{ city.stadium_image }}" alt="{{ city.stadium_name }}" class="w-full h-full object-cover">
+                {% else %}
+                <div class="w-full h-full bg-gradient-to-r from-green-600 to-blue-600 flex items-center justify-center">
+                    <i class="fas fa-futbol text-white text-8xl opacity-50"></i>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <!-- Popular Activities -->
+    <div class="mb-16">
+        <h2 class="section-title text-3xl font-bold mb-8">🎯 Popular Activities</h2>
+        <div class="flex flex-wrap gap-3">
+            {% for activity in city.popular_activities %}
+            <span class="activity-badge bg-gray-100 text-gray-700 px-4 py-2 rounded-full text-sm cursor-pointer">
+                {{ activity }}
+            </span>
+            {% endfor %}
+        </div>
+    </div>
+
+    <!-- Local Cuisine -->
+    <div class="mb-16 bg-orange-50 rounded-2xl p-8">
+        <h2 class="text-3xl font-bold mb-4 text-center">🍽️ Local Cuisine</h2>
+        <p class="text-gray-700 text-center mb-6 max-w-2xl mx-auto">{{ city.local_cuisine }}</p>
+        <div class="text-center">
+            <a href="{% url 'chatbot' %}?message=Recommend restaurants in {{ city.name }}" class="inline-flex items-center bg-orange-500 text-white px-6 py-3 rounded-full hover:bg-orange-600 transition">
+                <i class="fas fa-robot mr-2"></i>Ask AI for Restaurant Recommendations
+            </a>
+        </div>
+    </div>
+
+    <!-- Transportation -->
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-8 mb-16">
+        <div class="bg-white rounded-xl shadow-lg p-6">
+            <h3 class="text-xl font-bold mb-4 flex items-center">
+                <i class="fas fa-plane text-blue-600 mr-2"></i>Getting There
+            </h3>
+            <p class="text-gray-700">{{ city.how_to_get_there }}</p>
+            {% if city.airport_info %}
+            <div class="mt-4 p-3 bg-gray-50 rounded-lg">
+                <p class="text-sm text-gray-600"><i class="fas fa-info-circle mr-1"></i> {{ city.airport_info }}</p>
+            </div>
+            {% endif %}
+        </div>
+        
+        <div class="bg-white rounded-xl shadow-lg p-6">
+            <h3 class="text-xl font-bold mb-4 flex items-center">
+                <i class="fas fa-bus text-green-600 mr-2"></i>Getting Around
+            </h3>
+            <p class="text-gray-700">{{ city.getting_around }}</p>
+        </div>
+    </div>
+
+    <!-- CTA Section -->
+    <div class="bg-gradient-to-r from-green-600 to-blue-600 rounded-2xl p-12 text-center text-white">
+        <h2 class="text-3xl font-bold mb-4">Ready to Explore {{ city.name }}?</h2>
+        <p class="text-lg mb-8 opacity-90">Book your accommodation and discover the best of {{ city.name }} during AFCON 2027</p>
+        <div class="flex flex-wrap justify-center gap-4">
+            <a href="{% url 'hotel_list' %}?city={{ city.code }}" class="bg-white text-green-700 px-8 py-3 rounded-full font-bold hover:bg-gray-100 transition">
+                <i class="fas fa-hotel mr-2"></i>Find Hotels
+            </a>
+            <a href="{% url 'tourism' %}?city={{ city.code }}" class="bg-yellow-500 text-gray-900 px-8 py-3 rounded-full font-bold hover:bg-yellow-400 transition">
+                <i class="fas fa-map-marked-alt mr-2"></i>Explore Attractions
+            </a>
+            <a href="{% url 'chatbot' %}" class="bg-blue-700 text-white px-8 py-3 rounded-full font-bold hover:bg-blue-800 transition">
+                <i class="fas fa-robot mr-2"></i>Ask AI Assistant
+            </a>
+        </div>
+    </div>
+</div>
+{% endblock %}

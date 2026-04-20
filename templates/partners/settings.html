@@ -1,808 +1,326 @@
-<!-- templates/partners/settings.html -->
 {% extends 'base.html' %}
 
-{% block title %}Settings - Partner Dashboard{% endblock %}
+{% block title %}Partner Settings - AFCON 2027{% endblock %}
+
+{% block extra_css %}
+<style>
+    .settings-section {
+        transition: all 0.3s ease;
+    }
+    .settings-section:hover {
+        transform: translateY(-2px);
+    }
+    .info-tip {
+        cursor: help;
+        border-bottom: 1px dashed #9ca3af;
+    }
+</style>
+{% endblock %}
 
 {% block content %}
-<div class="animate-fade-in">
-  <!-- Header -->
-  <div class="bg-gradient-to-r from-green-800 to-blue-800 text-white py-8">
-    <div class="container mx-auto px-4">
-      <div class="flex justify-between items-center">
-        <div>
-          <h1 class="text-3xl font-bold mb-2">Account Settings</h1>
-          <p class="opacity-90">Manage your partner account information and preferences</p>
-        </div>
-        <div class="text-right">
-          <div class="inline-block bg-white text-green-800 px-4 py-2 rounded-full font-bold">
-            {{ partner.get_status_display }}
-          </div>
-        </div>
-      </div>
-    </div>
-  </div>
-
-  <div class="container mx-auto px-4 py-8">
-    <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
-      <!-- Left Column - Navigation -->
-      <div class="lg:col-span-1">
-        <div class="bg-white rounded-xl shadow-lg p-6 sticky top-8">
-          <h3 class="text-lg font-bold mb-6 text-gray-800">Settings Menu</h3>
-          <nav class="space-y-2">
-            <a href="#profile" onclick="showSection('profile')" 
-               class="block p-3 rounded-lg hover:bg-gray-100 font-medium text-gray-700 settings-nav active">
-              <i class="fas fa-user-circle mr-3"></i>Profile Information
-            </a>
-            <a href="#payment" onclick="showSection('payment')" 
-               class="block p-3 rounded-lg hover:bg-gray-100 font-medium text-gray-700 settings-nav">
-              <i class="fas fa-credit-card mr-3"></i>Payment Settings
-            </a>
-            <a href="#commission" onclick="showSection('commission')" 
-               class="block p-3 rounded-lg hover:bg-gray-100 font-medium text-gray-700 settings-nav">
-              <i class="fas fa-percentage mr-3"></i>Commission
-            </a>
-            <a href="#notifications" onclick="showSection('notifications')" 
-               class="block p-3 rounded-lg hover:bg-gray-100 font-medium text-gray-700 settings-nav">
-              <i class="fas fa-bell mr-3"></i>Notifications
-            </a>
-            <a href="#security" onclick="showSection('security')" 
-               class="block p-3 rounded-lg hover:bg-gray-100 font-medium text-gray-700 settings-nav">
-              <i class="fas fa-shield-alt mr-3"></i>Security
-            </a>
-            <div class="pt-6 mt-6 border-t">
-              <a href="{% url 'partner_dashboard' %}" 
-                 class="block p-3 rounded-lg hover:bg-gray-100 font-medium text-gray-700">
-                <i class="fas fa-arrow-left mr-3"></i>Back to Dashboard
-              </a>
+<div class="container mx-auto px-4 py-8 max-w-4xl">
+    <!-- Header -->
+    <div class="mb-8">
+        <div class="flex items-center justify-between">
+            <div>
+                <h1 class="text-3xl font-bold text-gray-800">Partner Settings</h1>
+                <p class="text-gray-600 mt-1">Manage your business information and preferences</p>
             </div>
-          </nav>
+            <a href="{% url 'partners:partner_dashboard' %}" class="text-green-600 hover:text-green-800">
+                <i class="fas fa-arrow-left mr-2"></i>Back to Dashboard
+            </a>
         </div>
-      </div>
+    </div>
 
-      <!-- Right Column - Content -->
-      <div class="lg:col-span-2">
-        <!-- Profile Information -->
-        <div id="profile-section" class="settings-section active">
-          <div class="bg-white rounded-xl shadow-lg p-6 mb-6">
-            <h2 class="text-2xl font-bold mb-6 text-gray-800">Profile Information</h2>
-            
-            <form method="post" action="{% url 'partner_settings' %}">
-              {% csrf_token %}
-              <input type="hidden" name="section" value="profile">
-              
-              <div class="space-y-6">
-                <!-- Business Information -->
+    <form method="POST" enctype="multipart/form-data">
+        {% csrf_token %}
+        
+        <!-- Basic Information Section -->
+        <div class="bg-white rounded-xl shadow-lg p-6 mb-6 settings-section">
+            <h2 class="text-xl font-bold mb-4 flex items-center">
+                <i class="fas fa-building text-green-600 mr-2"></i>
+                Basic Information
+            </h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div>
-                  <h3 class="text-lg font-semibold mb-4 text-gray-700">Business Information</h3>
-                  <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <div>
-                      <label class="block text-gray-700 mb-2">Business Name *</label>
-                      <input type="text" name="business_name" value="{{ partner.business_name }}" 
-                             required class="w-full p-3 border border-gray-300 rounded-lg">
-                    </div>
-                    <div>
-                      <label class="block text-gray-700 mb-2">Business Type</label>
-                      <input type="text" value="{{ partner.get_business_type_display }}" 
-                             disabled class="w-full p-3 border border-gray-300 rounded-lg bg-gray-50">
-                    </div>
-                  </div>
+                    <label class="block text-gray-700 font-semibold mb-2">Business Name *</label>
+                    <input type="text" name="business_name" value="{{ partner.business_name }}" required
+                           class="w-full p-3 border rounded-lg focus:ring-2 focus:ring-green-500">
                 </div>
-
-                <!-- Contact Information -->
                 <div>
-                  <h3 class="text-lg font-semibold mb-4 text-gray-700">Contact Information</h3>
-                  <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <div>
-                      <label class="block text-gray-700 mb-2">Contact Person *</label>
-                      <input type="text" name="contact_person" value="{{ partner.contact_person }}" 
-                             required class="w-full p-3 border border-gray-300 rounded-lg">
-                    </div>
-                    <div>
-                      <label class="block text-gray-700 mb-2">Phone Number *</label>
-                      <input type="tel" name="phone" value="{{ partner.phone }}" 
-                             required class="w-full p-3 border border-gray-300 rounded-lg">
-                    </div>
-                    <div>
-                      <label class="block text-gray-700 mb-2">Email Address *</label>
-                      <input type="email" name="email" value="{{ partner.email }}" 
-                             required class="w-full p-3 border border-gray-300 rounded-lg">
-                    </div>
-                    <div>
-                      <label class="block text-gray-700 mb-2">Website</label>
-                      <input type="url" name="website" value="{{ partner.website|default:'' }}" 
-                             class="w-full p-3 border border-gray-300 rounded-lg">
-                    </div>
-                  </div>
+                    <label class="block text-gray-700 font-semibold mb-2">Business Type</label>
+                    <input type="text" value="{{ partner.get_business_type_display }}" disabled
+                           class="w-full p-3 border rounded-lg bg-gray-100">
                 </div>
-
-                <!-- Address -->
                 <div>
-                  <h3 class="text-lg font-semibold mb-4 text-gray-700">Business Address</h3>
-                  <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <div>
-                      <label class="block text-gray-700 mb-2">City</label>
-                      <select name="city" class="w-full p-3 border border-gray-300 rounded-lg">
+                    <label class="block text-gray-700 font-semibold mb-2">Contact Person *</label>
+                    <input type="text" name="contact_person" value="{{ partner.contact_person }}" required
+                           class="w-full p-3 border rounded-lg focus:ring-2 focus:ring-green-500">
+                </div>
+                <div>
+                    <label class="block text-gray-700 font-semibold mb-2">Phone Number *</label>
+                    <input type="tel" name="phone" value="{{ partner.phone }}" required
+                           class="w-full p-3 border rounded-lg focus:ring-2 focus:ring-green-500">
+                </div>
+                <div>
+                    <label class="block text-gray-700 font-semibold mb-2">Alternate Phone</label>
+                    <input type="tel" name="alternate_phone" value="{{ partner.alternate_phone|default:'' }}"
+                           class="w-full p-3 border rounded-lg focus:ring-2 focus:ring-green-500">
+                </div>
+                <div>
+                    <label class="block text-gray-700 font-semibold mb-2">Email Address *</label>
+                    <input type="email" name="email" value="{{ partner.email }}" required
+                           class="w-full p-3 border rounded-lg focus:ring-2 focus:ring-green-500">
+                </div>
+                <div class="md:col-span-2">
+                    <label class="block text-gray-700 font-semibold mb-2">Website</label>
+                    <input type="url" name="website" value="{{ partner.website|default:'' }}"
+                           placeholder="https://example.com"
+                           class="w-full p-3 border rounded-lg focus:ring-2 focus:ring-green-500">
+                </div>
+                <div class="md:col-span-2">
+                    <label class="block text-gray-700 font-semibold mb-2">Business Description</label>
+                    <textarea name="description" rows="4" 
+                              placeholder="Tell customers about your business..."
+                              class="w-full p-3 border rounded-lg focus:ring-2 focus:ring-green-500">{{ partner.description|default:'' }}</textarea>
+                </div>
+            </div>
+        </div>
+
+        <!-- Address Section -->
+        <div class="bg-white rounded-xl shadow-lg p-6 mb-6 settings-section">
+            <h2 class="text-xl font-bold mb-4 flex items-center">
+                <i class="fas fa-map-marker-alt text-green-600 mr-2"></i>
+                Business Address
+            </h2>
+            <div class="grid grid-cols-1 gap-6">
+                <div>
+                    <label class="block text-gray-700 font-semibold mb-2">Street Address *</label>
+                    <textarea name="address" rows="2" required
+                              class="w-full p-3 border rounded-lg focus:ring-2 focus:ring-green-500">{{ partner.address }}</textarea>
+                </div>
+                <div>
+                    <label class="block text-gray-700 font-semibold mb-2">City *</label>
+                    <select name="city" required class="w-full p-3 border rounded-lg focus:ring-2 focus:ring-green-500">
                         <option value="DAR" {% if partner.city == 'DAR' %}selected{% endif %}>Dar es Salaam</option>
                         <option value="ARU" {% if partner.city == 'ARU' %}selected{% endif %}>Arusha</option>
                         <option value="ZAN" {% if partner.city == 'ZAN' %}selected{% endif %}>Zanzibar</option>
                         <option value="other" {% if partner.city == 'other' %}selected{% endif %}>Other</option>
-                      </select>
-                    </div>
-                    <div>
-                      <label class="block text-gray-700 mb-2">Address *</label>
-                      <textarea name="address" rows="3" required 
-                                class="w-full p-3 border border-gray-300 rounded-lg">{{ partner.address }}</textarea>
-                    </div>
-                  </div>
+                    </select>
                 </div>
-
-                <!-- Business Details -->
-                <div>
-                  <h3 class="text-lg font-semibold mb-4 text-gray-700">Business Details</h3>
-                  <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-                    <div>
-                      <label class="block text-gray-700 mb-2">Year Established</label>
-                      <input type="number" name="year_established" value="{{ partner.year_established|default:'' }}" 
-                             min="1900" max="2027" class="w-full p-3 border border-gray-300 rounded-lg">
-                    </div>
-                    <div>
-                      <label class="block text-gray-700 mb-2">Employee Count</label>
-                      <input type="number" name="employee_count" value="{{ partner.employee_count|default:1 }}" 
-                             min="1" class="w-full p-3 border border-gray-300 rounded-lg">
-                    </div>
-                    <div>
-                      <label class="block text-gray-700 mb-2">Tax ID / VAT Number</label>
-                      <input type="text" name="tax_id" value="{{ partner.tax_id|default:'' }}" 
-                             class="w-full p-3 border border-gray-300 rounded-lg">
-                    </div>
-                  </div>
-                  <div class="mt-6">
-                    <label class="block text-gray-700 mb-2">Business Description</label>
-                    <textarea name="description" rows="4" 
-                              class="w-full p-3 border border-gray-300 rounded-lg">{{ partner.description|default:'' }}</textarea>
-                  </div>
-                </div>
-
-                <!-- Submit Button -->
-                <div class="pt-6 border-t">
-                  <button type="submit" 
-                          class="bg-green-600 text-white px-8 py-3 rounded-lg hover:bg-green-700 font-semibold">
-                    <i class="fas fa-save mr-2"></i>Save Changes
-                  </button>
-                  <button type="button" onclick="resetForm('profile')" 
-                          class="ml-4 px-6 py-3 border border-gray-300 rounded-lg hover:bg-gray-50">
-                    Reset
-                  </button>
-                </div>
-              </div>
-            </form>
-          </div>
-        </div>
-
-        <!-- Payment Settings -->
-        <div id="payment-section" class="settings-section hidden">
-          <div class="bg-white rounded-xl shadow-lg p-6 mb-6">
-            <h2 class="text-2xl font-bold mb-6 text-gray-800">Payment Settings</h2>
-            
-            <form method="post" action="{% url 'partner_settings' %}">
-              {% csrf_token %}
-              <input type="hidden" name="section" value="payment">
-              
-              <div class="space-y-6">
-                <!-- Payment Method -->
-                <div>
-                  <h3 class="text-lg font-semibold mb-4 text-gray-700">Preferred Payment Method</h3>
-                  <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <div>
-                      <label class="block text-gray-700 mb-2">Payment Method *</label>
-                      <select name="payment_method" class="w-full p-3 border border-gray-300 rounded-lg">
-                        <option value="bank_transfer" {% if partner.payment_method == 'bank_transfer' %}selected{% endif %}>
-                          Bank Transfer
-                        </option>
-                        <option value="mobile_money" {% if partner.payment_method == 'mobile_money' %}selected{% endif %}>
-                          Mobile Money
-                        </option>
-                        <option value="paypal" {% if partner.payment_method == 'paypal' %}selected{% endif %}>
-                          PayPal
-                        </option>
-                        <option value="other" {% if partner.payment_method == 'other' %}selected{% endif %}>
-                          Other
-                        </option>
-                      </select>
-                    </div>
-                  </div>
-                </div>
-
-                <!-- Bank Details -->
-                <div id="bankDetails" class="{% if partner.payment_method != 'bank_transfer' %}hidden{% endif %}">
-                  <h3 class="text-lg font-semibold mb-4 text-gray-700">Bank Account Details</h3>
-                  <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <div>
-                      <label class="block text-gray-700 mb-2">Bank Name</label>
-                      <input type="text" name="bank_name" value="{{ partner.bank_name|default:'' }}" 
-                             class="w-full p-3 border border-gray-300 rounded-lg">
-                    </div>
-                    <div>
-                      <label class="block text-gray-700 mb-2">Account Number</label>
-                      <input type="text" name="bank_account" value="{{ partner.bank_account|default:'' }}" 
-                             class="w-full p-3 border border-gray-300 rounded-lg">
-                    </div>
-                    <div>
-                      <label class="block text-gray-700 mb-2">Branch Name</label>
-                      <input type="text" name="bank_branch" value="{{ partner.bank_branch|default:'' }}" 
-                             class="w-full p-3 border border-gray-300 rounded-lg">
-                    </div>
-                  </div>
-                </div>
-
-                <!-- Mobile Money Details -->
-                <div id="mobileMoneyDetails" class="{% if partner.payment_method != 'mobile_money' %}hidden{% endif %}">
-                  <h3 class="text-lg font-semibold mb-4 text-gray-700">Mobile Money Details</h3>
-                  <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <div>
-                      <label class="block text-gray-700 mb-2">Provider</label>
-                      <select name="mobile_money_provider" class="w-full p-3 border border-gray-300 rounded-lg">
-                        <option value="">Select Provider</option>
-                        <option value="mpesa" {% if partner.mobile_money_provider == 'mpesa' %}selected{% endif %}>M-Pesa</option>
-                        <option value="tigopesa" {% if partner.mobile_money_provider == 'tigopesa' %}selected{% endif %}>Tigo Pesa</option>
-                        <option value="airtelmoney" {% if partner.mobile_money_provider == 'airtelmoney' %}selected{% endif %}>Airtel Money</option>
-                        <option value="halopesa" {% if partner.mobile_money_provider == 'halopesa' %}selected{% endif %}>Halo Pesa</option>
-                        <option value="other" {% if partner.mobile_money_provider == 'other' %}selected{% endif %}>Other</option>
-                      </select>
-                    </div>
-                    <div>
-                      <label class="block text-gray-700 mb-2">Mobile Number</label>
-                      <input type="tel" name="mobile_money_number" value="{{ partner.mobile_money_number|default:'' }}" 
-                             class="w-full p-3 border border-gray-300 rounded-lg">
-                    </div>
-                  </div>
-                </div>
-
-                <!-- Payout Schedule -->
-                <div>
-                  <h3 class="text-lg font-semibold mb-4 text-gray-700">Payout Schedule</h3>
-                  <div class="bg-blue-50 p-4 rounded-lg">
-                    <div class="flex items-start">
-                      <i class="fas fa-info-circle text-blue-600 mt-1 mr-3"></i>
-                      <div>
-                        <p class="text-blue-800">
-                          Payouts are processed <strong>every 2 weeks</strong> on the <strong>1st and 15th</strong> of each month.
-                        </p>
-                        <p class="text-blue-700 text-sm mt-2">
-                          Minimum payout amount: <strong>$50.00</strong><br>
-                          Payments are typically processed within <strong>3-5 business days</strong> after the payout date.
-                        </p>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-
-                <!-- Submit Button -->
-                <div class="pt-6 border-t">
-                  <button type="submit" 
-                          class="bg-green-600 text-white px-8 py-3 rounded-lg hover:bg-green-700 font-semibold">
-                    <i class="fas fa-save mr-2"></i>Save Payment Settings
-                  </button>
-                </div>
-              </div>
-            </form>
-          </div>
-        </div>
-
-        <!-- Commission Settings -->
-        <div id="commission-section" class="settings-section hidden">
-          <div class="bg-white rounded-xl shadow-lg p-6 mb-6">
-            <h2 class="text-2xl font-bold mb-6 text-gray-800">Commission Settings</h2>
-            
-            <div class="space-y-6">
-              <!-- Current Commission -->
-              <div>
-                <h3 class="text-lg font-semibold mb-4 text-gray-700">Current Commission Rate</h3>
-                <div class="bg-green-50 p-6 rounded-lg">
-                  <div class="flex items-center justify-between">
-                    <div>
-                      <div class="text-3xl font-bold text-green-700">{{ partner.commission_rate }}%</div>
-                      <div class="text-green-600">Platform Commission</div>
-                    </div>
-                    <div class="text-right">
-                      <!-- Fixed: Using conditional logic for commission calculation -->
-                      {% with partner.commission_rate as rate %}
-                        {% if rate == 15 or rate == "15.00" or rate == 15.0 %}
-                          <div class="text-2xl font-bold text-blue-700">85%</div>
-                        {% elif rate == 20 or rate == "20.00" or rate == 20.0 %}
-                          <div class="text-2xl font-bold text-blue-700">80%</div>
-                        {% elif rate == 10 or rate == "10.00" or rate == 10.0 %}
-                          <div class="text-2xl font-bold text-blue-700">90%</div>
-                        {% elif rate == 5 or rate == "5.00" or rate == 5.0 %}
-                          <div class="text-2xl font-bold text-blue-700">95%</div>
-                        {% else %}
-                          <!-- Using Django's built-in filters for the calculation -->
-                          {% with "100" as base %}
-                            {% with base|add:"-"|add:rate as partner_percentage %}
-                              <div class="text-2xl font-bold text-blue-700">{{ partner_percentage|floatformat:"0" }}%</div>
-                            {% endwith %}
-                          {% endwith %}
-                        {% endif %}
-                      {% endwith %}
-                      <div class="text-blue-600">You Receive</div>
-                    </div>
-                  </div>
-                  <p class="text-green-700 text-sm mt-4">
-                    <i class="fas fa-info-circle mr-2"></i>
-                    This commission rate applies to all bookings made through the platform.
-                  </p>
-                </div>
-              </div>
-
-              <!-- Commission Structure -->
-              <div>
-                <h3 class="text-lg font-semibold mb-4 text-gray-700">Commission Structure</h3>
-                <div class="overflow-x-auto">
-                  <table class="w-full">
-                    <thead class="bg-gray-100">
-                      <tr>
-                        <th class="p-4 text-left font-semibold">Service Type</th>
-                        <th class="p-4 text-left font-semibold">Platform Commission</th>
-                        <th class="p-4 text-left font-semibold">You Receive</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      <tr class="border-b">
-                        <td class="p-4">Hotel Bookings</td>
-                        <td class="p-4 font-bold text-green-700">{{ partner.commission_rate }}%</td>
-                        <td class="p-4 font-bold text-blue-700">
-                          {% with partner.commission_rate as rate %}
-                            {% if rate == 15 or rate == "15.00" or rate == 15.0 %}85%
-                            {% elif rate == 20 or rate == "20.00" or rate == 20.0 %}80%
-                            {% elif rate == 10 or rate == "10.00" or rate == 10.0 %}90%
-                            {% elif rate == 5 or rate == "5.00" or rate == 5.0 %}95%
-                            {% else %}{% with "100" as base %}{% with base|add:"-"|add:rate as partner_percentage %}{{ partner_percentage|floatformat:"0" }}%{% endwith %}{% endwith %}
-                            {% endif %}
-                          {% endwith %}
-                        </td>
-                      </tr>
-                      <tr class="border-b">
-                        <td class="p-4">Tour Packages</td>
-                        <td class="p-4 font-bold text-green-700">{{ partner.commission_rate }}%</td>
-                        <td class="p-4 font-bold text-blue-700">
-                          {% with partner.commission_rate as rate %}
-                            {% if rate == 15 or rate == "15.00" or rate == 15.0 %}85%
-                            {% elif rate == 20 or rate == "20.00" or rate == 20.0 %}80%
-                            {% elif rate == 10 or rate == "10.00" or rate == 10.0 %}90%
-                            {% elif rate == 5 or rate == "5.00" or rate == 5.0 %}95%
-                            {% else %}{% with "100" as base %}{% with base|add:"-"|add:rate as partner_percentage %}{{ partner_percentage|floatformat:"0" }}%{% endwith %}{% endwith %}
-                            {% endif %}
-                          {% endwith %}
-                        </td>
-                      </tr>
-                      <tr>
-                        <td class="p-4">Attraction Tickets</td>
-                        <td class="p-4 font-bold text-green-700">{{ partner.commission_rate }}%</td>
-                        <td class="p-4 font-bold text-blue-700">
-                          {% with partner.commission_rate as rate %}
-                            {% if rate == 15 or rate == "15.00" or rate == 15.0 %}85%
-                            {% elif rate == 20 or rate == "20.00" or rate == 20.0 %}80%
-                            {% elif rate == 10 or rate == "10.00" or rate == 10.0 %}90%
-                            {% elif rate == 5 or rate == "5.00" or rate == 5.0 %}95%
-                            {% else %}{% with "100" as base %}{% with base|add:"-"|add:rate as partner_percentage %}{{ partner_percentage|floatformat:"0" }}%{% endwith %}{% endwith %}
-                            {% endif %}
-                          {% endwith %}
-                        </td>
-                      </tr>
-                    </tbody>
-                  </table>
-                </div>
-              </div>
-
-              <!-- Request Commission Change -->
-              <div class="bg-yellow-50 p-6 rounded-lg">
-                <h3 class="text-lg font-semibold mb-3 text-yellow-800">Request Commission Change</h3>
-                <p class="text-yellow-700 mb-4">
-                  If you would like to request a different commission rate, please contact our partner support team.
-                </p>
-                <a href="mailto:partners@afcon2027platform.com?subject=Commission Rate Change Request" 
-                   class="inline-block bg-yellow-600 text-white px-6 py-3 rounded-lg hover:bg-yellow-700 font-semibold">
-                  <i class="fas fa-envelope mr-2"></i>Contact Support
-                </a>
-              </div>
             </div>
-          </div>
         </div>
 
-        <!-- Notifications Settings -->
-        <div id="notifications-section" class="settings-section hidden">
-          <div class="bg-white rounded-xl shadow-lg p-6 mb-6">
-            <h2 class="text-2xl font-bold mb-6 text-gray-800">Notification Settings</h2>
+        <!-- Location Coordinates Section (NEW) -->
+        <div class="bg-white rounded-xl shadow-lg p-6 mb-6 settings-section">
+            <h2 class="text-xl font-bold mb-4 flex items-center">
+                <i class="fas fa-location-dot text-green-600 mr-2"></i>
+                Location Coordinates (GPS)
+            </h2>
+            <p class="text-sm text-gray-600 mb-4">
+                Add your exact location so customers can find you easily and get directions.
+            </p>
             
-            <form method="post" action="{% url 'partner_settings' %}">
-              {% csrf_token %}
-              <input type="hidden" name="section" value="notifications">
-              
-              <div class="space-y-6">
-                <!-- Email Notifications -->
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div>
-                  <h3 class="text-lg font-semibold mb-4 text-gray-700">Email Notifications</h3>
-                  <div class="space-y-3">
-                    <div class="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
-                      <div>
-                        <div class="font-medium">New Booking Alerts</div>
-                        <div class="text-sm text-gray-500">Receive email when someone books your service</div>
-                      </div>
-                      <label class="relative inline-flex items-center cursor-pointer">
-                        <input type="checkbox" name="booking_alerts" value="true" 
-                               {% if partner.notification_settings.booking_alerts|default:True %}checked{% endif %}
-                               class="sr-only peer">
-                        <div class="w-11 h-6 bg-gray-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-green-600"></div>
-                      </label>
-                    </div>
-                    
-                    <div class="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
-                      <div>
-                        <div class="font-medium">Payout Notifications</div>
-                        <div class="text-sm text-gray-500">Receive email when payout is processed</div>
-                      </div>
-                      <label class="relative inline-flex items-center cursor-pointer">
-                        <input type="checkbox" name="payout_notifications" value="true" 
-                               {% if partner.notification_settings.payout_notifications|default:True %}checked{% endif %}
-                               class="sr-only peer">
-                        <div class="w-11 h-6 bg-gray-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-green-600"></div>
-                      </label>
-                    </div>
-                    
-                    <div class="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
-                      <div>
-                        <div class="font-medium">Monthly Reports</div>
-                        <div class="text-sm text-gray-500">Receive monthly earnings report</div>
-                      </div>
-                      <label class="relative inline-flex items-center cursor-pointer">
-                        <input type="checkbox" name="monthly_reports" value="true" 
-                               {% if partner.notification_settings.monthly_reports|default:True %}checked{% endif %}
-                               class="sr-only peer">
-                        <div class="w-11 h-6 bg-gray-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-green-600"></div>
-                      </label>
-                    </div>
-                    
-                    <div class="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
-                      <div>
-                        <div class="font-medium">Promotional Offers</div>
-                        <div class="text-sm text-gray-500">Receive special offers and promotions</div>
-                      </div>
-                      <label class="relative inline-flex items-center cursor-pointer">
-                        <input type="checkbox" name="promotional_offers" value="true" 
-                               {% if partner.notification_settings.promotional_offers|default:True %}checked{% endif %}
-                               class="sr-only peer">
-                        <div class="w-11 h-6 bg-gray-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-green-600"></div>
-                      </label>
-                    </div>
-                  </div>
+                    <label class="block text-gray-700 font-semibold mb-2">
+                        Latitude 
+                        <span class="info-tip text-gray-400" title="Example: -6.7924 for Dar es Salaam">ⓘ</span>
+                    </label>
+                    <input type="text" name="latitude" value="{{ partner.latitude|default:'' }}" 
+                           placeholder="-6.7924" 
+                           class="w-full p-3 border rounded-lg focus:ring-2 focus:ring-green-500">
+                    <p class="text-xs text-gray-500 mt-1">e.g., -6.7924 (negative for southern hemisphere)</p>
                 </div>
-
-                <!-- SMS Notifications -->
                 <div>
-                  <h3 class="text-lg font-semibold mb-4 text-gray-700">SMS Notifications</h3>
-                  <div class="space-y-3">
-                    <div class="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
-                      <div>
-                        <div class="font-medium">SMS Alerts</div>
-                        <div class="text-sm text-gray-500">Receive SMS for urgent notifications</div>
-                      </div>
-                      <label class="relative inline-flex items-center cursor-pointer">
-                        <input type="checkbox" name="sms_alerts" value="true" 
-                               {% if partner.notification_settings.sms_alerts|default:True %}checked{% endif %}
-                               class="sr-only peer">
-                        <div class="w-11 h-6 bg-gray-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-green-600"></div>
-                      </label>
-                    </div>
-                    
-                    <div class="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
-                      <div>
-                        <div class="font-medium">Payout SMS</div>
-                        <div class="text-sm text-gray-500">Receive SMS when payout is sent</div>
-                      </div>
-                      <label class="relative inline-flex items-center cursor-pointer">
-                        <input type="checkbox" name="sms_payout" value="true" 
-                               {% if partner.notification_settings.sms_payout|default:True %}checked{% endif %}
-                               class="sr-only peer">
-                        <div class="w-11 h-6 bg-gray-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-green-600"></div>
-                      </label>
-                    </div>
-                  </div>
+                    <label class="block text-gray-700 font-semibold mb-2">
+                        Longitude
+                        <span class="info-tip text-gray-400" title="Example: 39.2083 for Dar es Salaam">ⓘ</span>
+                    </label>
+                    <input type="text" name="longitude" value="{{ partner.longitude|default:'' }}" 
+                           placeholder="39.2083" 
+                           class="w-full p-3 border rounded-lg focus:ring-2 focus:ring-green-500">
+                    <p class="text-xs text-gray-500 mt-1">e.g., 39.2083 (positive for eastern hemisphere)</p>
                 </div>
-
-                <!-- Notification Frequency -->
-                <div>
-                  <h3 class="text-lg font-semibold mb-4 text-gray-700">Notification Frequency</h3>
-                  <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <div>
-                      <label class="block text-gray-700 mb-2">Email Frequency</label>
-                      <select name="email_frequency" class="w-full p-3 border border-gray-300 rounded-lg">
-                        <option value="immediate" {% if partner.notification_settings.email_frequency == 'immediate' %}selected{% endif %}>Immediately</option>
-                        <option value="daily" {% if partner.notification_settings.email_frequency == 'daily' %}selected{% endif %}>Daily Digest</option>
-                        <option value="weekly" {% if partner.notification_settings.email_frequency == 'weekly' or not partner.notification_settings.email_frequency %}selected{% endif %}>Weekly Digest</option>
-                      </select>
-                    </div>
-                    <div>
-                      <label class="block text-gray-700 mb-2">SMS Frequency</label>
-                      <select name="sms_frequency" class="w-full p-3 border border-gray-300 rounded-lg">
-                        <option value="urgent" {% if partner.notification_settings.sms_frequency == 'urgent' %}selected{% endif %}>Urgent Only</option>
-                        <option value="all" {% if partner.notification_settings.sms_frequency == 'all' or not partner.notification_settings.sms_frequency %}selected{% endif %}>All Notifications</option>
-                        <option value="none" {% if partner.notification_settings.sms_frequency == 'none' %}selected{% endif %}>No SMS</option>
-                      </select>
-                    </div>
-                  </div>
-                </div>
-
-                <!-- Submit Button -->
-                <div class="pt-6 border-t">
-                  <button type="submit" 
-                          class="bg-green-600 text-white px-8 py-3 rounded-lg hover:bg-green-700 font-semibold">
-                    <i class="fas fa-save mr-2"></i>Save Notification Settings
-                  </button>
-                </div>
-              </div>
-            </form>
-          </div>
-        </div>
-
-        <!-- Security Settings -->
-        <div id="security-section" class="settings-section hidden">
-          <div class="bg-white rounded-xl shadow-lg p-6 mb-6">
-            <h2 class="text-2xl font-bold mb-6 text-gray-800">Security Settings</h2>
+            </div>
             
-            <div class="space-y-6">
-              <!-- Change Password -->
-              <div class="bg-gray-50 p-6 rounded-lg">
-                <h3 class="text-lg font-semibold mb-4 text-gray-700">Change Password</h3>
-                <form method="post" action="{% url 'partner_settings' %}">
-                  {% csrf_token %}
-                  <input type="hidden" name="section" value="change_password">
-                  
-                  <div class="space-y-4">
-                    <div>
-                      <label class="block text-gray-700 mb-2">Current Password *</label>
-                      <input type="password" name="current_password" required 
-                             class="w-full p-3 border border-gray-300 rounded-lg">
-                    </div>
-                    <div>
-                      <label class="block text-gray-700 mb-2">New Password *</label>
-                      <input type="password" name="new_password" required 
-                             class="w-full p-3 border border-gray-300 rounded-lg">
-                      <p class="text-sm text-gray-500 mt-1">Must be at least 8 characters long</p>
-                    </div>
-                    <div>
-                      <label class="block text-gray-700 mb-2">Confirm New Password *</label>
-                      <input type="password" name="confirm_password" required 
-                             class="w-full p-3 border border-gray-300 rounded-lg">
-                    </div>
-                    <div>
-                      <button type="submit" 
-                              class="bg-green-600 text-white px-6 py-3 rounded-lg hover:bg-green-700 font-semibold">
-                        <i class="fas fa-key mr-2"></i>Change Password
-                      </button>
-                    </div>
-                  </div>
-                </form>
-              </div>
-
-              <!-- Two-Factor Authentication -->
-              <div class="bg-blue-50 p-6 rounded-lg">
-                <h3 class="text-lg font-semibold mb-4 text-blue-800">Two-Factor Authentication (2FA)</h3>
-                <div class="flex items-start mb-4">
-                  <div class="flex-1">
-                    <p class="text-blue-700 mb-2">
-                      Add an extra layer of security to your account by enabling two-factor authentication.
-                    </p>
-                    <div class="flex items-center">
-                      <span class="text-sm {% if partner.security_settings.two_factor_enabled %}text-green-600{% else %}text-red-600{% endif %} font-semibold mr-3">
-                        {% if partner.security_settings.two_factor_enabled %}
-                          <i class="fas fa-check-circle mr-1"></i> 2FA Enabled
-                        {% else %}
-                          <i class="fas fa-times-circle mr-1"></i> 2FA Disabled
-                        {% endif %}
-                      </span>
-                      <span class="text-sm text-gray-600">
-                        Last updated: {{ partner.security_settings.two_factor_updated|default:"Never"|date:"M d, Y" }}
-                      </span>
-                    </div>
-                  </div>
-                  <div>
-                    {% if partner.security_settings.two_factor_enabled %}
-                      <button type="button" onclick="disable2FA()" 
-                              class="bg-red-600 text-white px-4 py-2 rounded-lg hover:bg-red-700 font-semibold text-sm">
-                        <i class="fas fa-times mr-1"></i>Disable 2FA
-                      </button>
-                    {% else %}
-                      <button type="button" onclick="enable2FA()" 
-                              class="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 font-semibold text-sm">
-                        <i class="fas fa-shield-alt mr-1"></i>Enable 2FA
-                      </button>
-                    {% endif %}
-                  </div>
+            <div class="mt-4 flex gap-3">
+                <button type="button" onclick="getCurrentLocation()" 
+                        class="bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600 transition">
+                    <i class="fas fa-location-dot mr-2"></i>Use My Current Location
+                </button>
+                <button type="button" onclick="searchAddress()" 
+                        class="bg-green-500 text-white px-4 py-2 rounded-lg hover:bg-green-600 transition">
+                    <i class="fas fa-search mr-2"></i>Search by Address
+                </button>
+                <button type="button" onclick="openMapPicker()" 
+                        class="bg-purple-500 text-white px-4 py-2 rounded-lg hover:bg-purple-600 transition">
+                    <i class="fas fa-map mr-2"></i>Open Map Picker
+                </button>
+            </div>
+            
+            <!-- Map Preview -->
+            <div id="mapPreview" class="mt-4 rounded-lg overflow-hidden border" style="display: none;">
+                <div id="previewMap" class="h-64 bg-gray-200"></div>
+                <div class="p-3 bg-gray-50 text-sm text-gray-600 text-center">
+                    Drag the marker to adjust location
                 </div>
-                <div class="bg-white p-4 rounded border border-blue-200">
-                  <h4 class="font-semibold mb-2 text-blue-800">How it works:</h4>
-                  <ul class="list-disc pl-5 text-blue-700 space-y-1 text-sm">
-                    <li>You'll need to enter a code from your phone each time you log in</li>
-                    <li>We recommend using Google Authenticator or Authy app</li>
-                    <li>You'll get backup codes to use if you lose your phone</li>
-                  </ul>
-                </div>
-              </div>
-
-              <!-- Login Activity -->
-              <div>
-                <h3 class="text-lg font-semibold mb-4 text-gray-700">Recent Login Activity</h3>
-                <div class="overflow-x-auto">
-                  <table class="w-full">
-                    <thead class="bg-gray-100">
-                      <tr>
-                        <th class="p-3 text-left font-semibold text-sm">Date & Time</th>
-                        <th class="p-3 text-left font-semibold text-sm">IP Address</th>
-                        <th class="p-3 text-left font-semibold text-sm">Location</th>
-                        <th class="p-3 text-left font-semibold text-sm">Device</th>
-                        <th class="p-3 text-left font-semibold text-sm">Status</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {% for login in recent_logins|slice:":5" %}
-                      <tr class="border-b hover:bg-gray-50">
-                        <td class="p-3 text-sm">{{ login.timestamp|date:"M d, Y H:i" }}</td>
-                        <td class="p-3 text-sm font-mono">{{ login.ip_address }}</td>
-                        <td class="p-3 text-sm">{{ login.location|default:"Unknown" }}</td>
-                        <td class="p-3 text-sm">{{ login.device|default:"Unknown" }}</td>
-                        <td class="p-3">
-                          <span class="px-2 py-1 rounded-full text-xs font-semibold 
-                            {% if login.success %}bg-green-100 text-green-800
-                            {% else %}bg-red-100 text-red-800{% endif %}">
-                            {% if login.success %}Success{% else %}Failed{% endif %}
-                          </span>
-                        </td>
-                      </tr>
-                      {% empty %}
-                      <tr>
-                        <td colspan="5" class="p-4 text-center text-gray-500">
-                          <i class="fas fa-history text-gray-300 text-3xl mb-2"></i>
-                          <p>No login activity recorded</p>
-                        </td>
-                      </tr>
-                      {% endfor %}
-                    </tbody>
-                  </table>
-                </div>
-                <div class="mt-4 text-right">
-                  <a href="#" class="text-green-600 hover:text-green-800 text-sm font-semibold">
-                    View All Activity
-                  </a>
-                </div>
-              </div>
-
-              <!-- Account Deactivation -->
-              <div class="bg-red-50 p-6 rounded-lg border border-red-200">
-                <h3 class="text-lg font-semibold mb-3 text-red-800">Danger Zone</h3>
-                <p class="text-red-700 mb-4">
-                  Once you deactivate your partner account, you will lose access to all partner features and your listings will be removed from the platform.
-                </p>
+            </div>
+            
+            {% if partner.latitude and partner.longitude %}
+            <div class="mt-4 p-4 bg-green-50 rounded-lg">
                 <div class="flex items-center justify-between">
-                  <div>
-                    <p class="text-sm text-red-600">
-                      This action cannot be undone. Please proceed with caution.
-                    </p>
-                  </div>
-                  <div>
-                    <button type="button" onclick="deactivateAccount()" 
-                            class="bg-red-600 text-white px-4 py-2 rounded-lg hover:bg-red-700 font-semibold text-sm">
-                      <i class="fas fa-exclamation-triangle mr-1"></i>Deactivate Account
-                    </button>
-                  </div>
+                    <div>
+                        <i class="fas fa-check-circle text-green-600 mr-2"></i>
+                        <span class="font-semibold">Location set!</span>
+                        <p class="text-sm text-gray-600 mt-1">
+                            Customers can now get directions to your business.
+                        </p>
+                    </div>
+                    <a href="{{ partner.get_google_maps_url }}" target="_blank"
+                       class="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 text-sm">
+                        <i class="fas fa-external-link-alt mr-1"></i>Test Directions
+                    </a>
                 </div>
-              </div>
             </div>
-          </div>
+            {% endif %}
         </div>
-      </div>
-    </div>
-  </div>
+
+        <!-- Delivery Settings Section (Optional) -->
+        <div class="bg-white rounded-xl shadow-lg p-6 mb-6 settings-section">
+            <h2 class="text-xl font-bold mb-4 flex items-center">
+                <i class="fas fa-truck text-green-600 mr-2"></i>
+                Delivery Settings
+            </h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div>
+                    <label class="flex items-center">
+                        <input type="checkbox" name="is_delivery_available" 
+                               {% if partner.is_delivery_available %}checked{% endif %}
+                               class="mr-2 w-5 h-5">
+                        <span class="text-gray-700 font-semibold">Delivery Available</span>
+                    </label>
+                </div>
+                <div>
+                    <label class="block text-gray-700 font-semibold mb-2">Delivery Radius (km)</label>
+                    <input type="number" name="delivery_radius_km" value="{{ partner.delivery_radius_km|default:5 }}"
+                           min="1" max="50"
+                           class="w-full p-3 border rounded-lg focus:ring-2 focus:ring-green-500">
+                </div>
+            </div>
+        </div>
+
+        <!-- Submit Buttons -->
+        <div class="flex gap-4">
+            <button type="submit" class="bg-green-600 text-white px-8 py-3 rounded-lg hover:bg-green-700 font-semibold">
+                <i class="fas fa-save mr-2"></i>Save Changes
+            </button>
+            <a href="{% url 'partners:partner_dashboard' %}" 
+               class="bg-gray-300 text-gray-700 px-8 py-3 rounded-lg hover:bg-gray-400 font-semibold">
+                Cancel
+            </a>
+        </div>
+    </form>
 </div>
 
+<!-- Leaflet CSS and JS for Map Picker -->
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+
 <script>
-function showSection(sectionId) {
-  // Hide all sections
-  document.querySelectorAll('.settings-section').forEach(section => {
-    section.classList.remove('active');
-    section.classList.add('hidden');
-  });
-  
-  // Remove active class from all nav items
-  document.querySelectorAll('.settings-nav').forEach(nav => {
-    nav.classList.remove('active');
-    nav.classList.remove('bg-green-50', 'text-green-700');
-  });
-  
-  // Show selected section
-  document.getElementById(sectionId + '-section').classList.remove('hidden');
-  document.getElementById(sectionId + '-section').classList.add('active');
-  
-  // Highlight active nav item
-  const activeNav = document.querySelector(`[onclick="showSection('${sectionId}')"]`);
-  activeNav.classList.add('active', 'bg-green-50', 'text-green-700');
-}
-
-// Show/hide payment method details
-document.querySelector('[name="payment_method"]').addEventListener('change', function() {
-  const method = this.value;
-  
-  // Hide all detail sections
-  document.getElementById('bankDetails').classList.add('hidden');
-  document.getElementById('mobileMoneyDetails').classList.add('hidden');
-  
-  // Show relevant section
-  if (method === 'bank_transfer') {
-    document.getElementById('bankDetails').classList.remove('hidden');
-  } else if (method === 'mobile_money') {
-    document.getElementById('mobileMoneyDetails').classList.remove('hidden');
-  }
-});
-
-function resetForm(section) {
-  if (confirm('Are you sure you want to reset all changes in this section?')) {
-    const form = document.querySelector(`#${section}-section form`);
-    form.reset();
-  }
-}
-
-// Security functions
-function enable2FA() {
-  if (confirm('Enable Two-Factor Authentication?\n\nYou will need to scan a QR code with an authenticator app like Google Authenticator.')) {
-    // In a real app, this would redirect to 2FA setup page
-    alert('Redirecting to 2FA setup page...\n\nFor now, this feature is under development.');
-  }
-}
-
-function disable2FA() {
-  if (confirm('Disable Two-Factor Authentication?\n\nThis will make your account less secure.')) {
-    // In a real app, this would make an API call
-    alert('2FA Disabled Successfully!\n\nFor now, this feature is under development.');
-  }
-}
-
-function deactivateAccount() {
-  const reason = prompt('Please tell us why you are deactivating your account:');
-  if (reason !== null) {
-    if (confirm(`Are you absolutely sure?\n\nReason: ${reason}\n\nThis action cannot be undone.`)) {
-      // In a real app, this would make an API call
-      alert('Account deactivation request sent!\n\nFor now, this feature is under development.');
+    let map, marker;
+    
+    function getCurrentLocation() {
+        if (navigator.geolocation) {
+            navigator.geolocation.getCurrentPosition(function(position) {
+                document.querySelector('input[name="latitude"]').value = position.coords.latitude;
+                document.querySelector('input[name="longitude"]').value = position.coords.longitude;
+                showMapPreview(position.coords.latitude, position.coords.longitude);
+                alert('Location coordinates added!');
+            }, function(error) {
+                alert('Error getting location: ' + error.message);
+            });
+        } else {
+            alert('Geolocation is not supported by this browser.');
+        }
     }
-  }
-}
-
-// Initialize
-document.addEventListener('DOMContentLoaded', function() {
-  // Set active section based on URL hash
-  const hash = window.location.hash.substring(1) || 'profile';
-  showSection(hash);
-});
+    
+    function searchAddress() {
+        const address = document.querySelector('textarea[name="address"]').value;
+        if (!address) {
+            alert('Please enter an address first');
+            return;
+        }
+        
+        // Using OpenStreetMap Nominatim API (free, no API key)
+        fetch(`https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(address)}&format=json&limit=1`)
+            .then(response => response.json())
+            .then(data => {
+                if (data && data.length > 0) {
+                    const lat = data[0].lat;
+                    const lon = data[0].lon;
+                    document.querySelector('input[name="latitude"]').value = lat;
+                    document.querySelector('input[name="longitude"]').value = lon;
+                    showMapPreview(lat, lon);
+                    alert('Coordinates found! Drag the marker to adjust if needed.');
+                } else {
+                    alert('Address not found. Please enter coordinates manually or use the map picker.');
+                }
+            })
+            .catch(error => {
+                alert('Error searching address: ' + error);
+            });
+    }
+    
+    function openMapPicker() {
+        const latInput = document.querySelector('input[name="latitude"]').value;
+        const lngInput = document.querySelector('input[name="longitude"]').value;
+        
+        let centerLat = -6.7924;  // Default Dar es Salaam
+        let centerLng = 39.2083;
+        
+        if (latInput && lngInput) {
+            centerLat = parseFloat(latInput);
+            centerLng = parseFloat(lngInput);
+        }
+        
+        showMapPreview(centerLat, centerLng);
+        
+        // Scroll to map
+        document.getElementById('mapPreview').scrollIntoView({ behavior: 'smooth' });
+    }
+    
+    function showMapPreview(lat, lng) {
+        const mapContainer = document.getElementById('mapPreview');
+        mapContainer.style.display = 'block';
+        
+        // Initialize map if not already done
+        if (!map) {
+            map = L.map('previewMap').setView([parseFloat(lat), parseFloat(lng)], 15);
+            L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', {
+                attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OSM</a> contributors'
+            }).addTo(map);
+            
+            marker = L.marker([parseFloat(lat), parseFloat(lng)], { draggable: true }).addTo(map);
+            
+            marker.on('dragend', function(e) {
+                const position = marker.getLatLng();
+                document.querySelector('input[name="latitude"]').value = position.lat;
+                document.querySelector('input[name="longitude"]').value = position.lng;
+            });
+        } else {
+            map.setView([parseFloat(lat), parseFloat(lng)], 15);
+            marker.setLatLng([parseFloat(lat), parseFloat(lng)]);
+        }
+    }
+    
+    // If coordinates already exist, show map preview on page load
+    document.addEventListener('DOMContentLoaded', function() {
+        const latInput = document.querySelector('input[name="latitude"]').value;
+        const lngInput = document.querySelector('input[name="longitude"]').value;
+        if (latInput && lngInput) {
+            showMapPreview(latInput, lngInput);
+        }
+    });
 </script>
-
-<style>
-.settings-section {
-  display: none;
-}
-.settings-section.active {
-  display: block;
-  animation: fadeIn 0.3s ease-in;
-}
-.settings-nav.active {
-  background-color: #f0f9ff;
-  color: #047857;
-}
-@keyframes fadeIn {
-  from { opacity: 0; transform: translateY(10px); }
-  to { opacity: 1; transform: translateY(0); }
-}
-
-/* Toggle switch styles */
-input:checked ~ .dot {
-  transform: translateX(100%);
-}
-</style>
 {% endblock %}

@@ -1,0 +1,448 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ partner.business_name }} - AFCON 2027 Partner{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+<style>
+    .distance-badge {
+        background: #00A859;
+        color: white;
+        padding: 4px 10px;
+        border-radius: 20px;
+        font-size: 12px;
+        font-weight: bold;
+        display: inline-flex;
+        align-items: center;
+        gap: 5px;
+    }
+    .direction-card {
+        transition: all 0.3s ease;
+    }
+    .direction-card:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container mx-auto px-4 py-8">
+    <!-- Back Button -->
+    <div class="mb-6">
+        <a href="javascript:history.back()" class="inline-flex items-center text-green-600 hover:text-green-800 font-semibold">
+            <i class="fas fa-arrow-left mr-2"></i> Go Back
+        </a>
+    </div>
+
+    <!-- Cover Image Header -->
+    <div class="relative rounded-2xl overflow-hidden mb-8 h-64 md:h-80">
+        {% if primary_cover and primary_cover.get_image_display_url %}
+            <img src="{{ primary_cover.get_image_display_url }}" 
+                 alt="{{ partner.business_name }} cover" 
+                 class="w-full h-full object-cover">
+            <div class="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent"></div>
+        {% else %}
+            <div class="w-full h-full bg-gradient-to-r from-green-600 to-blue-600">
+                <div class="absolute inset-0 flex items-center justify-center">
+                    <i class="fas fa-store text-white text-8xl opacity-30"></i>
+                </div>
+            </div>
+        {% endif %}
+        
+        <!-- Logo Overlay -->
+        <div class="absolute bottom-0 left-0 right-0 p-6">
+            <div class="flex flex-col md:flex-row items-center md:items-end gap-4">
+                {% if primary_logo and primary_logo.get_image_display_url %}
+                <div class="w-28 h-28 bg-white rounded-2xl shadow-lg overflow-hidden flex-shrink-0 border-4 border-white">
+                    <img src="{{ primary_logo.get_image_display_url }}" 
+                         alt="{{ partner.business_name }} logo" 
+                         class="w-full h-full object-cover">
+                </div>
+                {% else %}
+                <div class="w-28 h-28 bg-white rounded-2xl shadow-lg flex items-center justify-center flex-shrink-0 border-4 border-white">
+                    <i class="fas fa-utensils text-green-600 text-4xl"></i>
+                </div>
+                {% endif %}
+                
+                <div class="text-white text-center md:text-left">
+                    <h1 class="text-3xl md:text-4xl font-bold mb-2">{{ partner.business_name }}</h1>
+                    <div class="flex flex-wrap gap-2 justify-center md:justify-start">
+                        <span class="bg-white/20 px-3 py-1 rounded-full text-sm">
+                            <i class="fas fa-tag mr-1"></i>{{ partner.get_business_type_display }}
+                        </span>
+                        <span class="bg-white/20 px-3 py-1 rounded-full text-sm">
+                            <i class="fas fa-map-marker-alt mr-1"></i>{{ partner.get_city_display }}
+                        </span>
+                        {% if partner.latitude and partner.longitude %}
+                        <span class="bg-white/20 px-3 py-1 rounded-full text-sm">
+                            <i class="fas fa-location-dot mr-1"></i>Location Available
+                        </span>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ALL IMAGES GALLERY -->
+    {% if all_images %}
+    <div class="bg-white rounded-xl shadow-lg p-6 mb-8">
+        <h2 class="text-2xl font-bold mb-4 flex items-center">
+            <i class="fas fa-images text-green-600 mr-2"></i>
+            Photo Gallery ({{ all_images|length }} photos)
+        </h2>
+        <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+            {% for img in all_images %}
+            <div class="relative group cursor-pointer" onclick="openImageModal('{{ img.get_image_display_url }}')">
+                <div class="rounded-lg overflow-hidden bg-gray-100 h-48">
+                    <img src="{{ img.get_image_display_url }}" 
+                         alt="{{ img.title|default:img.get_image_type_display }}"
+                         class="w-full h-full object-cover group-hover:scale-110 transition duration-300">
+                </div>
+                <div class="absolute bottom-0 left-0 right-0 bg-black/60 text-white text-xs p-2 opacity-0 group-hover:opacity-100 transition">
+                    {% if img.title %}
+                        {{ img.title }}
+                    {% else %}
+                        {{ img.get_image_type_display }}
+                    {% endif %}
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- INTERIOR PHOTOS SECTION -->
+    {% if interior_images %}
+    <div class="bg-white rounded-xl shadow-lg p-6 mb-8">
+        <h2 class="text-2xl font-bold mb-4 flex items-center">
+            <i class="fas fa-building text-green-600 mr-2"></i>
+            Interior & Facilities
+        </h2>
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+            {% for img in interior_images %}
+            <div class="cursor-pointer" onclick="openImageModal('{{ img.get_image_display_url }}')">
+                <div class="rounded-lg overflow-hidden h-56">
+                    <img src="{{ img.get_image_display_url }}" 
+                         alt="{{ img.title|default:'Interior' }}"
+                         class="w-full h-full object-cover hover:scale-105 transition duration-300">
+                </div>
+                {% if img.title %}
+                <p class="text-center text-sm text-gray-600 mt-2">{{ img.title }}</p>
+                {% endif %}
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- PRODUCTS & SERVICES SECTION -->
+    {% if product_images %}
+    <div class="bg-white rounded-xl shadow-lg p-6 mb-8">
+        <h2 class="text-2xl font-bold mb-4 flex items-center">
+            <i class="fas fa-pizza-slice text-green-600 mr-2"></i>
+            Products & Services
+        </h2>
+        <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+            {% for img in product_images %}
+            <div class="cursor-pointer text-center group" onclick="openImageModal('{{ img.get_image_display_url }}')">
+                <div class="rounded-lg overflow-hidden h-40 bg-gray-100">
+                    <img src="{{ img.get_image_display_url }}" 
+                         alt="{{ img.title|default:'Product' }}"
+                         class="w-full h-full object-cover group-hover:scale-105 transition duration-300">
+                </div>
+                {% if img.title %}
+                <p class="text-sm font-semibold mt-2">{{ img.title }}</p>
+                {% endif %}
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- TEAM PHOTOS SECTION -->
+    {% if team_images %}
+    <div class="bg-white rounded-xl shadow-lg p-6 mb-8">
+        <h2 class="text-2xl font-bold mb-4 flex items-center">
+            <i class="fas fa-users text-green-600 mr-2"></i>
+            Our Team
+        </h2>
+        <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+            {% for img in team_images %}
+            <div class="text-center cursor-pointer" onclick="openImageModal('{{ img.get_image_display_url }}')">
+                <div class="w-32 h-32 mx-auto rounded-full overflow-hidden mb-2 bg-gray-100">
+                    <img src="{{ img.get_image_display_url }}" 
+                         alt="{{ img.title|default:'Team member' }}"
+                         class="w-full h-full object-cover">
+                </div>
+                {% if img.title %}
+                <div class="font-semibold text-sm">{{ img.title }}</div>
+                {% endif %}
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- Main Content Grid -->
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        <!-- Left Column - Description -->
+        <div class="lg:col-span-2">
+            <div class="bg-white rounded-xl shadow-lg p-6 mb-8">
+                <h2 class="text-2xl font-bold mb-4 flex items-center">
+                    <i class="fas fa-info-circle text-green-600 mr-2"></i>
+                    About {{ partner.business_name }}
+                </h2>
+                <p class="text-gray-700 leading-relaxed">
+                    {{ partner.description|default:"No description available." }}
+                </p>
+            </div>
+        </div>
+
+        <!-- Right Column - Contact & Info -->
+        <div class="lg:col-span-1">
+            <!-- Contact Information -->
+            <div class="bg-white rounded-xl shadow-lg p-6 mb-6">
+                <h3 class="text-xl font-bold mb-4 flex items-center">
+                    <i class="fas fa-address-card text-green-600 mr-2"></i>
+                    Contact Information
+                </h3>
+                <div class="space-y-3">
+                    <div class="flex items-center">
+                        <i class="fas fa-user w-6 text-green-600"></i>
+                        <span>{{ partner.contact_person }}</span>
+                    </div>
+                    <div class="flex items-center">
+                        <i class="fas fa-phone w-6 text-green-600"></i>
+                        <a href="tel:{{ partner.phone }}" class="hover:text-green-600 transition">{{ partner.phone }}</a>
+                    </div>
+                    {% if partner.alternate_phone %}
+                    <div class="flex items-center">
+                        <i class="fas fa-mobile-alt w-6 text-green-600"></i>
+                        <a href="tel:{{ partner.alternate_phone }}" class="hover:text-green-600 transition">{{ partner.alternate_phone }}</a>
+                    </div>
+                    {% endif %}
+                    <div class="flex items-center">
+                        <i class="fas fa-envelope w-6 text-green-600"></i>
+                        <a href="mailto:{{ partner.email }}" class="hover:text-green-600 transition">{{ partner.email }}</a>
+                    </div>
+                    <div class="flex items-start">
+                        <i class="fas fa-map-marker-alt w-6 text-green-600 mt-1"></i>
+                        <span class="flex-1">{{ partner.address }}</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Business Hours -->
+            <div class="bg-white rounded-xl shadow-lg p-6 mb-6">
+                <h3 class="text-xl font-bold mb-4 flex items-center">
+                    <i class="fas fa-clock text-green-600 mr-2"></i>
+                    Business Hours
+                </h3>
+                <div class="space-y-2 text-gray-600">
+                    <div class="flex justify-between">
+                        <span>Monday - Friday:</span>
+                        <span>9:00 AM - 9:00 PM</span>
+                    </div>
+                    <div class="flex justify-between">
+                        <span>Saturday:</span>
+                        <span>10:00 AM - 10:00 PM</span>
+                    </div>
+                    <div class="flex justify-between">
+                        <span>Sunday:</span>
+                        <span>11:00 AM - 8:00 PM</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- LOCATION MAP & DIRECTIONS SECTION -->
+            {% if partner.latitude and partner.longitude %}
+            <div class="bg-white rounded-xl shadow-lg p-6 mb-6 direction-card">
+                <h3 class="text-xl font-bold mb-4 flex items-center">
+                    <i class="fas fa-map-location-dot text-green-600 mr-2"></i>
+                    Find Us Here
+                </h3>
+                
+                <!-- Interactive Map -->
+                <div id="partnerMap" class="rounded-lg overflow-hidden mb-4 h-64"></div>
+                
+                <!-- Distance from User (if geolocation available) -->
+                <div id="distanceDisplay" class="mb-3 p-3 bg-gray-50 rounded-lg text-center">
+                    <i class="fas fa-spinner fa-spin mr-2"></i>
+                    <span id="distanceText">Detecting your location...</span>
+                </div>
+                
+                <!-- Directions Buttons -->
+                <div class="space-y-2">
+                    <a href="{{ partner.get_google_maps_url }}" target="_blank"
+                       class="flex items-center justify-center w-full bg-blue-600 text-white py-3 rounded-lg hover:bg-blue-700 transition">
+                        <i class="fab fa-google mr-2"></i> Open in Google Maps
+                    </a>
+                    <a href="https://www.openstreetmap.org/?mlat={{ partner.latitude }}&mlon={{ partner.longitude }}&zoom=15" target="_blank"
+                       class="flex items-center justify-center w-full bg-green-600 text-white py-3 rounded-lg hover:bg-green-700 transition">
+                        <i class="fas fa-map mr-2"></i> Open in OpenStreetMap
+                    </a>
+                    <button onclick="shareLocation()" 
+                            class="flex items-center justify-center w-full bg-purple-600 text-white py-3 rounded-lg hover:bg-purple-700 transition">
+                        <i class="fas fa-share-alt mr-2"></i> Share Location
+                    </button>
+                </div>
+                
+                <!-- Coordinates -->
+                <div class="mt-4 text-xs text-gray-500 text-center">
+                    <span>📍 Lat: {{ partner.latitude|floatformat:6 }}</span>
+                    <span class="mx-2">|</span>
+                    <span>Lng: {{ partner.longitude|floatformat:6 }}</span>
+                </div>
+            </div>
+            {% endif %}
+
+            <!-- Quick Actions -->
+            <div class="bg-white rounded-xl shadow-lg p-6">
+                <h3 class="text-xl font-bold mb-4 flex items-center">
+                    <i class="fas fa-bullhorn text-green-600 mr-2"></i>
+                    Quick Actions
+                </h3>
+                <div class="space-y-3">
+                    <a href="https://wa.me/{{ partner.phone }}" target="_blank" 
+                       class="flex items-center justify-center w-full bg-green-500 text-white py-3 rounded-lg hover:bg-green-600 transition">
+                        <i class="fab fa-whatsapp mr-2"></i> WhatsApp
+                    </a>
+                    {% if partner.latitude and partner.longitude %}
+                    <a href="https://www.google.com/maps/dir/?api=1&destination={{ partner.latitude }},{{ partner.longitude }}" target="_blank"
+                       class="flex items-center justify-center w-full bg-blue-600 text-white py-3 rounded-lg hover:bg-blue-700 transition">
+                        <i class="fas fa-directions mr-2"></i> Get Directions
+                    </a>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- No Images Message -->
+    {% if not all_images %}
+    <div class="bg-white rounded-xl shadow-lg p-12 text-center mt-8">
+        <i class="fas fa-camera-slash text-6xl text-gray-300 mb-4"></i>
+        <h3 class="text-xl font-semibold text-gray-600">No Images Available</h3>
+        <p class="text-gray-500 mt-2">Check back later for photos from {{ partner.business_name }}.</p>
+    </div>
+    {% endif %}
+</div>
+
+<!-- Image Modal -->
+<div id="imageModal" class="fixed inset-0 bg-black bg-opacity-90 z-50 hidden flex items-center justify-center" onclick="closeImageModal()">
+    <div onclick="event.stopPropagation()" class="relative max-w-4xl max-h-full">
+        <img id="modalImage" src="" alt="" class="max-w-full max-h-screen object-contain">
+        <button onclick="closeImageModal()" class="absolute top-4 right-4 text-white text-3xl hover:text-gray-300">
+            <i class="fas fa-times"></i>
+        </button>
+    </div>
+</div>
+
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script>
+    let partnerMap;
+    
+    // Initialize map if coordinates exist
+    {% if partner.latitude and partner.longitude %}
+    document.addEventListener('DOMContentLoaded', function() {
+        partnerMap = L.map('partnerMap').setView([{{ partner.latitude }}, {{ partner.longitude }}], 15);
+        L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', {
+            attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OSM</a> contributors'
+        }).addTo(partnerMap);
+        
+        // Add marker
+        const marker = L.marker([{{ partner.latitude }}, {{ partner.longitude }}]).addTo(partnerMap);
+        marker.bindPopup('<b>{{ partner.business_name }}</b><br>{{ partner.address }}').openPopup();
+    });
+    {% endif %}
+    
+    // Get user's location and calculate distance
+    if (navigator.geolocation) {
+        navigator.geolocation.getCurrentPosition(function(position) {
+            const userLat = position.coords.latitude;
+            const userLng = position.coords.longitude;
+            
+            {% if partner.latitude and partner.longitude %}
+            // Calculate distance using Haversine formula
+            const partnerLat = {{ partner.latitude }};
+            const partnerLng = {{ partner.longitude }};
+            
+            function calculateDistance(lat1, lon1, lat2, lon2) {
+                const R = 6371;
+                const dLat = (lat2 - lat1) * Math.PI / 180;
+                const dLon = (lon2 - lon1) * Math.PI / 180;
+                const a = Math.sin(dLat/2) * Math.sin(dLat/2) +
+                          Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) *
+                          Math.sin(dLon/2) * Math.sin(dLon/2);
+                const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+                return R * c;
+            }
+            
+            const distance = calculateDistance(userLat, userLng, partnerLat, partnerLng);
+            const distanceText = distance < 1 ? `${Math.round(distance * 1000)} meters` : `${distance.toFixed(1)} km`;
+            
+            document.getElementById('distanceDisplay').innerHTML = `
+                <div class="flex items-center justify-between">
+                    <span class="text-gray-600">📍 Distance from you:</span>
+                    <span class="font-bold text-green-600">${distanceText}</span>
+                </div>
+                <div class="mt-2">
+                    <a href="https://www.google.com/maps/dir/?api=1&origin=${userLat},${userLng}&destination=${partnerLat},${partnerLng}" 
+                       target="_blank"
+                       class="text-blue-600 text-sm hover:text-blue-800">
+                        <i class="fas fa-directions mr-1"></i>Get directions from your location
+                    </a>
+                </div>
+            `;
+            {% endif %}
+        }, function(error) {
+            document.getElementById('distanceDisplay').innerHTML = `
+                <div class="text-gray-500 text-sm text-center">
+                    <i class="fas fa-location-dot mr-1"></i>
+                    Enable location to see distance
+                </div>
+            `;
+        });
+    } else {
+        document.getElementById('distanceDisplay').innerHTML = `
+            <div class="text-gray-500 text-sm text-center">
+                Geolocation is not supported by your browser
+            </div>
+        `;
+    }
+    
+    function openImageModal(imageUrl) {
+        document.getElementById('modalImage').src = imageUrl;
+        document.getElementById('imageModal').classList.remove('hidden');
+        document.body.style.overflow = 'hidden';
+    }
+    
+    function closeImageModal() {
+        document.getElementById('imageModal').classList.add('hidden');
+        document.body.style.overflow = 'auto';
+    }
+    
+    function shareLocation() {
+        {% if partner.latitude and partner.longitude %}
+        if (navigator.share) {
+            navigator.share({
+                title: '{{ partner.business_name }}',
+                text: 'Check out {{ partner.business_name }} at {{ partner.address }}',
+                url: '{{ partner.get_google_maps_url }}'
+            }).catch(() => {});
+        } else {
+            navigator.clipboard.writeText('{{ partner.get_google_maps_url }}');
+            alert('Location link copied to clipboard!');
+        }
+        {% endif %}
+    }
+    
+    document.addEventListener('keydown', function(e) {
+        if (e.key === 'Escape') {
+            closeImageModal();
+        }
+    });
+</script>
+{% endblock %}

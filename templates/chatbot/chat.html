@@ -1,468 +1,286 @@
 {% extends 'base.html' %}
+{% load static %}
 
 {% block title %}AI Assistant - AFCON 2027{% endblock %}
 
-{% block extra_css %}
-<style>
-    .chat-container {
-        height: calc(100vh - 200px);
-    }
-    
-    .message-bubble {
-        max-width: 80%;
-        border-radius: 1rem;
-        padding: 1rem;
-        margin-bottom: 1rem;
-        position: relative;
-    }
-    
-    .user-message {
-        background: linear-gradient(135deg, #00A859, #1EB2E6);
-        color: white;
-        margin-left: auto;
-        border-bottom-right-radius: 0.25rem;
-    }
-    
-    .bot-message {
-        background: #f3f4f6;
-        color: #374151;
-        margin-right: auto;
-        border-bottom-left-radius: 0.25rem;
-    }
-    
-    .typing-indicator {
-        display: flex;
-        align-items: center;
-        padding: 1rem;
-    }
-    
-    .typing-dot {
-        width: 8px;
-        height: 8px;
-        border-radius: 50%;
-        background-color: #9ca3af;
-        margin: 0 2px;
-        animation: typing 1.4s infinite ease-in-out;
-    }
-    
-    .typing-dot:nth-child(1) { animation-delay: -0.32s; }
-    .typing-dot:nth-child(2) { animation-delay: -0.16s; }
-    
-    @keyframes typing {
-        0%, 80%, 100% { transform: scale(0); }
-        40% { transform: scale(1); }
-    }
-    
-    .session-item.active {
-        background: linear-gradient(135deg, #00A859, #1EB2E6);
-        color: white;
-    }
-</style>
-{% endblock %}
-
 {% block content %}
-<div class="animate-fade-in">
-    <!-- Header -->
-    <div class="bg-gradient-to-r from-green-800 to-blue-800 text-white py-8">
-        <div class="container mx-auto px-4">
-            <h1 class="text-4xl font-bold mb-4">AI Travel Assistant</h1>
-            <p class="text-xl opacity-90">Personalized help for AFCON 2027 bookings and travel planning</p>
-        </div>
-    </div>
-
+<div class="min-h-screen bg-gray-50">
     <div class="container mx-auto px-4 py-8">
         <div class="grid grid-cols-1 lg:grid-cols-4 gap-8">
             <!-- Sidebar -->
             <div class="lg:col-span-1">
-                <!-- Profile Card -->
-                <div class="bg-white rounded-xl shadow-lg p-6 mb-6">
-                    <div class="flex items-center mb-4">
-                        <div class="w-16 h-16 bg-gradient-to-r from-green-500 to-blue-500 rounded-full flex items-center justify-center text-white text-2xl mr-4">
-                            <i class="fas fa-robot"></i>
+                <div class="bg-white rounded-xl shadow-lg p-6 sticky top-24">
+                    <div class="text-center mb-6">
+                        <div class="w-20 h-20 bg-gradient-to-r from-green-500 to-blue-500 rounded-full flex items-center justify-center mx-auto mb-4">
+                            <i class="fas fa-robot text-3xl text-white"></i>
                         </div>
-                        <div>
-                            <h3 class="font-bold text-lg">{{ request.user.username }}</h3>
-                            <p class="text-gray-600 text-sm">AFCON 2027 Assistant</p>
-                        </div>
+                        <h3 class="text-xl font-bold">{{ request.user.username }}</h3>
+                        <p class="text-gray-600 text-sm">AFCON 2027 Assistant</p>
                     </div>
                     
-                    <div class="mb-4">
-                        <label class="block text-gray-700 text-sm font-bold mb-2">Preferred Language</label>
-                        <select id="languageSelect" class="w-full p-2 border border-gray-300 rounded">
-                            <option value="en" {% if profile.preferred_language == 'en' %}selected{% endif %}>English</option>
-                            <option value="sw" {% if profile.preferred_language == 'sw' %}selected{% endif %}>Swahili</option>
-                            <option value="fr" {% if profile.preferred_language == 'fr' %}selected{% endif %}>French</option>
-                            <option value="ar" {% if profile.preferred_language == 'ar' %}selected{% endif %}>Arabic</option>
-                        </select>
-                    </div>
-                    
+                    <!-- User Interests -->
                     <div class="mb-6">
-                        <label class="block text-gray-700 text-sm font-bold mb-2">Your Interests</label>
-                        <select id="interestsSelect" class="w-full p-2 border border-gray-300 rounded">
-                            <option value="football" {% if profile.interests == 'football' %}selected{% endif %}>⚽ Football</option>
-                            <option value="safari" {% if profile.interests == 'safari' %}selected{% endif %}>🦁 Safari & Wildlife</option>
-                            <option value="beach" {% if profile.interests == 'beach' %}selected{% endif %}>🏖️ Beach & Relaxation</option>
-                            <option value="culture" {% if profile.interests == 'culture' %}selected{% endif %}>🎭 Culture & History</option>
-                            <option value="adventure" {% if profile.interests == 'adventure' %}selected{% endif %}>🗻 Adventure & Hiking</option>
-                        </select>
+                        <h4 class="font-semibold mb-3 flex items-center">
+                            <i class="fas fa-heart text-red-500 mr-2"></i>
+                            Your Interests
+                        </h4>
+                        <div class="flex flex-wrap gap-2">
+                            {% for interest in user_interests %}
+                            <span class="bg-green-100 text-green-700 px-3 py-1 rounded-full text-sm">
+                                {% if interest == 'safari' %}🦁 Safari
+                                {% elif interest == 'beach' %}🏖️ Beach
+                                {% elif interest == 'culture' %}🎭 Culture
+                                {% elif interest == 'adventure' %}🗻 Adventure
+                                {% elif interest == 'football' %}⚽ Football
+                                {% elif interest == 'luxury' %}💎 Luxury
+                                {% elif interest == 'budget' %}💰 Budget
+                                {% elif interest == 'food' %}🍲 Food
+                                {% else %}⭐ {{ interest }}
+                                {% endif %}
+                            </span>
+                            {% empty %}
+                            <span class="text-gray-500 text-sm">Chat with me to discover your interests!</span>
+                            {% endfor %}
+                        </div>
                     </div>
                     
-                    <button id="updateProfileBtn" class="w-full bg-green-600 text-white py-2 rounded-lg hover:bg-green-700 font-semibold">
-                        Update Preferences
-                    </button>
-                </div>
-
-                <!-- Travel Preferences Card -->
-                <div class="bg-white rounded-xl shadow-lg p-6 mb-6">
-                    <h3 class="font-bold text-lg mb-4">Travel Preferences</h3>
-                    
-                    <div class="mb-4">
-                        <label class="block text-gray-700 text-sm font-bold mb-2">Travel Budget</label>
-                        <select id="budgetSelect" class="w-full p-2 border border-gray-300 rounded">
-                            <option value="budget" {% if profile.travel_budget == 'budget' %}selected{% endif %}>💰 Budget (< $100/night)</option>
-                            <option value="midrange" {% if profile.travel_budget == 'midrange' %}selected{% endif %}>💵 Mid-range ($100-$300)</option>
-                            <option value="luxury" {% if profile.travel_budget == 'luxury' %}selected{% endif %}>💎 Luxury ($300+)</option>
-                        </select>
+                    <!-- Training Stats -->
+                    <div class="mb-6 p-3 bg-blue-50 rounded-lg">
+                        <h4 class="font-semibold mb-2 text-sm">📊 Training Statistics</h4>
+                        <div class="text-xs text-gray-600 space-y-1">
+                            <div>🎯 {{ stats.total_examples }} training examples</div>
+                            <div>💬 {{ stats.unique_intents }} intents</div>
+                            <div>📚 {{ stats.categories|length }} categories</div>
+                        </div>
                     </div>
                     
-                    <div class="mb-6">
-                        <label class="block text-gray-700 text-sm font-bold mb-2">Travel Group</label>
-                        <select id="groupSelect" class="w-full p-2 border border-gray-300 rounded">
-                            <option value="solo" {% if profile.travel_group == 'solo' %}selected{% endif %}>👤 Solo Traveler</option>
-                            <option value="couple" {% if profile.travel_group == 'couple' %}selected{% endif %}>👫 Couple</option>
-                            <option value="family" {% if profile.travel_group == 'family' %}selected{% endif %}>👨‍👩‍👧‍👦 Family</option>
-                            <option value="friends" {% if profile.travel_group == 'friends' %}selected{% endif %}>👥 Friends</option>
-                            <option value="business" {% if profile.travel_group == 'business' %}selected{% endif %}>💼 Business</option>
-                        </select>
-                    </div>
-                </div>
-
-                <!-- Quick Stats -->
-                <div class="bg-white rounded-xl shadow-lg p-6 mb-6">
-                    <h3 class="font-bold text-lg mb-4">Your Travel Stats</h3>
-                    <div class="space-y-3">
-                        <div class="flex justify-between items-center">
-                            <span class="text-gray-600">Conversations</span>
-                            <span class="font-bold text-green-600">{{ profile.conversation_count }}</span>
-                        </div>
-                        <div class="flex justify-between items-center">
-                            <span class="text-gray-600">Available Hotels</span>
-                            <span class="font-bold text-blue-600">{{ hotels_count }}</span>
-                        </div>
-                        <div class="flex justify-between items-center">
-                            <span class="text-gray-600">Attractions</span>
-                            <span class="font-bold text-yellow-600">{{ attractions_count }}</span>
-                        </div>
-                        {% if user_bookings > 0 %}
-                        <div class="flex justify-between items-center">
-                            <span class="text-gray-600">Your Bookings</span>
-                            <span class="font-bold text-purple-600">{{ user_bookings }}</span>
-                        </div>
-                        {% endif %}
-                    </div>
-                </div>
-
-                <!-- Conversation History -->
-                <div class="bg-white rounded-xl shadow-lg p-6">
-                    <h3 class="font-bold text-lg mb-4">Recent Conversations</h3>
-                    <div class="space-y-2">
-                        <a href="{% url 'chatbot' %}" class="block p-3 bg-green-50 rounded-lg hover:bg-green-100">
-                            <div class="font-semibold">➕ New Chat</div>
-                            <div class="text-sm text-gray-600">Start a new conversation</div>
-                        </a>
+                    <!-- Recent Chats -->
+                    <h4 class="font-semibold mb-3 flex items-center">
+                        <i class="fas fa-history mr-2"></i>
+                        Recent Chats
+                    </h4>
+                    <div class="space-y-2 max-h-64 overflow-y-auto">
                         {% for s in sessions %}
-                        <a href="{% url 'chatbot' %}?session={{ s.session_id }}" 
-                           class="block p-3 rounded-lg hover:bg-gray-100 {% if s.session_id == session.session_id %}bg-gray-100 font-semibold{% endif %}">
-                            <div>{{ s.title }}</div>
-                            <div class="text-sm text-gray-600">{{ s.updated_at|date:"M d, H:i" }}</div>
-                            {% if s.session_id == session.session_id %}
-                            <button onclick="deleteSession('{{ s.session_id }}')" 
-                                    class="text-red-500 text-xs mt-1 hover:text-red-700">
-                                <i class="fas fa-trash mr-1"></i>Delete
-                            </button>
-                            {% endif %}
+                        <a href="?session={{ s.session_id }}" 
+                           class="block p-3 rounded-lg hover:bg-gray-100 transition {% if s.session_id == session.session_id %}bg-green-50 border-l-4 border-green-500{% endif %}">
+                            <div class="font-semibold text-sm truncate">{{ s.title }}</div>
+                            <div class="text-xs text-gray-500">{{ s.updated_at|date:"M d, H:i" }}</div>
                         </a>
                         {% endfor %}
                     </div>
                 </div>
             </div>
-
+            
             <!-- Chat Window -->
             <div class="lg:col-span-3">
                 <div class="bg-white rounded-xl shadow-lg overflow-hidden">
-                    <!-- Chat Header -->
+                    <!-- Header -->
                     <div class="bg-gradient-to-r from-green-600 to-blue-600 text-white p-6">
                         <div class="flex justify-between items-center">
                             <div>
                                 <h2 class="text-2xl font-bold">{{ session.title }}</h2>
-                                <p class="opacity-90">AI Assistant • {{ profile.get_preferred_language_display }} • {{ profile.get_interests_display }}</p>
+                                <p class="opacity-90 text-sm mt-1">
+                                    <i class="fas fa-database mr-1"></i>
+                                    Trained on {{ stats.total_examples }} conversations
+                                </p>
                             </div>
                             <div class="text-right">
-                                <div class="text-sm opacity-90">Conversations: {{ profile.conversation_count }}</div>
-                                <div class="text-sm opacity-90">{{ messages|length }} messages</div>
+                                <div class="text-sm">{{ messages|length }} messages</div>
+                                <div class="text-xs opacity-75">
+                                    {% if user_interests %}
+                                    🎯 {{ user_interests|length }} interests detected
+                                    {% endif %}
+                                </div>
                             </div>
                         </div>
                     </div>
-
-                    <!-- Messages Container -->
-                    <div id="messagesContainer" class="h-96 overflow-y-auto p-6 space-y-4">
+                    
+                    <!-- Messages -->
+                    <div id="messagesContainer" class="h-96 overflow-y-auto p-6 space-y-4 bg-gray-50">
                         {% for message in messages %}
-                        <div class="message-bubble {% if message.message_type == 'user' %}user-message{% else %}bot-message{% endif %}">
-                            <div class="flex items-start">
-                                <div class="mr-3">
-                                    {% if message.message_type == 'user' %}
-                                    <div class="w-8 h-8 bg-white rounded-full flex items-center justify-center text-green-600">
-                                        <i class="fas fa-user"></i>
-                                    </div>
-                                    {% else %}
-                                    <div class="w-8 h-8 bg-gradient-to-r from-green-500 to-blue-500 rounded-full flex items-center justify-center text-white">
-                                        <i class="fas fa-robot"></i>
+                        <div class="flex {% if message.message_type == 'user' %}justify-end{% else %}justify-start{% endif %} animate-fade-in">
+                            <div class="max-w-2xl {% if message.message_type == 'user' %}bg-gradient-to-r from-green-500 to-green-600 text-white{% else %}bg-white shadow-md text-gray-800{% endif %} rounded-2xl p-4">
+                                <div class="flex items-start">
+                                    {% if message.message_type == 'bot' %}
+                                    <div class="w-8 h-8 rounded-full bg-gradient-to-r from-green-500 to-blue-500 flex items-center justify-center mr-3 flex-shrink-0">
+                                        <i class="fas fa-robot text-white text-sm"></i>
                                     </div>
                                     {% endif %}
-                                </div>
-                                <div class="flex-1">
-                                    <div class="font-semibold mb-1">
-                                        {% if message.message_type == 'user' %}You{% else %}AFCON Assistant{% endif %}
-                                        <span class="text-xs opacity-75 ml-2">{{ message.timestamp|date:"H:i" }}</span>
+                                    <div class="flex-1">
+                                        <div class="text-sm {% if message.message_type == 'user' %}text-green-100{% else %}text-gray-500{% endif %} mb-1">
+                                            {% if message.message_type == 'user' %}You{% else %}AFCON Assistant{% endif %}
+                                            <span class="text-xs ml-2">{{ message.timestamp|date:"H:i" }}</span>
+                                        </div>
+                                        <div class="whitespace-pre-wrap">{{ message.content }}</div>
+                                        {% if message.intent and message.message_type == 'bot' %}
+                                        <div class="text-xs mt-2 opacity-75">
+                                            <i class="fas fa-tag"></i> {{ message.intent }}
+                                        </div>
+                                        {% endif %}
                                     </div>
-                                    <div>{{ message.content }}</div>
                                 </div>
                             </div>
                         </div>
                         {% empty %}
-                        <div class="text-center py-12 text-gray-500">
-                            <div class="text-6xl mb-6 opacity-50">
-                                <i class="fas fa-robot"></i>
+                        <div class="text-center py-12">
+                            <div class="w-24 h-24 bg-gradient-to-r from-green-100 to-blue-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                                <i class="fas fa-comments text-4xl text-green-600"></i>
                             </div>
-                            <h3 class="text-2xl font-bold mb-4">Start a Conversation</h3>
-                            <p class="mb-6">I'm your AFCON 2027 assistant. Ask me about:</p>
-                            <div class="grid grid-cols-2 gap-3 max-w-md mx-auto">
-                                <div class="bg-gray-100 p-3 rounded-lg">🏨 Hotel bookings</div>
-                                <div class="bg-gray-100 p-3 rounded-lg">🗺️ Tourist attractions</div>
-                                <div class="bg-gray-100 p-3 rounded-lg">⚽ Match schedules</div>
-                                <div class="bg-gray-100 p-3 rounded-lg">🚗 Transportation</div>
-                            </div>
+                            <h3 class="text-xl font-semibold text-gray-800 mb-2">Start a Conversation</h3>
+                            <p class="text-gray-500 max-w-md mx-auto">
+                                Ask me about hotels, tourist attractions, or AFCON 2027 in Tanzania!
+                            </p>
                         </div>
                         {% endfor %}
                         
-                        <!-- Typing Indicator (hidden by default) -->
-                        <div id="typingIndicator" class="typing-indicator hidden">
-                            <div class="w-8 h-8 bg-gradient-to-r from-green-500 to-blue-500 rounded-full flex items-center justify-center text-white mr-3">
-                                <i class="fas fa-robot"></i>
-                            </div>
-                            <div class="flex">
-                                <div class="typing-dot"></div>
-                                <div class="typing-dot"></div>
-                                <div class="typing-dot"></div>
+                        <!-- Typing Indicator -->
+                        <div id="typingIndicator" class="hidden justify-start">
+                            <div class="bg-white shadow-md rounded-2xl p-4">
+                                <div class="flex items-center space-x-2">
+                                    <div class="w-2 h-2 bg-green-500 rounded-full animate-bounce"></div>
+                                    <div class="w-2 h-2 bg-green-500 rounded-full animate-bounce" style="animation-delay: 0.2s"></div>
+                                    <div class="w-2 h-2 bg-green-500 rounded-full animate-bounce" style="animation-delay: 0.4s"></div>
+                                </div>
                             </div>
                         </div>
                     </div>
-
+                    
                     <!-- Input Area -->
-                    <div class="border-t p-6">
-                        <form id="chatForm" class="flex gap-3">
-                            <input type="hidden" id="sessionId" value="{{ session.session_id }}">
+                    <div class="border-t p-6 bg-white">
+                        <div class="flex gap-3">
                             <input type="text" 
-                                   id="messageInput" 
-                                   placeholder="Type your message here... (Try: 'hotels in Dar es Salaam' or 'tourist attractions')" 
-                                   class="flex-1 p-4 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500"
+                                   id="messageInput"
+                                   placeholder="Type your message... (e.g., 'Find hotels in Dar es Salaam' or 'Tell me about safaris')"
+                                   class="flex-1 p-4 border border-gray-300 rounded-xl focus:ring-2 focus:ring-green-500 focus:border-transparent"
                                    autocomplete="off">
-                            <button type="submit" 
-                                    class="bg-gradient-to-r from-green-600 to-blue-600 text-white px-8 py-4 rounded-lg hover:opacity-90 font-semibold">
+                            <button id="sendBtn" 
+                                    class="bg-gradient-to-r from-green-600 to-blue-600 text-white px-8 py-4 rounded-xl hover:opacity-90 font-semibold transition">
                                 <i class="fas fa-paper-plane mr-2"></i>Send
                             </button>
-                        </form>
-                        <div class="mt-4 flex flex-wrap gap-2">
-                            <button class="quick-question bg-gray-200 px-4 py-2 rounded-lg hover:bg-gray-300" data-question="Hotels in Dar es Salaam">
-                                🏨 Dar Hotels
-                            </button>
-                            <button class="quick-question bg-gray-200 px-4 py-2 rounded-lg hover:bg-gray-300" data-question="Best safari near Arusha">
-                                🦁 Arusha Safari
-                            </button>
-                            <button class="quick-question bg-gray-200 px-4 py-2 rounded-lg hover:bg-gray-300" data-question="Beach resorts in Zanzibar">
-                                🏖️ Zanzibar Resorts
-                            </button>
-                            <button class="quick-question bg-gray-200 px-4 py-2 rounded-lg hover:bg-gray-300" data-question="AFCON match schedule">
-                                ⚽ Match Info
-                            </button>
-                            <button class="quick-question bg-gray-200 px-4 py-2 rounded-lg hover:bg-gray-300" data-question="Tourist attractions">
-                                🗺️ Attractions
-                            </button>
                         </div>
-                    </div>
-                </div>
-
-                <!-- Help Section -->
-                <div class="mt-8 grid grid-cols-1 md:grid-cols-3 gap-6">
-                    <div class="bg-white p-6 rounded-xl shadow">
-                        <div class="text-green-600 text-2xl mb-3">
-                            <i class="fas fa-lightbulb"></i>
+                        
+                        <!-- Quick Suggestions -->
+                        <div class="mt-4">
+                            <p class="text-xs text-gray-500 mb-2">Suggested questions:</p>
+                            <div class="flex flex-wrap gap-2">
+                                <button class="quick-btn px-3 py-2 bg-gray-100 rounded-lg hover:bg-gray-200 text-sm transition" data-msg="Book a hotel in Dar es Salaam">
+                                    🏨 Book Dar Hotel
+                                </button>
+                                <button class="quick-btn px-3 py-2 bg-gray-100 rounded-lg hover:bg-gray-200 text-sm transition" data-msg="What are the best tourist attractions in Arusha?">
+                                    🦁 Arusha Attractions
+                                </button>
+                                <button class="quick-btn px-3 py-2 bg-gray-100 rounded-lg hover:bg-gray-200 text-sm transition" data-msg="Beach resorts in Zanzibar">
+                                    🏖️ Zanzibar Beaches
+                                </button>
+                                <button class="quick-btn px-3 py-2 bg-gray-100 rounded-lg hover:bg-gray-200 text-sm transition" data-msg="AFCON 2027 match schedule and venues">
+                                    ⚽ Match Schedule
+                                </button>
+                                <button class="quick-btn px-3 py-2 bg-gray-100 rounded-lg hover:bg-gray-200 text-sm transition" data-msg="Best local food and restaurants">
+                                    🍲 Local Cuisine
+                                </button>
+                                <button class="quick-btn px-3 py-2 bg-gray-100 rounded-lg hover:bg-gray-200 text-sm transition" data-msg="How to get from Dar es Salaam to Zanzibar?">
+                                    🚢 Transportation
+                                </button>
+                            </div>
                         </div>
-                        <h4 class="font-bold mb-2">Tips</h4>
-                        <p class="text-gray-600 text-sm">I learn from your preferences. Update your interests for better recommendations.</p>
-                    </div>
-                    <div class="bg-white p-6 rounded-xl shadow">
-                        <div class="text-blue-600 text-2xl mb-3">
-                            <i class="fas fa-clock"></i>
+                        
+                        <!-- CSV Info -->
+                        <div class="mt-4 text-center text-xs text-gray-400">
+                            <i class="fas fa-file-csv mr-1"></i>
+                            Powered by CSV training data • {{ stats.total_examples }} examples • {{ stats.unique_intents }} intents
                         </div>
-                        <h4 class="font-bold mb-2">24/7 Available</h4>
-                        <p class="text-gray-600 text-sm">Get instant help anytime for hotel bookings and travel planning.</p>
-                    </div>
-                    <div class="bg-white p-6 rounded-xl shadow">
-                        <div class="text-yellow-600 text-2xl mb-3">
-                            <i class="fas fa-globe"></i>
-                        </div>
-                        <h4 class="font-bold mb-2">Multi-language</h4>
-                        <p class="text-gray-600 text-sm">Switch between English, Swahili, French, and Arabic anytime.</p>
                     </div>
                 </div>
             </div>
         </div>
     </div>
 </div>
-{% endblock %}
 
-{% block extra_js %}
+<style>
+    @keyframes fadeIn {
+        from {
+            opacity: 0;
+            transform: translateY(10px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+    
+    .animate-fade-in {
+        animation: fadeIn 0.3s ease-out;
+    }
+</style>
+
 <script>
-    // Get CSRF token
-    function getCookie(name) {
-        let cookieValue = null;
-        if (document.cookie && document.cookie !== '') {
-            const cookies = document.cookie.split(';');
-            for (let i = 0; i < cookies.length; i++) {
-                const cookie = cookies[i].trim();
-                if (cookie.substring(0, name.length + 1) === (name + '=')) {
-                    cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
-                    break;
-                }
-            }
-        }
-        return cookieValue;
-    }
-    const csrftoken = getCookie('csrftoken');
+    const sessionId = '{{ session.session_id }}';
+    const csrfToken = '{{ csrf_token }}';
+    const messagesContainer = document.getElementById('messagesContainer');
+    const messageInput = document.getElementById('messageInput');
+    const sendBtn = document.getElementById('sendBtn');
+    const typingIndicator = document.getElementById('typingIndicator');
     
-    // Scroll to bottom of messages
     function scrollToBottom() {
-        const container = document.getElementById('messagesContainer');
-        container.scrollTop = container.scrollHeight;
+        messagesContainer.scrollTop = messagesContainer.scrollHeight;
     }
     
-    // Notification system
-    function showNotification(message, type = 'info') {
-        const notification = document.createElement('div');
-        notification.className = `fixed top-4 right-4 p-4 rounded-lg shadow-lg z-50 ${
-            type === 'success' ? 'bg-green-500 text-white' :
-            type === 'error' ? 'bg-red-500 text-white' :
-            'bg-blue-500 text-white'
-        }`;
-        notification.innerHTML = `
-            <div class="flex items-center">
-                <i class="fas fa-${type === 'success' ? 'check-circle' : type === 'error' ? 'exclamation-circle' : 'info-circle'} mr-2"></i>
-                <span>${message}</span>
-            </div>
-        `;
-        
-        document.body.appendChild(notification);
-        
-        // Auto-remove after 3 seconds
-        setTimeout(() => {
-            notification.remove();
-        }, 3000);
-    }
-    
-    // Enhanced message display with analysis
-    function addMessageToUI(type, content, analysis = null) {
-        const container = document.getElementById('messagesContainer');
-        const now = new Date();
-        const timeString = now.getHours().toString().padStart(2, '0') + ':' + 
-                          now.getMinutes().toString().padStart(2, '0');
-        
+    function addMessage(type, content, intent = null) {
         const messageDiv = document.createElement('div');
-        messageDiv.className = `message-bubble ${type === 'user' ? 'user-message' : 'bot-message'}`;
+        messageDiv.className = `flex ${type === 'user' ? 'justify-end' : 'justify-start'} animate-fade-in`;
         
-        let analysisHTML = '';
-        if (analysis && type === 'user') {
-            // Show sentiment indicator
-            let sentimentEmoji = '😐';
-            if (analysis.sentiment > 0.3) sentimentEmoji = '😊';
-            else if (analysis.sentiment < -0.3) sentimentEmoji = '😔';
-            
-            analysisHTML = `<div class="text-xs opacity-50 mt-1">${sentimentEmoji} Detected: ${analysis.intent}</div>`;
-        }
+        const time = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
         
         messageDiv.innerHTML = `
-            <div class="flex items-start">
-                <div class="mr-3">
-                    ${type === 'user' ? 
-                        '<div class="w-8 h-8 bg-white rounded-full flex items-center justify-center text-green-600"><i class="fas fa-user"></i></div>' : 
-                        '<div class="w-8 h-8 bg-gradient-to-r from-green-500 to-blue-500 rounded-full flex items-center justify-center text-white"><i class="fas fa-robot"></i></div>'
-                    }
-                </div>
-                <div class="flex-1">
-                    <div class="font-semibold mb-1">
-                        ${type === 'user' ? 'You' : 'AFCON Assistant'}
-                        <span class="text-xs opacity-75 ml-2">${timeString}</span>
+            <div class="max-w-2xl ${type === 'user' ? 'bg-gradient-to-r from-green-500 to-green-600 text-white' : 'bg-white shadow-md text-gray-800'} rounded-2xl p-4">
+                <div class="flex items-start">
+                    ${type === 'bot' ? `
+                    <div class="w-8 h-8 rounded-full bg-gradient-to-r from-green-500 to-blue-500 flex items-center justify-center mr-3 flex-shrink-0">
+                        <i class="fas fa-robot text-white text-sm"></i>
                     </div>
-                    <div>${content}</div>
-                    ${analysisHTML}
-                    ${type === 'bot' && analysis && analysis.has_recommendation ? 
-                        '<div class="mt-2"><button class="text-xs bg-green-100 text-green-800 px-2 py-1 rounded hover:bg-green-200" onclick="showRecommendation()">💡 See Recommendation</button></div>' : ''
-                    }
+                    ` : ''}
+                    <div class="flex-1">
+                        <div class="text-sm ${type === 'user' ? 'text-green-100' : 'text-gray-500'} mb-1">
+                            ${type === 'user' ? 'You' : 'AFCON Assistant'}
+                            <span class="text-xs ml-2">${time}</span>
+                        </div>
+                        <div class="whitespace-pre-wrap">${content}</div>
+                        ${intent && type === 'bot' ? `
+                        <div class="text-xs mt-2 opacity-75">
+                            <i class="fas fa-tag"></i> ${intent}
+                        </div>
+                        ` : ''}
+                    </div>
                 </div>
             </div>
         `;
         
-        container.appendChild(messageDiv);
+        messagesContainer.appendChild(messageDiv);
         scrollToBottom();
     }
     
-    // Handle bot actions
-    function handleBotActions(actions) {
-        actions.forEach(action => {
-            switch(action.type) {
-                case 'hotel_booking':
-                    // Show hotel booking modal or redirect
-                    if (confirm('Would you like to view available hotels?')) {
-                        window.location.href = '/hotels/';
-                    }
-                    break;
-                case 'afcon_info':
-                    // Display AFCON info
-                    console.log('AFCON Info:', action.data);
-                    break;
-                case 'redirect':
-                    // Option to redirect
-                    if (confirm(action.message)) {
-                        window.location.href = action.url;
-                    }
-                    break;
-            }
-        });
-    }
-    
-    // Send message
-    document.getElementById('chatForm').addEventListener('submit', async function(e) {
-        e.preventDefault();
-        const messageInput = document.getElementById('messageInput');
-        const sessionId = document.getElementById('sessionId').value;
+    async function sendMessage() {
         const message = messageInput.value.trim();
-        
         if (!message) return;
         
-        // Add user message to UI (initially without analysis)
-        addMessageToUI('user', message);
+        // Add user message
+        addMessage('user', message);
         messageInput.value = '';
         
         // Show typing indicator
-        document.getElementById('typingIndicator').classList.remove('hidden');
+        typingIndicator.classList.remove('hidden');
         scrollToBottom();
+        
+        // Disable send button
+        sendBtn.disabled = true;
+        sendBtn.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i>Thinking...';
         
         try {
             const response = await fetch('/chatbot/send/', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
-                    'X-CSRFToken': csrftoken
+                    'X-CSRFToken': csrfToken
                 },
                 body: JSON.stringify({
                     session_id: sessionId,
@@ -473,123 +291,43 @@
             const data = await response.json();
             
             // Hide typing indicator
-            document.getElementById('typingIndicator').classList.add('hidden');
+            typingIndicator.classList.add('hidden');
             
             if (data.success) {
-                // Add bot response with analysis
-                addMessageToUI('bot', data.bot_message.content, {
-                    has_recommendation: data.bot_message.has_recommendation,
-                    intent: data.bot_message.intent
-                });
+                addMessage('bot', data.response, data.intent);
                 
-                // Handle any actions from the bot
-                if (data.bot_message.actions && data.bot_message.actions.length > 0) {
-                    handleBotActions(data.bot_message.actions);
+                // If interests were updated, show a subtle notification
+                if (data.user_interests && data.user_interests.length > 0) {
+                    console.log('User interests updated:', data.user_interests);
                 }
-                
-                // Log analysis data (for debugging)
-                console.log('Message analysis:', data.analysis);
             } else {
-                addMessageToUI('bot', 'Sorry, I encountered an error. Please try again.');
+                addMessage('bot', 'Sorry, I encountered an error. Please try again.');
             }
-            
         } catch (error) {
-            document.getElementById('typingIndicator').classList.add('hidden');
-            addMessageToUI('bot', 'Network error. Please check your connection.');
+            console.error('Error:', error);
+            typingIndicator.classList.add('hidden');
+            addMessage('bot', 'Network error. Please check your connection and try again.');
+        } finally {
+            sendBtn.disabled = false;
+            sendBtn.innerHTML = '<i class="fas fa-paper-plane mr-2"></i>Send';
         }
+    }
+    
+    // Event listeners
+    sendBtn.addEventListener('click', sendMessage);
+    messageInput.addEventListener('keypress', (e) => {
+        if (e.key === 'Enter') sendMessage();
     });
     
-    // Quick question buttons
-    document.querySelectorAll('.quick-question').forEach(button => {
-        button.addEventListener('click', function() {
-            const question = this.getAttribute('data-question');
-            document.getElementById('messageInput').value = question;
-            document.getElementById('chatForm').dispatchEvent(new Event('submit'));
+    // Quick buttons
+    document.querySelectorAll('.quick-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+            messageInput.value = btn.getAttribute('data-msg');
+            sendMessage();
         });
     });
     
-    // Advanced profile update
-    document.getElementById('updateProfileBtn').addEventListener('click', async function() {
-        const language = document.getElementById('languageSelect').value;
-        const interests = document.getElementById('interestsSelect').value;
-        const budget = document.getElementById('budgetSelect').value;
-        const group = document.getElementById('groupSelect').value;
-        
-        try {
-            const response = await fetch('/chatbot/update-profile/', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'X-CSRFToken': csrftoken
-                },
-                body: JSON.stringify({
-                    language: language,
-                    interests: interests,
-                    travel_budget: budget,
-                    travel_group: group
-                })
-            });
-            
-            const data = await response.json();
-            if (data.success) {
-                showNotification('Preferences updated successfully!', 'success');
-                // You can update UI elements with the new profile data
-            } else {
-                showNotification(data.error || 'Error updating preferences', 'error');
-            }
-        } catch (error) {
-            showNotification('Error updating preferences', 'error');
-        }
-    });
-    
-    // Get personalized suggestions
-    async function getSuggestions() {
-        try {
-            const response = await fetch('/chatbot/suggestions/', {
-                headers: {
-                    'X-CSRFToken': csrftoken
-                }
-            });
-            
-            const data = await response.json();
-            if (data.suggestions) {
-                // You can implement this to show suggestions in a modal or sidebar
-                console.log('Personalized suggestions:', data.suggestions);
-            }
-        } catch (error) {
-            console.error('Error getting suggestions:', error);
-        }
-    }
-    
-    // Delete session
-    function deleteSession(sessionId) {
-        if (confirm('Delete this conversation?')) {
-            fetch(`/chatbot/delete-session/${sessionId}/`, {
-                method: 'DELETE',
-                headers: {
-                    'X-CSRFToken': csrftoken
-                }
-            })
-            .then(response => response.json())
-            .then(data => {
-                if (data.success) {
-                    window.location.href = '/chatbot/';
-                }
-            });
-        }
-    }
-    
-    // Show recommendation
-    function showRecommendation() {
-        // This can be expanded to show a modal with detailed recommendations
-        alert('Detailed recommendations would be shown here. In a full implementation, this would open a modal or redirect to a recommendations page.');
-    }
-    
-    // Load suggestions on page load
-    window.addEventListener('load', function() {
-        scrollToBottom();
-        // Load suggestions after a delay
-        setTimeout(getSuggestions, 1000);
-    });
+    // Scroll to bottom on load
+    scrollToBottom();
 </script>
 {% endblock %}

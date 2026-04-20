@@ -1,279 +1,330 @@
 {% extends 'base.html' %}
 
+{% block title %}Travel To Tanzania Hub - Official Travel Management System{% endblock %}
+
 {% block content %}
-<!-- AFCON 2027 Hero Banner -->
-<section class="relative bg-gradient-to-r from-green-800 via-green-600 to-blue-600 text-white py-12 md:py-20 overflow-hidden">
-    <!-- Background Pattern -->
-    <div class="absolute inset-0 opacity-10">
-        <div class="absolute top-0 left-0 w-64 h-64 bg-white rounded-full -translate-x-1/2 -translate-y-1/2"></div>
-        <div class="absolute bottom-0 right-0 w-96 h-96 bg-white rounded-full translate-x-1/3 translate-y-1/3"></div>
-    </div>
-    
-    <div class="container mx-auto px-4 relative z-10">
-        <!-- Official AFCON Logo Placeholder -->
-        <div class="flex justify-center mb-8">
-            <div class="bg-white/20 backdrop-blur-sm rounded-2xl p-6 border-4 border-yellow-400">
+<div class="animate-fade-in">
+    <!-- Main Hero Section -->
+    <section class="relative bg-gradient-to-r from-green-800 via-green-700 to-blue-800 text-white py-20 md:py-28 overflow-hidden">
+        <div class="absolute inset-0 bg-black/30"></div>
+        <div class="container mx-auto px-4 text-center relative z-10">
+            
+            <!-- Tanzanian Flag Badge -->
+            <div class="flex justify-center mb-6">
+                <div class="inline-flex items-center bg-white/10 backdrop-blur-sm rounded-full px-4 py-2 border border-white/20">
+                    <img src="https://flagcdn.com/w80/tz.png" 
+                         alt="Tanzania Flag" 
+                         class="w-8 h-6 rounded-sm mr-2 shadow-lg">
+                    <span class="text-sm font-semibold">Welcome to Tanzania</span>
+                </div>
+            </div>
+            
+            <!-- Travel To Tanzania Hub Banner -->
+            <div class="bg-white/10 backdrop-blur-sm rounded-2xl p-6 md:p-8 border-4 border-yellow-400 max-w-3xl mx-auto mb-8">
                 <div class="text-center">
-                    <div class="text-6xl font-black mb-2">CAF</div>
-                    <div class="text-4xl font-bold tracking-widest mb-1">AFRICA CUP</div>
-                    <div class="text-4xl font-bold tracking-widest mb-3">OF NATIONS</div>
-                    <div class="text-6xl font-black text-yellow-400 mb-4">2027</div>
-                    <div class="text-2xl font-semibold">
-                        <span class="text-green-300">TANZANIA</span>
-                        <span class="mx-4">•</span>
-                        <span class="text-yellow-300">KENYA</span>
-                        <span class="mx-4">•</span>
-                        <span class="text-red-300">UGANDA</span>
+                    <div class="text-4xl md:text-5xl font-black mb-2">TRAVEL TO</div>
+                    <div class="text-2xl md:text-3xl font-bold tracking-widest mb-1">TANZANIA</div>
+                    <div class="text-2xl md:text-3xl font-bold tracking-widest mb-3">HUB</div>
+                    <div class="text-5xl md:text-6xl font-black text-yellow-400 mb-4">2027</div>
+                    <div class="text-lg md:text-xl font-semibold">
+                        <span class="text-green-300">DAR ES SALAAM</span>
+                        <span class="mx-3">•</span>
+                        <span class="text-yellow-300">ARUSHA</span>
+                        <span class="mx-3">•</span>
+                        <span class="text-red-300">ZANZIBAR</span>
                     </div>
                 </div>
             </div>
-        </div>
-        
-        <div class="text-center max-w-4xl mx-auto">
-            <h1 class="text-4xl md:text-5xl font-bold mb-6">
-                Official Hotel Management System
-                <span class="block text-yellow-400 mt-2">AFCON 2027 Tanzania</span>
+            
+            <h1 class="text-4xl md:text-6xl font-bold mb-6">
+                Travel To Tanzania Hub
+                <span class="block text-yellow-400 mt-2">Your Gateway to Paradise</span>
             </h1>
-            <p class="text-xl mb-8 opacity-90">
-                Secure your accommodation across Dar es Salaam, Arusha, and Zanzibar for Africa's biggest football tournament.
-                Exclusive partner of Tanzania Football Federation.
+            <p class="text-xl md:text-2xl mb-8 max-w-3xl mx-auto opacity-90">
+                Book your perfect stay across Dar es Salaam, Arusha, and Zanzibar for an unforgettable Tanzanian adventure.
             </p>
             <div class="flex flex-wrap justify-center gap-4">
-                <a href="/hotels/" class="bg-white text-green-800 px-8 py-3 rounded-full font-bold hover:bg-gray-100 transform hover:scale-105 transition duration-300">
-                    <i class="fas fa-calendar-check mr-2"></i>Book Your Stay
+                <a href="{% url 'hotel_list' %}" class="bg-white text-green-800 px-8 py-3 rounded-full font-bold hover:bg-gray-100 transition">
+                    <i class="fas fa-hotel mr-2"></i>Browse All Hotels
                 </a>
-                <a href="/tourism/" class="bg-yellow-400 text-gray-900 px-8 py-3 rounded-full font-bold hover:bg-yellow-300 transform hover:scale-105 transition duration-300">
+                <a href="{% url 'chatbot' %}" class="bg-blue-600 text-white px-8 py-3 rounded-full font-bold hover:bg-blue-700 transition">
+                    <i class="fas fa-robot mr-2"></i>AI Assistant
+                </a>
+                <a href="{% url 'tourism' %}" class="bg-yellow-500 text-gray-900 px-8 py-3 rounded-full font-bold hover:bg-yellow-400 transition">
                     <i class="fas fa-map-marked-alt mr-2"></i>Explore Tanzania
                 </a>
-                <a href="/chatbot/" class="bg-blue-500 text-white px-8 py-3 rounded-full font-bold hover:bg-blue-600 transform hover:scale-105 transition duration-300">
-                    <i class="fas fa-robot mr-2"></i>AI Travel Assistant
-                </a>
             </div>
         </div>
-    </div>
-    
-    <!-- Wave separator -->
-    <div class="absolute bottom-0 left-0 right-0">
-        <svg viewBox="0 0 1200 120" preserveAspectRatio="none" class="w-full h-12">
-            <path d="M0,0V46.29c47.79,22.2,103.59,32.17,158,28,70.36-5.37,136.33-33.31,206.8-37.5C438.64,32.43,512.34,53.67,583,72.05c69.27,18,138.3,24.88,209.4,13.08,36.15-6,69.85-17.84,104.45-29.34C989.49,25,1113-14.29,1200,52.47V0Z" opacity=".25" fill="white"></path>
-            <path d="M0,0V15.81C13,36.92,27.64,56.86,47.69,72.05,99.41,111.27,165,111,224.58,91.58c31.15-10.15,60.09-26.07,89.67-39.8,40.92-19,84.73-46,130.83-49.67,36.26-2.85,70.9,9.42,98.6,31.56,31.77,25.39,62.32,62,103.63,73,40.44,10.79,81.35-6.69,119.13-24.28s75.16-39,116.92-43.05c59.73-5.85,113.28,22.88,168.9,38.84,30.2,8.66,59,6.17,87.09-7.5,22.43-10.89,48-26.93,60.65-49.24V0Z" opacity=".5" fill="white"></path>
-            <path d="M0,0V5.63C149.93,59,314.09,71.32,475.83,42.57c43-7.64,84.23-20.12,127.61-26.46,59-8.63,112.48,12.24,165.56,35.4C827.93,77.22,886,95.24,951.2,90c86.53-7,172.46-45.71,248.8-84.81V0Z" fill="white"></path>
-        </svg>
-    </div>
-</section>
+    </section>
 
-<!-- Host Cities Section -->
-<section class="py-16">
-    <div class="container mx-auto px-4">
-        <h2 class="text-3xl font-bold text-center mb-4 text-gray-800">Host Cities in Tanzania</h2>
-        <p class="text-gray-600 text-center mb-12 max-w-2xl mx-auto">
-            Choose your preferred location for AFCON 2027 matches and experience Tanzania's hospitality
-        </p>
-        
-        <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
-            <!-- Dar es Salaam -->
-            <div class="bg-white rounded-2xl shadow-xl overflow-hidden transform hover:-translate-y-2 transition duration-300">
-                <div class="h-48 bg-gradient-to-br from-green-500 to-green-700 relative">
-                    <div class="absolute inset-0 flex items-center justify-center">
-                        <span class="text-white text-4xl font-black">DAR</span>
+    <!-- Features Section -->
+    <section class="py-16 bg-gray-100">
+        <div class="container mx-auto px-4">
+            <h2 class="text-3xl md:text-4xl font-bold text-center mb-12 text-gray-800">Why Choose Travel To Tanzania Hub</h2>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+                <div class="bg-white rounded-xl shadow-lg p-6 text-center hover:shadow-xl transition">
+                    <div class="w-20 h-20 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                        <i class="fas fa-hotel text-3xl text-green-600"></i>
                     </div>
+                    <h3 class="text-xl font-bold mb-3">300+ Hotels</h3>
+                    <p class="text-gray-600">Carefully selected hotels across all three host cities with verified amenities and reviews.</p>
                 </div>
-                <div class="p-6">
-                    <h3 class="text-2xl font-bold mb-2 text-green-800">Dar es Salaam</h3>
-                    <p class="text-gray-600 mb-4">
-                        Commercial capital with modern stadiums, beach resorts, and vibrant nightlife. 
-                        Main venue for group stage matches.
-                    </p>
-                    <ul class="space-y-2 mb-6">
-                        <li class="flex items-center">
-                            <i class="fas fa-futbol text-green-600 mr-2"></i>
-                            <span>Benjamin Mkapa Stadium</span>
-                        </li>
-                        <li class="flex items-center">
-                            <i class="fas fa-bed text-green-600 mr-2"></i>
-                            <span>120+ Hotels Available</span>
-                        </li>
-                        <li class="flex items-center">
-                            <i class="fas fa-users text-green-600 mr-2"></i>
-                            <span>Capacity: 60,000+</span>
-                        </li>
-                    </ul>
-                    <a href="/hotels/?city=dar" class="block w-full bg-green-600 text-white text-center py-3 rounded-lg hover:bg-green-700 font-semibold">
-                        View Hotels <i class="fas fa-arrow-right ml-2"></i>
-                    </a>
-                </div>
-            </div>
-            
-            <!-- Arusha -->
-            <div class="bg-white rounded-2xl shadow-xl overflow-hidden transform hover:-translate-y-2 transition duration-300">
-                <div class="h-48 bg-gradient-to-br from-blue-500 to-blue-700 relative">
-                    <div class="absolute inset-0 flex items-center justify-center">
-                        <span class="text-white text-4xl font-black">ARU</span>
+                <div class="bg-white rounded-xl shadow-lg p-6 text-center hover:shadow-xl transition">
+                    <div class="w-20 h-20 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                        <i class="fas fa-robot text-3xl text-blue-600"></i>
                     </div>
+                    <h3 class="text-xl font-bold mb-3">AI Assistant</h3>
+                    <p class="text-gray-600">Personalized chatbot to help you with bookings, recommendations, and local information.</p>
                 </div>
-                <div class="p-6">
-                    <h3 class="text-2xl font-bold mb-2 text-blue-800">Arusha</h3>
-                    <p class="text-gray-600 mb-4">
-                        Gateway to Serengeti and Mount Kilimanjaro. Experience safari adventures 
-                        between match days in this scenic city.
-                    </p>
-                    <ul class="space-y-2 mb-6">
-                        <li class="flex items-center">
-                            <i class="fas fa-futbol text-blue-600 mr-2"></i>
-                            <span>Arusha Stadium</span>
-                        </li>
-                        <li class="flex items-center">
-                            <i class="fas fa-bed text-blue-600 mr-2"></i>
-                            <span>80+ Hotels Available</span>
-                        </li>
-                        <li class="flex items-center">
-                            <i class="fas fa-mountain text-blue-600 mr-2"></i>
-                            <span>Near Kilimanjaro</span>
-                        </li>
-                    </ul>
-                    <a href="/hotels/?city=arusha" class="block w-full bg-blue-600 text-white text-center py-3 rounded-lg hover:bg-blue-700 font-semibold">
-                        View Hotels <i class="fas fa-arrow-right ml-2"></i>
-                    </a>
-                </div>
-            </div>
-            
-            <!-- Zanzibar -->
-            <div class="bg-white rounded-2xl shadow-xl overflow-hidden transform hover:-translate-y-2 transition duration-300">
-                <div class="h-48 bg-gradient-to-br from-yellow-500 to-yellow-700 relative">
-                    <div class="absolute inset-0 flex items-center justify-center">
-                        <span class="text-white text-4xl font-black">ZAN</span>
+                <div class="bg-white rounded-xl shadow-lg p-6 text-center hover:shadow-xl transition">
+                    <div class="w-20 h-20 bg-yellow-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                        <i class="fas fa-map-marked-alt text-3xl text-yellow-600"></i>
                     </div>
-                </div>
-                <div class="p-6">
-                    <h3 class="text-2xl font-bold mb-2 text-yellow-800">Zanzibar</h3>
-                    <p class="text-gray-600 mb-4">
-                        Tropical paradise with historic Stone Town and pristine beaches. 
-                        Perfect for post-tournament relaxation.
-                    </p>
-                    <ul class="space-y-2 mb-6">
-                        <li class="flex items-center">
-                            <i class="fas fa-futbol text-yellow-600 mr-2"></i>
-                            <span>Amaan Stadium</span>
-                        </li>
-                        <li class="flex items-center">
-                            <i class="fas fa-bed text-yellow-600 mr-2"></i>
-                            <span>90+ Hotels Available</span>
-                        </li>
-                        <li class="flex items-center">
-                            <i class="fas fa-umbrella-beach text-yellow-600 mr-2"></i>
-                            <span>Beach Resorts</span>
-                        </li>
-                    </ul>
-                    <a href="/hotels/?city=zanzibar" class="block w-full bg-yellow-600 text-white text-center py-3 rounded-lg hover:bg-yellow-700 font-semibold">
-                        View Hotels <i class="fas fa-arrow-right ml-2"></i>
-                    </a>
+                    <h3 class="text-xl font-bold mb-3">Tourist Guide</h3>
+                    <p class="text-gray-600">Comprehensive guide to Tanzania's attractions, from Serengeti to Zanzibar beaches.</p>
                 </div>
             </div>
         </div>
-    </div>
-</section>
+    </section>
 
-<!-- AI Assistant Preview -->
-<section class="py-16 bg-gradient-to-r from-gray-50 to-blue-50">
-    <div class="container mx-auto px-4">
-        <div class="max-w-4xl mx-auto">
-            <div class="text-center mb-12">
-                <div class="inline-block p-3 bg-blue-100 rounded-full mb-4">
-                    <i class="fas fa-robot text-4xl text-blue-600"></i>
+    <!-- Host Cities Section with Hero Images -->
+    <section class="py-16">
+        <div class="container mx-auto px-4">
+            <div class="flex justify-center mb-8">
+                <div class="inline-flex items-center bg-green-100 rounded-full px-6 py-2">
+                    <img src="https://flagcdn.com/w80/tz.png" 
+                         alt="Tanzania Flag" 
+                         class="w-6 h-4 rounded-sm mr-2">
+                    <span class="text-green-800 font-semibold">Explore Tanzania's Beautiful Cities</span>
                 </div>
-                <h2 class="text-3xl font-bold text-gray-800 mb-4">AI Travel Assistant</h2>
-                <p class="text-gray-600 text-lg">
-                    Get personalized help with bookings, match schedules, and tourist recommendations. 
-                    Available 24/7 in multiple languages.
-                </p>
             </div>
-            
-            <div class="bg-white rounded-2xl shadow-xl p-8">
-                <div class="flex items-start mb-6">
-                    <div class="w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center mr-4">
-                        <i class="fas fa-robot text-blue-600"></i>
-                    </div>
-                    <div class="flex-1">
-                        <div class="bg-blue-50 rounded-2xl rounded-tl-none p-4">
-                            <p class="text-gray-800">
-                                Hello! I'm your AFCON 2027 assistant. I can help you:
-                            </p>
-                            <ul class="mt-3 space-y-2">
-                                <li class="flex items-center">
-                                    <i class="fas fa-check-circle text-green-500 mr-2"></i>
-                                    Find hotels near stadiums
-                                </li>
-                                <li class="flex items-center">
-                                    <i class="fas fa-check-circle text-green-500 mr-2"></i>
-                                    Book airport transfers
-                                </li>
-                                <li class="flex items-center">
-                                    <i class="fas fa-check-circle text-green-500 mr-2"></i>
-                                    Get match schedules
-                                </li>
-                                <li class="flex items-center">
-                                    <i class="fas fa-check-circle text-green-500 mr-2"></i>
-                                    Recommend tourist attractions
-                                </li>
-                            </ul>
+            <h2 class="text-3xl md:text-4xl font-bold text-center mb-12 text-gray-800">Discover Tanzania's Host Cities</h2>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+                
+                <!-- Dar es Salaam City Card -->
+                <div class="group relative bg-white rounded-2xl shadow-xl overflow-hidden hover:shadow-2xl transition transform hover:-translate-y-2 cursor-pointer">
+                    <div class="relative h-80 overflow-hidden">
+                        <!-- Hero Image -->
+                        <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQqPqPNLPGk-5MYulpkxK5AHkyZ0SAxaCK1Rw&s" 
+                             alt="Dar es Salaam city skyline" 
+                             class="w-full h-full object-cover group-hover:scale-110 transition duration-700">
+                        <div class="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent"></div>
+                        
+                        <!-- City Name Overlay -->
+                        <div class="absolute bottom-0 left-0 right-0 p-6">
+                            <h3 class="text-3xl font-bold text-white mb-2">Dar es Salaam</h3>
+                            <p class="text-white/90 text-sm">The Vibrant Commercial Capital</p>
                         </div>
+                        
+                        <!-- Icon Badge -->
+                        <div class="absolute top-4 right-4 bg-green-600 rounded-full w-12 h-12 flex items-center justify-center shadow-lg">
+                            <i class="fas fa-city text-white text-xl"></i>
+                        </div>
+                    </div>
+                    <div class="p-6">
+                        <div class="flex items-center justify-between mb-4">
+                            <div class="flex items-center space-x-2">
+                                <i class="fas fa-futbol text-green-600"></i>
+                                <span class="text-sm text-gray-600">60,000 capacity stadium</span>
+                            </div>
+                            <div class="flex items-center space-x-2">
+                                <i class="fas fa-hotel text-blue-600"></i>
+                                <span class="text-sm text-gray-600">120+ hotels</span>
+                            </div>
+                        </div>
+                        <p class="text-gray-600 mb-4">Commercial capital with modern stadiums, beach resorts, and vibrant nightlife. Main venue for major events and the final.</p>
+                        <a href="{% url 'city:city_detail' 'dar-es-salaam' %}" class="inline-flex items-center text-green-600 font-semibold hover:text-green-800">
+                            Explore City <i class="fas fa-arrow-right ml-2"></i>
+                        </a>
                     </div>
                 </div>
                 
-                <div class="text-center">
-                    <a href="/chatbot/" class="inline-flex items-center bg-gradient-to-r from-blue-600 to-green-600 text-white px-8 py-4 rounded-full font-bold hover:opacity-90 transition duration-300">
-                        <i class="fas fa-comments mr-3"></i>
-                        Start Chat with AI Assistant
-                    </a>
-                    <p class="text-gray-500 mt-4 text-sm">
-                        Available in English, Swahili, French, and Arabic
-                    </p>
+                <!-- Arusha City Card -->
+                <div class="group relative bg-white rounded-2xl shadow-xl overflow-hidden hover:shadow-2xl transition transform hover:-translate-y-2 cursor-pointer">
+                    <div class="relative h-80 overflow-hidden">
+                        <!-- Hero Image -->
+                        <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSyJ0H2aUW_muErVkXLjNeBbMXopYdGozFO0Q&s" 
+                             alt="Arusha with Mount Kilimanjaro" 
+                             class="w-full h-full object-cover group-hover:scale-110 transition duration-700">
+                        <div class="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent"></div>
+                        
+                        <!-- City Name Overlay -->
+                        <div class="absolute bottom-0 left-0 right-0 p-6">
+                            <h3 class="text-3xl font-bold text-white mb-2">Arusha</h3>
+                            <p class="text-white/90 text-sm">The Safari Capital</p>
+                        </div>
+                        
+                        <!-- Icon Badge -->
+                        <div class="absolute top-4 right-4 bg-blue-600 rounded-full w-12 h-12 flex items-center justify-center shadow-lg">
+                            <i class="fas fa-mountain text-white text-xl"></i>
+                        </div>
+                    </div>
+                    <div class="p-6">
+                        <div class="flex items-center justify-between mb-4">
+                            <div class="flex items-center space-x-2">
+                                <i class="fas fa-futbol text-green-600"></i>
+                                <span class="text-sm text-gray-600">30,000 capacity stadium</span>
+                            </div>
+                            <div class="flex items-center space-x-2">
+                                <i class="fas fa-hotel text-blue-600"></i>
+                                <span class="text-sm text-gray-600">80+ hotels</span>
+                            </div>
+                        </div>
+                        <p class="text-gray-600 mb-4">Gateway to Serengeti and Mount Kilimanjaro. Experience safari adventures in this scenic city.</p>
+                        <a href="{% url 'city:city_detail' 'arusha' %}" class="inline-flex items-center text-blue-600 font-semibold hover:text-blue-800">
+                            Explore City <i class="fas fa-arrow-right ml-2"></i>
+                        </a>
+                    </div>
+                </div>
+                
+                <!-- Zanzibar City Card -->
+                <div class="group relative bg-white rounded-2xl shadow-xl overflow-hidden hover:shadow-2xl transition transform hover:-translate-y-2 cursor-pointer">
+                    <div class="relative h-80 overflow-hidden">
+                        <!-- Hero Image -->
+                        <img src="https://www.tanzaniatourism.com/images/uploads/Zanzibar_Island_Stone_Town_01.jpg" 
+                             alt="Zanzibar beach" 
+                             class="w-full h-full object-cover group-hover:scale-110 transition duration-700">
+                        <div class="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent"></div>
+                        
+                        <!-- City Name Overlay -->
+                        <div class="absolute bottom-0 left-0 right-0 p-6">
+                            <h3 class="text-3xl font-bold text-white mb-2">Zanzibar</h3>
+                            <p class="text-white/90 text-sm">The Spice Island Paradise</p>
+                        </div>
+                        
+                        <!-- Icon Badge -->
+                        <div class="absolute top-4 right-4 bg-yellow-600 rounded-full w-12 h-12 flex items-center justify-center shadow-lg">
+                            <i class="fas fa-umbrella-beach text-white text-xl"></i>
+                        </div>
+                    </div>
+                    <div class="p-6">
+                        <div class="flex items-center justify-between mb-4">
+                            <div class="flex items-center space-x-2">
+                                <i class="fas fa-futbol text-green-600"></i>
+                                <span class="text-sm text-gray-600">25,000 capacity stadium</span>
+                            </div>
+                            <div class="flex items-center space-x-2">
+                                <i class="fas fa-hotel text-blue-600"></i>
+                                <span class="text-sm text-gray-600">90+ resorts</span>
+                            </div>
+                        </div>
+                        <p class="text-gray-600 mb-4">Tropical paradise with historic Stone Town and pristine beaches. Perfect for relaxation.</p>
+                        <a href="{% url 'city:city_detail' 'zanzibar' %}" class="inline-flex items-center text-yellow-600 font-semibold hover:text-yellow-800">
+                            Explore City <i class="fas fa-arrow-right ml-2"></i>
+                        </a>
+                    </div>
                 </div>
             </div>
         </div>
-    </div>
-</section>
+    </section>
 
-<!-- Quick Stats -->
-<section class="py-16">
-    <div class="container mx-auto px-4">
-        <div class="grid grid-cols-2 md:grid-cols-4 gap-8">
-            <div class="text-center">
-                <div class="text-4xl font-bold text-green-600 mb-2">500+</div>
-                <div class="text-gray-600">Hotels Available</div>
-            </div>
-            <div class="text-center">
-                <div class="text-4xl font-bold text-blue-600 mb-2">24/7</div>
-                <div class="text-gray-600">AI Support</div>
-            </div>
-            <div class="text-center">
-                <div class="text-4xl font-bold text-yellow-600 mb-2">3</div>
-                <div class="text-gray-600">Host Cities</div>
-            </div>
-            <div class="text-center">
-                <div class="text-4xl font-bold text-red-600 mb-2">50K+</div>
-                <div class="text-gray-600">Expected Visitors</div>
+    <!-- Quick Stats Bar -->
+    <section class="py-12 bg-gradient-to-r from-green-700 to-blue-700">
+        <div class="container mx-auto px-4">
+            <div class="grid grid-cols-2 md:grid-cols-4 gap-8 text-center text-white">
+                <div>
+                    <div class="text-4xl md:text-5xl font-bold mb-2">500+</div>
+                    <div class="text-sm opacity-90">Partner Hotels</div>
+                </div>
+                <div>
+                    <div class="text-4xl md:text-5xl font-bold mb-2">24/7</div>
+                    <div class="text-sm opacity-90">AI Support</div>
+                </div>
+                <div>
+                    <div class="text-4xl md:text-5xl font-bold mb-2">3</div>
+                    <div class="text-sm opacity-90">Host Cities</div>
+                </div>
+                <div>
+                    <div class="text-4xl md:text-5xl font-bold mb-2">50K+</div>
+                    <div class="text-sm opacity-90">Happy Visitors</div>
+                </div>
             </div>
         </div>
-    </div>
-</section>
+    </section>
 
-<!-- CTA Section -->
-<section class="py-16 bg-gradient-to-r from-green-800 to-green-900 text-white">
-    <div class="container mx-auto px-4 text-center">
-        <h2 class="text-3xl font-bold mb-6">Ready for AFCON 2027?</h2>
-        <p class="text-xl mb-8 max-w-2xl mx-auto opacity-90">
-            Book your stay now and get early bird discounts. Official accommodation partner of 
-            Tanzania Football Federation.
-        </p>
-        <a href="/hotels/" class="inline-flex items-center bg-white text-green-800 px-10 py-4 rounded-full text-lg font-bold hover:bg-gray-100 transform hover:scale-105 transition duration-300">
-            <i class="fas fa-ticket-alt mr-3"></i>
-            Book Hotels & Match Packages
-        </a>
-        <p class="mt-6 text-green-200">
-            <i class="fas fa-shield-alt mr-2"></i>
-            Secure Booking • Best Price Guarantee • 24/7 Customer Support
-        </p>
-    </div>
-</section>
+    <!-- AI Assistant Preview -->
+    <section class="py-16 bg-gray-50">
+        <div class="container mx-auto px-4">
+            <div class="max-w-4xl mx-auto">
+                <div class="text-center mb-12">
+                    <div class="inline-block p-3 bg-blue-100 rounded-full mb-4">
+                        <i class="fas fa-robot text-4xl text-blue-600"></i>
+                    </div>
+                    <h2 class="text-3xl md:text-4xl font-bold text-gray-800 mb-4">AI Travel Assistant</h2>
+                    <p class="text-gray-600 text-lg">
+                        Get personalized help with bookings, travel schedules, and tourist recommendations. 
+                        Available 24/7 in multiple languages.
+                    </p>
+                </div>
+                
+                <div class="bg-white rounded-2xl shadow-xl p-8">
+                    <div class="flex items-start mb-6">
+                        <div class="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center mr-4 flex-shrink-0">
+                            <i class="fas fa-robot text-blue-600 text-xl"></i>
+                        </div>
+                        <div class="flex-1">
+                            <div class="bg-blue-50 rounded-2xl rounded-tl-none p-4">
+                                <p class="text-gray-800 font-semibold mb-2">Hello! I'm your Travel To Tanzania assistant.</p>
+                                <p class="text-gray-600">I can help you with:</p>
+                                <ul class="mt-2 space-y-1">
+                                    <li class="flex items-center text-gray-700">
+                                        <i class="fas fa-check-circle text-green-500 mr-2 text-sm"></i>
+                                        Find hotels near attractions
+                                    </li>
+                                    <li class="flex items-center text-gray-700">
+                                        <i class="fas fa-check-circle text-green-500 mr-2 text-sm"></i>
+                                        Recommend tourist attractions
+                                    </li>
+                                    <li class="flex items-center text-gray-700">
+                                        <i class="fas fa-check-circle text-green-500 mr-2 text-sm"></i>
+                                        Help with travel schedules
+                                    </li>
+                                    <li class="flex items-center text-gray-700">
+                                        <i class="fas fa-check-circle text-green-500 mr-2 text-sm"></i>
+                                        Transportation and dining options
+                                    </li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="text-center">
+                        <a href="{% url 'chatbot' %}" class="inline-flex items-center bg-gradient-to-r from-blue-600 to-green-600 text-white px-8 py-4 rounded-full font-bold hover:opacity-90 transition">
+                            <i class="fas fa-comments mr-3 text-xl"></i> Start Chat with AI Assistant
+                        </a>
+                        <p class="text-gray-500 mt-4 text-sm">Available in English, Swahili, French, and Arabic</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- CTA Section -->
+    <section class="py-16 bg-gradient-to-r from-green-800 to-green-900 text-white">
+        <div class="container mx-auto px-4 text-center">
+            <div class="flex justify-center mb-6">
+                <img src="https://flagcdn.com/w120/tz.png" 
+                     alt="Tanzania Flag" 
+                     class="w-12 h-8 rounded shadow-lg">
+            </div>
+            <h2 class="text-3xl md:text-4xl font-bold mb-6">Ready to Explore Tanzania?</h2>
+            <p class="text-xl mb-8 max-w-2xl mx-auto opacity-90">
+                Book your stay now and get early bird discounts. Your trusted travel partner for an unforgettable Tanzanian experience.
+            </p>
+            <div class="flex flex-wrap justify-center gap-4">
+                <a href="{% url 'hotel_list' %}" class="inline-flex items-center bg-white text-green-800 px-8 py-4 rounded-full text-lg font-bold hover:bg-gray-100 transition">
+                    <i class="fas fa-ticket-alt mr-3"></i> Browse Hotels
+                </a>
+                <a href="{% url 'tourism' %}" class="inline-flex items-center bg-yellow-500 text-gray-900 px-8 py-4 rounded-full text-lg font-bold hover:bg-yellow-400 transition">
+                    <i class="fas fa-map-marked-alt mr-3"></i> Plan Your Trip
+                </a>
+                <a href="{% url 'city:city_detail' 'dar-es-salaam' %}" class="inline-flex items-center bg-blue-600 text-white px-8 py-4 rounded-full text-lg font-bold hover:bg-blue-700 transition">
+                    <i class="fas fa-city mr-3"></i> Explore Cities
+                </a>
+            </div>
+            <p class="mt-6 text-green-200 text-sm">
+                <i class="fas fa-shield-alt mr-2"></i> Secure Booking · Best Price Guarantee · 24/7 Customer Support
+            </p>
+        </div>
+    </section>
+</div>
 {% endblock %}

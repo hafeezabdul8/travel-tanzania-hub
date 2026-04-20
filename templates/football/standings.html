@@ -1,0 +1,94 @@
+{% extends 'football/football_base.html' %}
+
+{% block title %}Group Standings - AFCON 2027{% endblock %}
+
+{% block football_content %}
+<div class="container mx-auto px-4 py-8">
+    <div class="text-center mb-8">
+        <h1 class="text-3xl md:text-4xl font-bold text-gray-800 mb-2">Group Standings</h1>
+        <p class="text-gray-600">AFCON 2027 Tournament Standings</p>
+    </div>
+
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+        {% for group, standings in standings_data.items %}
+        <div class="bg-white rounded-xl shadow-lg overflow-hidden">
+            <div class="bg-gradient-to-r from-green-600 to-blue-600 text-white px-6 py-4">
+                <h2 class="text-2xl font-bold">Group {{ group }}</h2>
+            </div>
+            
+            <div class="overflow-x-auto">
+                <table class="w-full">
+                    <thead class="bg-gray-50">
+                        <tr>
+                            <th class="p-3 text-left">#</th>
+                            <th class="p-3 text-left">Team</th>
+                            <th class="p-3 text-center">P</th>
+                            <th class="p-3 text-center">W</th>
+                            <th class="p-3 text-center">D</th>
+                            <th class="p-3 text-center">L</th>
+                            <th class="p-3 text-center">GF</th>
+                            <th class="p-3 text-center">GA</th>
+                            <th class="p-3 text-center">GD</th>
+                            <th class="p-3 text-center">Pts</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for standing in standings %}
+                        <tr class="standing-row border-b hover:bg-gray-50">
+                            <td class="p-3 font-semibold">{{ forloop.counter }}</td>
+                            <td class="p-3">
+                                <div class="flex items-center">
+                                    <!-- Team Flag -->
+                                    <div class="w-8 h-8 rounded-full overflow-hidden bg-gray-100 flex items-center justify-center mr-3">
+                                        {% if standing.team.get_flag_url %}
+                                            <img src="{{ standing.team.get_flag_url }}" 
+                                                 alt="{{ standing.team.name }} flag" 
+                                                 class="w-full h-full object-cover">
+                                        {% else %}
+                                            <span class="text-xs font-bold">{{ standing.team.short_name }}</span>
+                                        {% endif %}
+                                    </div>
+                                    <span class="font-medium">{{ standing.team.name }}</span>
+                                </div>
+                            </td>
+                            <td class="p-3 text-center">{{ standing.played }}</td>
+                            <td class="p-3 text-center">{{ standing.won }}</td>
+                            <td class="p-3 text-center">{{ standing.drawn }}</td>
+                            <td class="p-3 text-center">{{ standing.lost }}</td>
+                            <td class="p-3 text-center">{{ standing.goals_for }}</td>
+                            <td class="p-3 text-center">{{ standing.goals_against }}</td>
+                            <td class="p-3 text-center font-semibold {% if standing.goal_difference > 0 %}text-green-600{% elif standing.goal_difference < 0 %}text-red-600{% endif %}">
+                                {{ standing.goal_difference }}
+                            </td>
+                            <td class="p-3 text-center font-bold text-green-700">{{ standing.points }}</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+
+    <!-- Legend -->
+    <div class="mt-8 bg-blue-50 rounded-xl p-6">
+        <h3 class="font-semibold mb-3">Legend:</h3>
+        <div class="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
+            <div><span class="font-semibold">P</span> = Played</div>
+            <div><span class="font-semibold">W</span> = Won</div>
+            <div><span class="font-semibold">D</span> = Drawn</div>
+            <div><span class="font-semibold">L</span> = Lost</div>
+            <div><span class="font-semibold">GF</span> = Goals For</div>
+            <div><span class="font-semibold">GA</span> = Goals Against</div>
+            <div><span class="font-semibold">GD</span> = Goal Difference</div>
+            <div><span class="font-semibold">Pts</span> = Points</div>
+        </div>
+    </div>
+
+    <!-- Qualification Info -->
+    <div class="mt-6 bg-gray-100 rounded-lg p-4 text-center text-sm text-gray-600">
+        <i class="fas fa-info-circle mr-2"></i>
+        Top 2 teams from each group advance to the Round of 16
+    </div>
+</div>
+{% endblock %}

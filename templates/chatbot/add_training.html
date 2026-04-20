@@ -1,0 +1,71 @@
+{% extends 'base.html' %}
+
+{% block title %}Add Training Data - Admin{% endblock %}
+
+{% block content %}
+<div class="container mx-auto px-4 py-8 max-w-2xl">
+    <div class="bg-white rounded-xl shadow-lg p-8">
+        <h1 class="text-2xl font-bold mb-6">Add Training Example</h1>
+        
+        <form method="POST">
+            {% csrf_token %}
+            
+            <div class="mb-4">
+                <label class="block text-gray-700 mb-2">User Question</label>
+                <input type="text" name="text" required
+                       class="w-full p-3 border rounded-lg focus:ring-2 focus:ring-green-500"
+                       placeholder="e.g., How do I get to the stadium?">
+            </div>
+            
+            <div class="mb-4">
+                <label class="block text-gray-700 mb-2">Intent</label>
+                <select name="intent" required class="w-full p-3 border rounded-lg">
+                    <option value="greeting">Greeting</option>
+                    <option value="hotel_booking">Hotel Booking</option>
+                    <option value="tourism_info">Tourism Info</option>
+                    <option value="afcon_info">AFCON Info</option>
+                    <option value="price_query">Price Query</option>
+                    <option value="transport">Transport</option>
+                    <option value="emergency">Emergency</option>
+                    <option value="food">Food</option>
+                    <option value="farewell">Farewell</option>
+                </select>
+            </div>
+            
+            <div class="mb-4">
+                <label class="block text-gray-700 mb-2">Bot Response</label>
+                <textarea name="response" required rows="4"
+                          class="w-full p-3 border rounded-lg focus:ring-2 focus:ring-green-500"
+                          placeholder="The assistant's response..."></textarea>
+            </div>
+            
+            <div class="mb-4">
+                <label class="block text-gray-700 mb-2">Category</label>
+                <input type="text" name="category" value="general"
+                       class="w-full p-3 border rounded-lg">
+            </div>
+            
+            <div class="mb-6">
+                <label class="block text-gray-700 mb-2">Keywords (comma-separated)</label>
+                <input type="text" name="keywords"
+                       class="w-full p-3 border rounded-lg"
+                       placeholder="stadium, transport, bus">
+            </div>
+            
+            <button type="submit" class="w-full bg-green-600 text-white py-3 rounded-lg hover:bg-green-700 font-semibold">
+                Add to Training Data
+            </button>
+        </form>
+        
+        <div class="mt-6 p-4 bg-blue-50 rounded-lg">
+            <h3 class="font-semibold mb-2">💡 Tips for good training data:</h3>
+            <ul class="text-sm text-gray-600 space-y-1">
+                <li>• Add multiple variations of the same question</li>
+                <li>• Keep responses concise but informative</li>
+                <li>• Include keywords to improve matching</li>
+                <li>• Test your examples after adding</li>
+            </ul>
+        </div>
+    </div>
+</div>
+{% endblock %}

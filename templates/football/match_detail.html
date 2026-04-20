@@ -1,0 +1,98 @@
+{% extends 'football/football_base.html' %}
+
+{% block title %}Match {{ match.match_number }} - {{ match.home_team.short_name }} vs {{ match.away_team.short_name }}{% endblock %}
+
+{% block football_content %}
+<div class="container mx-auto px-4 py-8">
+    <div class="bg-white rounded-xl shadow-lg p-6">
+        <!-- Back Button -->
+        <div class="mb-6">
+            <a href="{% url 'football:match_schedule' %}" class="text-green-600 hover:text-green-800">
+                <i class="fas fa-arrow-left mr-2"></i>Back to Schedule
+            </a>
+        </div>
+        
+        <div class="text-center mb-8">
+            <div class="text-sm text-gray-500 mb-2">
+                <i class="far fa-calendar-alt mr-1"></i>{{ match.date|date:"l, F j, Y" }} at {{ match.time|time:"g:i A" }}
+            </div>
+            <div class="text-lg text-gray-600">{{ match.stadium.name }}, {{ match.stadium.city }}</div>
+        </div>
+        
+        <div class="flex items-center justify-between mb-8">
+            <!-- Home Team -->
+            <div class="text-center flex-1">
+                <!-- Home Team Flag -->
+                <div class="w-24 h-24 rounded-full overflow-hidden bg-gray-100 flex items-center justify-center mx-auto mb-4 shadow-lg">
+                    {% if match.home_team.get_flag_url %}
+                        <img src="{{ match.home_team.get_flag_url }}" 
+                             alt="{{ match.home_team.name }} flag" 
+                             class="w-full h-full object-cover">
+                    {% else %}
+                        <span class="text-2xl font-bold">{{ match.home_team.short_name }}</span>
+                    {% endif %}
+                </div>
+                <div class="text-2xl font-bold text-gray-800">{{ match.home_team.name }}</div>
+                <div class="text-4xl font-bold text-green-600 mt-2">{{ match.home_score|default:"0" }}</div>
+            </div>
+            
+            <div class="text-3xl font-bold text-gray-400">VS</div>
+            
+            <!-- Away Team -->
+            <div class="text-center flex-1">
+                <!-- Away Team Flag -->
+                <div class="w-24 h-24 rounded-full overflow-hidden bg-gray-100 flex items-center justify-center mx-auto mb-4 shadow-lg">
+                    {% if match.away_team.get_flag_url %}
+                        <img src="{{ match.away_team.get_flag_url }}" 
+                             alt="{{ match.away_team.name }} flag" 
+                             class="w-full h-full object-cover">
+                    {% else %}
+                        <span class="text-2xl font-bold">{{ match.away_team.short_name }}</span>
+                    {% endif %}
+                </div>
+                <div class="text-2xl font-bold text-gray-800">{{ match.away_team.name }}</div>
+                <div class="text-4xl font-bold text-green-600 mt-2">{{ match.away_score|default:"0" }}</div>
+            </div>
+        </div>
+        
+        <div class="text-center">
+            <span class="px-4 py-2 rounded-full text-sm 
+                {% if match.status == 'live' %}bg-red-500 text-white
+                {% elif match.status == 'finished' %}bg-gray-500 text-white
+                {% else %}bg-green-100 text-green-700{% endif %}">
+                {% if match.status == 'live' %}LIVE
+                {% elif match.status == 'finished' %}Full Time
+                {% else %}Scheduled{% endif %}
+            </span>
+        </div>
+        
+        <!-- Goalscorers -->
+        {% if goals %}
+        <div class="mt-8 border-t pt-6">
+            <h3 class="text-xl font-bold mb-4">Goal Scorers</h3>
+            <div class="space-y-2">
+                {% for goal in goals %}
+                <div class="flex items-center">
+                    <div class="w-8 h-8 rounded-full overflow-hidden bg-gray-100 mr-3">
+                        {% if goal.player.team.get_flag_url %}
+                            <img src="{{ goal.player.team.get_flag_url }}" 
+                                 alt="{{ goal.player.team.short_name }} flag" 
+                                 class="w-full h-full object-cover">
+                        {% else %}
+                            <span class="text-xs">{{ goal.player.team.short_name }}</span>
+                        {% endif %}
+                    </div>
+                    <div>
+                        <span class="font-semibold">{{ goal.player.name }}</span>
+                        <span class="text-gray-500 ml-2">{{ goal.minute }}'</span>
+                        {% if goal.is_penalty %}<span class="text-sm text-gray-500">(Penalty)</span>{% endif %}
+                        {% if goal.is_own_goal %}<span class="text-sm text-red-500">(Own Goal)</span>{% endif %}
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

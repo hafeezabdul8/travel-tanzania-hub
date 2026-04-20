@@ -1,0 +1,317 @@
+{% extends 'football/football_base.html' %}
+
+{% block title %}{{ stadium.name }} - Stadium Details{% endblock %}
+
+{% block football_content %}
+<div class="container mx-auto px-4 py-8">
+    <!-- Stadium Header -->
+    <div class="bg-gradient-to-r from-green-600 to-blue-600 rounded-2xl p-8 text-white mb-8">
+        <div class="flex flex-col md:flex-row items-center justify-between">
+            <div class="text-center md:text-left mb-4 md:mb-0">
+                <h1 class="text-4xl font-bold mb-2">{{ stadium.name }}</h1>
+                <div class="flex flex-wrap gap-3 justify-center md:justify-start">
+                    <span class="bg-white/20 px-3 py-1 rounded-full">
+                        <i class="fas fa-map-marker-alt mr-1"></i>{{ stadium.city }}
+                    </span>
+                    <span class="bg-white/20 px-3 py-1 rounded-full">
+                        <i class="fas fa-users mr-1"></i>Capacity: {{ stadium.get_capacity_display }}
+                    </span>
+                    <span class="bg-white/20 px-3 py-1 rounded-full">
+                        <i class="fas fa-lightbulb mr-1"></i>{% if stadium.has_floodlights %}Floodlights{% else %}No Floodlights{% endif %}
+                    </span>
+                </div>
+            </div>
+            <div class="text-center md:text-right">
+                <div class="text-3xl font-bold">{{ stadium.matches.count }}</div>
+                <div class="text-sm opacity-90">Matches Hosted</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Stadium Image -->
+    <div class="mb-8">
+        {% if stadium.get_main_image_url %}
+        <img src="{{ stadium.get_main_image_url }}" alt="{{ stadium.name }}" 
+             class="w-full h-96 object-cover rounded-2xl shadow-lg">
+        {% else %}
+        <div class="w-full h-96 bg-gradient-to-r from-green-400 to-blue-500 rounded-2xl flex items-center justify-center shadow-lg">
+            <i class="fas fa-futbol text-white text-6xl opacity-50"></i>
+        </div>
+        {% endif %}
+    </div>
+
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        <!-- Main Content -->
+        <div class="lg:col-span-2">
+            <!-- Description -->
+            <div class="bg-white rounded-xl shadow-lg p-6 mb-8">
+                <h2 class="text-2xl font-bold mb-4 flex items-center">
+                    <i class="fas fa-info-circle text-green-600 mr-2"></i>
+                    About the Stadium
+                </h2>
+                <p class="text-gray-700 leading-relaxed mb-4">
+                    {{ stadium.description|default:"This world-class venue is ready to host AFCON 2027 matches." }}
+                </p>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
+                    <div class="flex items-center p-3 bg-gray-50 rounded-lg">
+                        <i class="fas fa-map-marker-alt text-green-600 mr-3"></i>
+                        <div>
+                            <div class="text-sm text-gray-500">Address</div>
+                            <div class="font-medium">{{ stadium.address }}</div>
+                        </div>
+                    </div>
+                    <div class="flex items-center p-3 bg-gray-50 rounded-lg">
+                        <i class="fas fa-calendar-alt text-green-600 mr-3"></i>
+                        <div>
+                            <div class="text-sm text-gray-500">Built</div>
+                            <div class="font-medium">{{ stadium.built_year|default:"Information coming soon" }}</div>
+                        </div>
+                    </div>
+                    <div class="flex items-center p-3 bg-gray-50 rounded-lg">
+                        <i class="fas fa-tachometer-alt text-green-600 mr-3"></i>
+                        <div>
+                            <div class="text-sm text-gray-500">Pitch Type</div>
+                            <div class="font-medium">{{ stadium.get_pitch_type_display }}</div>
+                        </div>
+                    </div>
+                    <div class="flex items-center p-3 bg-gray-50 rounded-lg">
+                        <i class="fas fa-wifi text-green-600 mr-3"></i>
+                        <div>
+                            <div class="text-sm text-gray-500">Status</div>
+                            <div class="font-medium capitalize">{{ stadium.status }}</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Facilities -->
+            {% if stadium.facilities %}
+            <div class="bg-white rounded-xl shadow-lg p-6 mb-8">
+                <h2 class="text-2xl font-bold mb-4 flex items-center">
+                    <i class="fas fa-cogs text-green-600 mr-2"></i>
+                    Facilities
+                </h2>
+                <div class="grid grid-cols-2 md:grid-cols-3 gap-3">
+                    {% for facility in stadium.facilities %}
+                    <div class="flex items-center p-2 bg-gray-50 rounded-lg">
+                        <i class="fas fa-check-circle text-green-500 mr-2"></i>
+                        <span class="text-gray-700">{{ facility }}</span>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+            {% endif %}
+
+            <!-- Transport Information -->
+            {% if stadium.transport_info %}
+            <div class="bg-white rounded-xl shadow-lg p-6 mb-8">
+                <h2 class="text-2xl font-bold mb-4 flex items-center">
+                    <i class="fas fa-bus text-green-600 mr-2"></i>
+                    Getting There
+                </h2>
+                <p class="text-gray-700 leading-relaxed">{{ stadium.transport_info }}</p>
+                
+                <div class="mt-4 p-4 bg-blue-50 rounded-lg">
+                    <h3 class="font-semibold mb-2">AFCON 2027 Special Transport</h3>
+                    <p class="text-sm text-gray-700">
+                        Dedicated shuttle buses will operate from major hotels and city centers on match days.
+                        Free parking available for VIP ticket holders.
+                    </p>
+                </div>
+            </div>
+            {% endif %}
+
+            <!-- Nearby Hotels -->
+            {% if stadium.nearby_hotels.all %}
+            <div class="bg-white rounded-xl shadow-lg p-6">
+                <h2 class="text-2xl font-bold mb-4 flex items-center">
+                    <i class="fas fa-hotel text-green-600 mr-2"></i>
+                    Nearby Hotels
+                </h2>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    {% for hotel in stadium.nearby_hotels.all %}
+                    <div class="flex items-center p-3 border rounded-lg hover:shadow-md transition">
+                        <div class="w-12 h-12 bg-green-100 rounded-full flex items-center justify-center mr-3">
+                            <i class="fas fa-hotel text-green-600"></i>
+                        </div>
+                        <div>
+                            <div class="font-semibold">{{ hotel.name }}</div>
+                            <div class="text-sm text-gray-500">${{ hotel.price_per_night }}/night</div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+                <div class="mt-4 text-center">
+                    <a href="{% url 'hotel_list' %}?city={{ stadium.city }}" 
+                       class="inline-block bg-green-600 text-white px-6 py-2 rounded-lg hover:bg-green-700">
+                        View All Hotels in {{ stadium.city }}
+                    </a>
+                </div>
+            </div>
+            {% endif %}
+        </div>
+
+        <!-- Sidebar -->
+        <div class="lg:col-span-1">
+            <!-- Upcoming Matches -->
+            <div class="bg-white rounded-xl shadow-lg p-6 mb-6">
+                <h3 class="text-xl font-bold mb-4 flex items-center">
+                    <i class="fas fa-calendar-alt text-green-600 mr-2"></i>
+                    Upcoming Matches
+                </h3>
+                {% if matches %}
+                <div class="space-y-4">
+                    {% for match in matches|slice:":5" %}
+                    <div class="border-b pb-3 last:border-0">
+                        <div class="flex justify-between items-center mb-2">
+                            <div class="font-semibold">{{ match.home_team.short_name }}</div>
+                            <div class="text-gray-500">vs</div>
+                            <div class="font-semibold">{{ match.away_team.short_name }}</div>
+                        </div>
+                        <div class="text-sm text-gray-500 text-center">
+                            {{ match.date|date:"M d, Y" }} - {{ match.time|time:"g:i A" }}
+                        </div>
+                        <a href="{% url 'football:match_detail' match.id %}" 
+                           class="block text-center text-green-600 text-sm mt-2 hover:text-green-800">
+                            View Details →
+                        </a>
+                    </div>
+                    {% endfor %}
+                </div>
+                {% else %}
+                <p class="text-gray-500 text-center py-4">No upcoming matches scheduled yet</p>
+                {% endif %}
+            </div>
+
+            <!-- Stadium Features -->
+            <div class="bg-white rounded-xl shadow-lg p-6">
+                <h3 class="text-xl font-bold mb-4 flex items-center">
+                    <i class="fas fa-star text-yellow-500 mr-2"></i>
+                    Key Features
+                </h3>
+                <div class="space-y-3">
+                    <div class="flex justify-between">
+                        <span class="text-gray-600">Floodlights</span>
+                        <span class="font-semibold">
+                            {% if stadium.has_floodlights %}
+                            <i class="fas fa-check-circle text-green-500"></i> Yes
+                            {% else %}
+                            <i class="fas fa-times-circle text-red-500"></i> No
+                            {% endif %}
+                        </span>
+                    </div>
+                    <div class="flex justify-between">
+                        <span class="text-gray-600">Roof Cover</span>
+                        <span class="font-semibold">
+                            {% if stadium.has_roof %}
+                            <i class="fas fa-check-circle text-green-500"></i> Yes
+                            {% else %}
+                            <i class="fas fa-times-circle text-red-500"></i> No
+                            {% endif %}
+                        </span>
+                    </div>
+                    <div class="flex justify-between">
+                        <span class="text-gray-600">Pitch Type</span>
+                        <span class="font-semibold">{{ stadium.get_pitch_type_display }}</span>
+                    </div>
+                    <div class="flex justify-between">
+                        <span class="text-gray-600">Year Built</span>
+                        <span class="font-semibold">{{ stadium.built_year|default:"—" }}</span>
+                    </div>
+                    {% if stadium.renovated_year %}
+                    <div class="flex justify-between">
+                        <span class="text-gray-600">Last Renovated</span>
+                        <span class="font-semibold">{{ stadium.renovated_year }}</span>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- Weather Info -->
+            <div class="mt-6 bg-gradient-to-r from-blue-50 to-green-50 rounded-xl p-6">
+                <h3 class="text-lg font-bold mb-3 flex items-center">
+                    <i class="fas fa-cloud-sun text-yellow-500 mr-2"></i>
+                    Match Day Weather
+                </h3>
+                <div class="text-center">
+                    <div class="text-3xl font-bold text-gray-800">{{ stadium.city }}</div>
+                    <div class="text-sm text-gray-600 mt-2">
+                        January: 25-32°C, Mostly sunny
+                    </div>
+                    <div class="text-sm text-gray-600">
+                        Bring light clothing and stay hydrated!
+                    </div>
+                </div>
+            </div>
+
+            <!-- Share Button -->
+            <div class="mt-6">
+                <button onclick="shareStadium()" 
+                        class="w-full bg-gray-800 text-white py-3 rounded-lg hover:bg-gray-700 transition">
+                    <i class="fas fa-share-alt mr-2"></i>Share This Stadium
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Gallery Section -->
+    {% if stadium.get_gallery_images %}
+    <div class="mt-8">
+        <h2 class="text-2xl font-bold mb-4 flex items-center">
+            <i class="fas fa-images text-green-600 mr-2"></i>
+            Gallery
+        </h2>
+        <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+            {% for img_url in stadium.get_gallery_images %}
+            <div class="relative h-48 rounded-lg overflow-hidden cursor-pointer" onclick="openImageModal('{{ img_url }}')">
+                <img src="{{ img_url }}" alt="Stadium image" class="w-full h-full object-cover hover:scale-110 transition duration-300">
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+    {% endif %}
+</div>
+
+<!-- Image Modal -->
+<div id="imageModal" class="fixed inset-0 bg-black bg-opacity-90 z-50 hidden flex items-center justify-center" onclick="closeImageModal()">
+    <div onclick="event.stopPropagation()" class="relative max-w-4xl max-h-full">
+        <img id="modalImage" src="" alt="" class="max-w-full max-h-screen object-contain">
+        <button onclick="closeImageModal()" class="absolute top-4 right-4 text-white text-3xl hover:text-gray-300">
+            <i class="fas fa-times"></i>
+        </button>
+    </div>
+</div>
+
+<script>
+    function openImageModal(imageUrl) {
+        document.getElementById('modalImage').src = imageUrl;
+        document.getElementById('imageModal').classList.remove('hidden');
+        document.body.style.overflow = 'hidden';
+    }
+    
+    function closeImageModal() {
+        document.getElementById('imageModal').classList.add('hidden');
+        document.body.style.overflow = 'auto';
+    }
+    
+    function shareStadium() {
+        if (navigator.share) {
+            navigator.share({
+                title: '{{ stadium.name }}',
+                text: 'Check out {{ stadium.name }} in {{ stadium.city }}!',
+                url: window.location.href,
+            });
+        } else {
+            navigator.clipboard.writeText(window.location.href);
+            alert('Link copied to clipboard!');
+        }
+    }
+    
+    // Close modal on ESC key
+    document.addEventListener('keydown', function(e) {
+        if (e.key === 'Escape') {
+            closeImageModal();
+        }
+    });
+</script>
+{% endblock %}
