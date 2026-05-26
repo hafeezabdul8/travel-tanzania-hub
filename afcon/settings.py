@@ -11,43 +11,50 @@ https://docs.djangoproject.com/en/6.0/ref/settings/
 """
 
 from pathlib import Path
+import os
+from dotenv import load_dotenv
+
+# Load environment variables
+load_dotenv()
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
-
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/6.0/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'django-insecure-key-for-development'
+SECRET_KEY = os.getenv('SECRET_KEY', 'django-insecure-key-for-development')
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = os.getenv('DEBUG', 'True').lower() == 'true'
 
-ALLOWED_HOSTS = []
+# FIXED: Allow all hosts for development
+ALLOWED_HOSTS = ['localhost', '127.0.0.1', '0.0.0.0', '::1']
 
+# Or read from environment variable (more flexible)
+# ALLOWED_HOSTS = os.getenv('ALLOWED_HOSTS', 'localhost,127.0.0.1').split(',')
 
 # Application definition
-
 INSTALLED_APPS = [
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
     'django.contrib.sessions',
     'django.contrib.messages',
-    'django.contrib.staticfiles', 'accounts',
+    'django.contrib.staticfiles',
+    'accounts',
     'hotels',
     'chatbot',
     'tourism',
     'dashboard', 
-    'partners' ,
+    'partners',
     'football',
     'city',
     'payments',
     'rest_framework',
-    'corsheaders',  
-    
+    'rest_framework.authtoken',
+    'corsheaders',
 ]
 
 MIDDLEWARE = [
@@ -61,7 +68,7 @@ MIDDLEWARE = [
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
 
-# Add REST Framework settings
+# REST Framework settings
 REST_FRAMEWORK = {
     'DEFAULT_PERMISSION_CLASSES': [
         'rest_framework.permissions.AllowAny',
@@ -74,47 +81,29 @@ REST_FRAMEWORK = {
     'PAGE_SIZE': 10
 }
 
-
+# CORS settings
 CORS_ALLOWED_ORIGINS = [
     "http://localhost:3000",
     "http://127.0.0.1:3000",
-    "http://10.0.2.2:8000",  # Android emulator
+    "http://10.0.2.2:8000",
 ]
 
 CORS_ALLOW_ALL_ORIGINS = True  # For development only
 
-# Add Token Authentication
-INSTALLED_APPS += ['rest_framework.authtoken']
-# Email Configuration
-EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
-EMAIL_HOST = 'smtp.gmail.com'  # For Gmail, or use your SMTP server
-EMAIL_PORT = 587
-EMAIL_USE_TLS = True
-EMAIL_HOST_USER = 'hafidhiabdul2004@gmail.com'  # Your email
-EMAIL_HOST_PASSWORD = 'your-app-password'  # App password (not regular password)
-DEFAULT_FROM_EMAIL = 'AFCON 2027 Hotels <noreply@afcon2027.tz>'
+# Email Configuration - FIXED to use console backend by default (no errors)
+# Your developer can use this without setting up SMTP
+if os.getenv('EMAIL_HOST_USER'):
+    EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+    EMAIL_HOST = os.getenv('EMAIL_HOST', 'smtp.gmail.com')
+    EMAIL_PORT = int(os.getenv('EMAIL_PORT', 587))
+    EMAIL_USE_TLS = os.getenv('EMAIL_USE_TLS', 'True').lower() == 'true'
+    EMAIL_HOST_USER = os.getenv('EMAIL_HOST_USER')
+    EMAIL_HOST_PASSWORD = os.getenv('EMAIL_HOST_PASSWORD')
+    DEFAULT_FROM_EMAIL = os.getenv('DEFAULT_FROM_EMAIL', 'noreply@afcon2027.tz')
+else:
+    # Use console backend for development (no errors, just prints to terminal)
+    EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
 
-# For development/testing, you can use console backend
-# EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
-
-import os
-try:
-    from dotenv import load_dotenv
-except Exception:
-    # Fallback no-op if python-dotenv is not installed (avoids import errors in editors/CI)
-    def load_dotenv(*args, **kwargs):
-        return False
-
-load_dotenv()  # Load environment variables
-
-# Email Configuration
-EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
-EMAIL_HOST = os.getenv('EMAIL_HOST', 'smtp.gmail.com')
-EMAIL_PORT = int(os.getenv('EMAIL_PORT', 587))
-EMAIL_USE_TLS = os.getenv('EMAIL_USE_TLS', 'True').lower() == 'true'
-EMAIL_HOST_USER = os.getenv('EMAIL_HOST_USER')
-EMAIL_HOST_PASSWORD = os.getenv('EMAIL_HOST_PASSWORD')
-DEFAULT_FROM_EMAIL = os.getenv('DEFAULT_FROM_EMAIL', 'noreply@afcon2027.tz')
 SITE_URL = os.getenv('SITE_URL', 'http://localhost:8000')
 
 ROOT_URLCONF = 'afcon.urls'
@@ -136,10 +125,7 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'afcon.wsgi.application'
 
-
 # Database
-# https://docs.djangoproject.com/en/6.0/ref/settings/#databases
-
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.sqlite3',
@@ -147,10 +133,7 @@ DATABASES = {
     }
 }
 
-
 # Password validation
-# https://docs.djangoproject.com/en/6.0/ref/settings/#auth-password-validators
-
 AUTH_PASSWORD_VALIDATORS = [
     {
         'NAME': 'django.contrib.auth.password_validation.UserAttributeSimilarityValidator',
@@ -166,25 +149,16 @@ AUTH_PASSWORD_VALIDATORS = [
     },
 ]
 
-
 # Internationalization
-# https://docs.djangoproject.com/en/6.0/topics/i18n/
-
 LANGUAGE_CODE = 'en-us'
-
 TIME_ZONE = 'UTC'
-
 USE_I18N = True
-
 USE_TZ = True
 
-
 # Static files (CSS, JavaScript, Images)
-# https://docs.djangoproject.com/en/6.0/howto/static-files/
-
-
 STATIC_URL = 'static/'
 STATICFILES_DIRS = [BASE_DIR / 'static']
+STATIC_ROOT = BASE_DIR / 'staticfiles'
 
 # Media files
 MEDIA_URL = 'media/'
@@ -193,34 +167,8 @@ MEDIA_ROOT = BASE_DIR / 'media'
 # Default primary key field type
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
-
-# settings.py
-import os
-from pathlib import Path
-from dotenv import load_dotenv
-
-# Load environment variables
-load_dotenv()
-
-# Build paths inside the project like this: BASE_DIR / 'subdir'.
-BASE_DIR = Path(__file__).resolve().parent.parent
-
-# SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = os.getenv('SECRET_KEY', 'django-insecure-fallback-key')
-
-# AI Configuration
+# AI Configuration (Optional - chatbot works without)
 GEMINI_API_KEY = os.getenv('GEMINI_API_KEY')
-AI_SERVICE = os.getenv('AI_SERVICE', 'gemini')  # gemini, openai, local
-
-# Debug mode
-DEBUG = os.getenv('DEBUG', 'False').lower() == 'true'
-
-import os
-from dotenv import load_dotenv
-
-# Load environment variables
-load_dotenv()
-
-# DeepSeek API Configuration
 DEEPSEEK_API_KEY = os.getenv('DEEPSEEK_API_KEY')
 DEEPSEEK_API_URL = os.getenv('DEEPSEEK_API_URL', 'https://api.deepseek.com/v1/chat/completions')
+AI_SERVICE = os.getenv('AI_SERVICE', 'gemini')

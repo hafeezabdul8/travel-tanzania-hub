@@ -3,3 +3,23 @@
 __pycache__/
 *.pyc
 node_modules/
+
+# Environment variables (keep secrets private)
+.env
+.env.local
+.env.*.local
+
+# Database
+*.sqlite3
+*.db
+
+# Python cache
+__pycache__/
+*.pyc
+
+# Media files
+media/
+uploads/
+
+# Logs
+*.log
